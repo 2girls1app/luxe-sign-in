@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Facebook } from "lucide-react";
 import { Link } from "react-router-dom";
-import Logo from "@/components/Logo";
+
 
 const Index = () => {
   const [username, setUsername] = useState("");
@@ -17,7 +17,7 @@ const Index = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-sm flex flex-col items-center gap-8"
       >
-        <Logo />
+        
 
         <h1 className="text-2xl font-light tracking-wide text-gold">
           Welcome back!
