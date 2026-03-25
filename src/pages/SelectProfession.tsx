@@ -5,12 +5,14 @@ import physicianImg from "@/assets/physician.png";
 import firstAssistImg from "@/assets/first-assist.png";
 import nurseImg from "@/assets/nurse.png";
 import anesthesiaImg from "@/assets/anesthesia.png";
+import administrativeImg from "@/assets/administrative.png";
 
 const professions = [
   { id: "physician", label: "PHYSICIAN", image: physicianImg },
   { id: "first-assist", label: "FIRST ASSIST", image: firstAssistImg },
   { id: "nurse", label: "NURSE", image: nurseImg },
   { id: "anesthesia", label: "ANESTHESIA", image: anesthesiaImg },
+  { id: "administrative", label: "ADMIN STAFF", image: administrativeImg },
 ];
 
 const SelectProfession = () => {
