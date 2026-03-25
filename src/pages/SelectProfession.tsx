@@ -39,11 +39,15 @@ const SelectProfession = () => {
         </h1>
 
         <div className="grid grid-cols-2 gap-6 w-full">
-          {professions.map((prof) => (
+          {professions.map((prof, index) => (
             <button
               key={prof.id}
               onClick={() => setSelected(prof.id)}
-              className="flex flex-col items-center gap-2 focus:outline-none"
+              className={`flex flex-col items-center gap-2 focus:outline-none ${
+                professions.length % 2 !== 0 && index === professions.length - 1
+                  ? "col-span-2"
+                  : ""
+              }`}
             >
               <div className="w-28 h-28 rounded-full overflow-hidden bg-card border-2 border-border">
                 <img
