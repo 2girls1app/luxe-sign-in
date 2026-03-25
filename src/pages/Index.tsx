@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Facebook } from "lucide-react";
 import { Link } from "react-router-dom";
-import Logo from "@/components/Logo";
+
 
 const Index = () => {
   const [username, setUsername] = useState("");
