@@ -13,18 +13,21 @@ const SignUp = () => {
   const [agree, setAgree] = useState(false);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
+    <div className="relative flex min-h-screen items-center justify-center bg-background px-6 py-12 overflow-hidden">
+      <img src={logoImg} alt="" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] object-contain opacity-[0.12] pointer-events-none select-none" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-sm flex flex-col items-center gap-8"
+        className="relative z-10 w-full max-w-sm flex flex-col items-center gap-8"
       >
-        
-
-        <h1 className="text-2xl font-light tracking-wide text-primary">
-          Create Account
+        <h1 className="text-2xl font-light tracking-[0.2em] text-primary text-center uppercase">
+          Advanced Surgical Solutions
         </h1>
+
+        <p className="text-2xl font-light tracking-wide text-primary">
+          Create Account
+        </p>
 
         <div className="w-full flex flex-col gap-4">
           <input

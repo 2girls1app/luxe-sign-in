@@ -22,11 +22,10 @@ const Index = () => {
         <h1 className="text-2xl font-light tracking-[0.2em] text-primary text-center uppercase">
           Advanced Surgical Solutions
         </h1>
-        
 
-        <h1 className="text-2xl font-light tracking-wide text-gold">
+        <p className="text-2xl font-light tracking-wide text-primary">
           Welcome back!
-        </h1>
+        </p>
 
         <div className="w-full flex flex-col gap-4">
           <input
