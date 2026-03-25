@@ -1,8 +1,8 @@
 import logoImg from "@/assets/logo.png";
 
 const Logo = () => (
-  <div className="flex flex-col items-center gap-3">
-    <img src={logoImg} alt="Advanced Surgical Solutions" className="w-40 h-40 object-contain" />
+  <div className="flex flex-col items-center gap-3 opacity-40">
+    <img src={logoImg} alt="Advanced Surgical Solutions" className="w-64 h-64 object-contain" />
     <div className="flex flex-col items-center gap-1">
       <span className="text-xs font-semibold tracking-[3px] text-primary">
         ADVANCED SURGICAL
