@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Facebook } from "lucide-react";
 import { Link } from "react-router-dom";
 import Logo from "@/components/Logo";
+import logoImg from "@/assets/logo.png";
 
 const Index = () => {
   const [username, setUsername] = useState("");
@@ -10,7 +11,8 @@ const Index = () => {
   const [remember, setRemember] = useState(false);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
+    <div className="relative flex min-h-screen items-center justify-center bg-background px-6 py-12 overflow-hidden">
+      <img src={logoImg} alt="" className="pointer-events-none absolute top-8 left-1/2 -translate-x-1/2 w-[420px] h-[420px] object-contain opacity-[0.12]" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
