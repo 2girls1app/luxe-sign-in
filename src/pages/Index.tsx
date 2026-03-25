@@ -18,7 +18,7 @@ const Index = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-sm flex flex-col items-center gap-6"
       >
-        <img src={logoImg} alt="Advanced Surgical Solutions" className="w-40 h-40 object-contain" />
+        <img src={logoImg} alt="Advanced Surgical Solutions" className="w-[480px] h-[480px] object-contain" />
         <h1 className="text-2xl font-light tracking-[0.2em] text-primary text-center uppercase">
           Advanced Surgical Solutions
         </h1>
