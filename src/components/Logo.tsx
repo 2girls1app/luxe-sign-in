@@ -2,7 +2,7 @@ import logoImg from "@/assets/logo.png";
 
 const Logo = () => (
   <div className="flex flex-col items-center gap-3">
-    <img src={logoImg} alt="Advanced Surgical Solutions" className="w-28 h-28 object-contain" />
+    <img src={logoImg} alt="Advanced Surgical Solutions" className="w-40 h-40 object-contain" />
     <div className="flex flex-col items-center gap-1">
       <span className="text-xs font-semibold tracking-[3px] text-primary">
         ADVANCED SURGICAL
