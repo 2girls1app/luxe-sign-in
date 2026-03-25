@@ -38,7 +38,7 @@ const SelectProfession = () => {
           Please Select Your Medical<br />Profession
         </h1>
 
-        <div className="grid grid-cols-2 gap-6 w-full">
+        <div className="grid grid-cols-2 gap-6 w-full justify-items-center">
           {professions.map((prof) => (
             <button
               key={prof.id}
