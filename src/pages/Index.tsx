@@ -82,9 +82,9 @@ const Index = () => {
 
         <p className="text-sm text-muted-foreground">
           Do not have an account,{" "}
-          <a href="#" className="text-gold hover:text-gold-light underline">
+          <Link to="/signup" className="text-primary hover:text-gold-light underline">
             Sign Up Here
-          </a>
+          </Link>
         </p>
       </motion.div>
     </div>
