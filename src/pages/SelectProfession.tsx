@@ -8,7 +8,7 @@ import anesthesiaImg from "@/assets/anesthesia.png";
 import administrativeImg from "@/assets/administrative.png";
 
 const professions = [
-  { id: "physician", label: "PHYSICIAN", image: physicianImg },
+  { id: "doctor", label: "DOCTOR", image: physicianImg },
   { id: "first-assist", label: "FIRST ASSIST", image: firstAssistImg },
   { id: "nurse", label: "NURSE", image: nurseImg },
   { id: "anesthesia", label: "ANESTHESIA", image: anesthesiaImg },
