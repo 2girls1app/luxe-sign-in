@@ -4,10 +4,12 @@ import { Facebook } from "lucide-react";
 import { Link } from "react-router-dom";
 import Logo from "@/components/Logo";
 
-const Index = () => {
-  const [username, setUsername] = useState("");
+const SignUp = () => {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [agree, setAgree] = useState(false);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
@@ -19,53 +21,68 @@ const Index = () => {
       >
         <Logo />
 
-        <h1 className="text-2xl font-light tracking-wide text-gold">
-          Welcome back!
+        <h1 className="text-2xl font-light tracking-wide text-primary">
+          Create Account
         </h1>
 
         <div className="w-full flex flex-col gap-4">
           <input
             type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold"
+            placeholder="Full Name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold"
+            className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
 
         <label className="flex items-center gap-2 self-start cursor-pointer">
           <div
             className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-              remember ? "bg-gold border-gold" : "border-muted-foreground"
+              agree ? "bg-primary border-primary" : "border-muted-foreground"
             }`}
-            onClick={() => setRemember(!remember)}
+            onClick={() => setAgree(!agree)}
           >
-            {remember && (
+            {agree && (
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                 <path d="M2 6L5 9L10 3" stroke="hsl(0,0%,8%)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             )}
           </div>
-          <span className="text-sm text-muted-foreground" onClick={() => setRemember(!remember)}>
-            Remember Me
+          <span className="text-sm text-muted-foreground" onClick={() => setAgree(!agree)}>
+            I agree to the{" "}
+            <a href="#" className="text-primary hover:text-gold-light underline">Terms & Conditions</a>
           </span>
         </label>
 
-        <button className="rounded-lg bg-gold px-10 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-gold-light active:scale-95">
-          Sign In
+        <button className="rounded-lg bg-primary px-10 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-gold-light active:scale-95">
+          Sign Up
         </button>
 
         <div className="w-full flex flex-col gap-3">
           <button className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-foreground transition-colors hover:bg-muted">
             <Facebook size={18} />
-            Sign In with Facebook
+            Sign Up with Facebook
           </button>
           <button className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-foreground transition-colors hover:bg-muted">
             <svg width="18" height="18" viewBox="0 0 24 24">
@@ -74,16 +91,16 @@ const Index = () => {
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
-            Sign In with Google
+            Sign Up with Google
           </button>
         </div>
 
         <div className="w-full border-t border-border" />
 
         <p className="text-sm text-muted-foreground">
-          Do not have an account,{" "}
-          <Link to="/signup" className="text-primary hover:text-gold-light underline">
-            Sign Up Here
+          Already have an account?{" "}
+          <Link to="/" className="text-primary hover:text-gold-light underline">
+            Sign In Here
           </Link>
         </p>
       </motion.div>
@@ -91,4 +108,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default SignUp;
