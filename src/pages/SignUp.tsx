@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Facebook } from "lucide-react";
 import { Link } from "react-router-dom";
+import logoImg from "@/assets/logo.png";
 
 
 const SignUp = () => {
