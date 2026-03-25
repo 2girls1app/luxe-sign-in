@@ -17,7 +17,7 @@ const Index = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-sm flex flex-col items-center gap-8"
       >
-        <Logo />
+        
 
         <h1 className="text-2xl font-light tracking-wide text-gold">
           Welcome back!
