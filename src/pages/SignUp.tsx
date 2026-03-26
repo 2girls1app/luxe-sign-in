@@ -1,16 +1,29 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Facebook } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import logoImg from "@/assets/logo.png";
-
 
 const SignUp = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [captcha, setCaptcha] = useState(false);
   const [agree, setAgree] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const profession = (location.state as any)?.profession || "";
+
+  const handleSubmit = () => {
+    if (fullName && email && password && confirmPassword === password && captcha) {
+      navigate("/profile-picture");
+    }
+  };
+
+  const inputClass =
+    "w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
@@ -20,66 +33,52 @@ const SignUp = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-sm flex flex-col items-center gap-6"
       >
-        <img src={logoImg} alt="Advanced Surgical Solutions" className="w-40 h-40 object-contain" />
+        <img src={logoImg} alt="1st Assist" className="w-40 h-40 object-contain" />
         <h1 className="text-2xl font-light tracking-[0.2em] text-primary text-center uppercase">
-          Advanced Surgical Solutions
+          1st Assist
         </h1>
 
-        <p className="text-2xl font-light tracking-wide text-primary">
+        <p className="text-xl font-light tracking-wide text-foreground">
           Create Account
+          {profession && (
+            <span className="block text-sm text-muted-foreground mt-1 capitalize">
+              {profession.replace("-", " ")}
+            </span>
+          )}
         </p>
 
         <div className="w-full flex flex-col gap-4">
-          <input
-            type="text"
-            placeholder="Full Name"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
+          <input type="text" placeholder="Username" value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputClass} />
+          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
+          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} />
+          <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={inputClass} />
+          <input type="tel" placeholder="Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
         </div>
 
-        <label className="flex items-center gap-2 self-start cursor-pointer">
+        {/* CAPTCHA checkbox */}
+        <label className="flex items-center gap-3 self-start cursor-pointer w-full rounded-lg border border-border bg-secondary px-4 py-3">
           <div
             className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-              agree ? "bg-primary border-primary" : "border-muted-foreground"
+              captcha ? "bg-primary border-primary" : "border-muted-foreground"
             }`}
-            onClick={() => setAgree(!agree)}
+            onClick={() => setCaptcha(!captcha)}
           >
-            {agree && (
+            {captcha && (
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                 <path d="M2 6L5 9L10 3" stroke="hsl(0,0%,8%)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             )}
           </div>
-          <span className="text-sm text-muted-foreground" onClick={() => setAgree(!agree)}>
-            I agree to the{" "}
-            <a href="#" className="text-primary hover:text-gold-light underline">Terms & Conditions</a>
+          <span className="text-sm text-foreground" onClick={() => setCaptcha(!captcha)}>
+            I'm not a robot
           </span>
         </label>
 
-        <button className="rounded-lg bg-primary px-10 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-gold-light active:scale-95">
+        <button
+          onClick={handleSubmit}
+          disabled={!fullName || !email || !password || password !== confirmPassword || !captcha}
+          className="rounded-lg bg-primary px-10 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-gold-light active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
           Sign Up
         </button>
 
@@ -98,6 +97,13 @@ const SignUp = () => {
             Sign Up with Google
           </button>
         </div>
+
+        <p className="text-xs text-muted-foreground text-center">
+          By signing up, you agree to our{" "}
+          <a href="#" className="text-primary hover:text-gold-light underline">Privacy Policy</a>
+          {" "}and{" "}
+          <a href="#" className="text-primary hover:text-gold-light underline">Terms of Service</a>
+        </p>
 
         <div className="w-full border-t border-border" />
 
