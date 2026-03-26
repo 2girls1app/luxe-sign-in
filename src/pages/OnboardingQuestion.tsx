@@ -14,7 +14,7 @@ const OnboardingQuestion = () => {
 
   useEffect(() => {
     const role = profile?.role || user?.user_metadata?.profession;
-    if (role === "administrative") {
+    if (role === "administrative" || role === "admin" || role === "admin-staff") {
       navigate("/profile", { replace: true });
     }
   }, [profile, user, navigate]);
