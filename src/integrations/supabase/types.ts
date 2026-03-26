@@ -93,6 +93,7 @@ export type Database = {
           id: string
           onboarding_completed: boolean
           role: string | null
+          specialty: string | null
           updated_at: string
           user_id: string
         }
@@ -103,6 +104,7 @@ export type Database = {
           id?: string
           onboarding_completed?: boolean
           role?: string | null
+          specialty?: string | null
           updated_at?: string
           user_id: string
         }
@@ -113,6 +115,7 @@ export type Database = {
           id?: string
           onboarding_completed?: boolean
           role?: string | null
+          specialty?: string | null
           updated_at?: string
           user_id?: string
         }

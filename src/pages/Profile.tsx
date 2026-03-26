@@ -8,6 +8,7 @@ import AddProcedureDialog from "@/components/AddProcedureDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Facility {
   id: string;
@@ -31,6 +32,18 @@ const Profile = () => {
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [searchProcedures, setSearchProcedures] = useState("");
+  const [specialty, setSpecialty] = useState<string>(profile?.specialty || "");
+
+  const SPECIALTIES = [
+    "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
+    "Cosmetic Surgery", "Critical Care Surgery", "Endocrine Surgery", "General Surgery",
+    "Gynecologic Surgery", "Hand Surgery", "Head and Neck Surgery", "Hepatobiliary Surgery",
+    "Maxillofacial Surgery", "Minimally Invasive Surgery", "Neurosurgery", "Obstetric Surgery",
+    "Oncologic Surgery", "Ophthalmic Surgery", "Oral Surgery", "Orthopedic Surgery",
+    "Otolaryngology Surgery", "Pediatric Surgery", "Plastic Surgery", "Podiatric Surgery",
+    "Reconstructive Surgery", "Spine Surgery", "Surgical Oncology", "Thoracic Surgery",
+    "Transplant Surgery", "Trauma Surgery", "Urologic Surgery", "Vascular Surgery",
+  ];
 
   const emailUsername = user?.email?.split("@")[0] || "";
   const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.user_metadata?.name || emailUsername || "User";
@@ -50,10 +63,26 @@ const Profile = () => {
   }, [user]);
 
   useEffect(() => {
+    if (profile?.specialty) setSpecialty(profile.specialty);
+  }, [profile]);
+
+  useEffect(() => {
     refreshProfile();
     fetchFacilities();
     fetchProcedures();
   }, [fetchFacilities, fetchProcedures]);
+
+  const updateSpecialty = async (value: string) => {
+    setSpecialty(value);
+    if (!user) return;
+    const { error } = await supabase.from("profiles").update({ specialty: value } as any).eq("user_id", user.id);
+    if (error) {
+      toast({ title: "Error", description: "Failed to save specialty", variant: "destructive" });
+    } else {
+      toast({ title: "Specialty updated" });
+      refreshProfile();
+    }
+  };
 
   const deleteFacility = async (id: string) => {
     const { error } = await supabase.from("facilities").delete().eq("id", id);
@@ -119,6 +148,23 @@ const Profile = () => {
             <p className="text-foreground font-medium">{displayName}</p>
             <p className="text-sm text-muted-foreground">{username}</p>
           </div>
+        </div>
+
+        {/* Surgery Specialty */}
+        <div>
+          <label className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-2 block">
+            Surgery Specialty
+          </label>
+          <Select value={specialty} onValueChange={updateSpecialty}>
+            <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-12">
+              <SelectValue placeholder="Select your surgery specialty" />
+            </SelectTrigger>
+            <SelectContent className="max-h-60">
+              {SPECIALTIES.map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Facilities Section */}
