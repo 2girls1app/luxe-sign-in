@@ -15,7 +15,6 @@ const OnboardingQuestion = () => {
   useEffect(() => {
     if (loading) return;
     const role = profile?.role || user?.user_metadata?.profession;
-    console.log("OnboardingQuestion role check:", { role, profileRole: profile?.role, metaProfession: user?.user_metadata?.profession });
     if (role === "administrative" || role === "admin" || role === "admin-staff") {
       navigate("/profile", { replace: true });
     }
