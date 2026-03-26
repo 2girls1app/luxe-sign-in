@@ -11,6 +11,7 @@ import paImg from "@/assets/physician-assistant.png";
 
 const professions = [
   { id: "doctor", label: "DOCTOR", image: physicianImg },
+  { id: "first-assist", label: "FIRST ASSIST", image: firstAssistImg },
   { id: "physician-assistant", label: "PHYSICIAN ASST", image: paImg },
   { id: "nurse", label: "NURSE", image: nurseImg },
   { id: "anesthesia", label: "ANESTHESIA", image: anesthesiaImg },
