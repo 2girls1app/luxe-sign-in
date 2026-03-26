@@ -10,9 +10,58 @@ import logoImg from "@/assets/logo.png";
 
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleSignIn = async () => {
+    if (!username || !password) {
+      toast({ title: "Please enter username and password", variant: "destructive" });
+      return;
+    }
+    setSigningIn(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: username,
+      password,
+    });
+    setSigningIn(false);
+    if (error) {
+      toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
+    } else {
+      // Check profile for redirect
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role, onboarding_completed")
+          .eq("user_id", session.user.id)
+          .single();
+        if (!profile?.role) {
+          navigate("/select-profession");
+        } else if (!profile?.onboarding_completed) {
+          navigate("/onboarding-intro");
+        } else {
+          navigate("/profile");
+        }
+      }
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (error) {
+      setGoogleLoading(false);
+      toast({ title: "Google sign in failed", description: String(error), variant: "destructive" });
+    }
+    // If redirected, page will reload and AuthCallback handles routing
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
