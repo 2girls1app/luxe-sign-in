@@ -27,7 +27,7 @@ const ProfilePicture = () => {
         className="w-full max-w-sm flex flex-col items-center gap-8"
       >
         <h1 className="text-xl font-light tracking-wide text-foreground text-center">
-          Create Profile Picture
+          Upload Profile Photo
         </h1>
 
         <div className="w-36 h-36 rounded-full overflow-hidden bg-card border-2 border-border flex items-center justify-center">
