@@ -109,27 +109,28 @@ const Index = () => {
           />
         </div>
 
-        <label className="flex items-center gap-2 self-start cursor-pointer">
-          <div
-            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-              remember ? "bg-gold border-gold" : "border-muted-foreground"
-            }`}
-            onClick={() => setRemember(!remember)}
-          >
-            {remember && (
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2 6L5 9L10 3" stroke="hsl(0,0%,8%)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            )}
-          </div>
-          <span className="text-sm text-muted-foreground" onClick={() => setRemember(!remember)}>
-            Remember Me
-          </span>
-        </label>
-
-        <Link to="/forgot-password" className="self-end text-xs text-muted-foreground hover:text-gold transition-colors">
-          Forgot Password?
-        </Link>
+        <div className="w-full flex items-center justify-between">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <div
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                remember ? "bg-gold border-gold" : "border-muted-foreground"
+              }`}
+              onClick={() => setRemember(!remember)}
+            >
+              {remember && (
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6L5 9L10 3" stroke="hsl(0,0%,8%)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </div>
+            <span className="text-sm text-muted-foreground" onClick={() => setRemember(!remember)}>
+              Remember Me
+            </span>
+          </label>
+          <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-gold transition-colors">
+            Forgot Password?
+          </Link>
+        </div>
 
         <button
           onClick={handleSignIn}
