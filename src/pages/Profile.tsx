@@ -32,9 +32,10 @@ const Profile = () => {
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [searchProcedures, setSearchProcedures] = useState("");
 
-  const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.user_metadata?.name || "Doctor";
+  const emailUsername = user?.email?.split("@")[0] || "";
+  const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.user_metadata?.name || emailUsername || "User";
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
-  const role = profile?.role || "Medical Professional";
+  const username = emailUsername || displayName.toLowerCase().replace(/\s+/g, "");
 
   const fetchFacilities = useCallback(async () => {
     if (!user) return;
@@ -116,7 +117,7 @@ const Profile = () => {
           </div>
           <div>
             <p className="text-foreground font-medium">{displayName}</p>
-            <p className="text-sm text-muted-foreground">{role}</p>
+            <p className="text-sm text-muted-foreground">{username}</p>
           </div>
         </div>
 
