@@ -127,6 +127,10 @@ const Index = () => {
           </span>
         </label>
 
+        <Link to="/forgot-password" className="self-end text-xs text-muted-foreground hover:text-gold transition-colors">
+          Forgot Password?
+        </Link>
+
         <button
           onClick={handleSignIn}
           disabled={signingIn}
