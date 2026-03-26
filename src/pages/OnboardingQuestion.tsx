@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThumbsUp, ThumbsDown, Search, Music, Disc, Mic } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import NavHeader from "@/components/NavHeader";
 
 const OnboardingQuestion = () => {
   const [answer, setAnswer] = useState<"yes" | "no" | null>(null);
