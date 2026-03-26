@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Facebook } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import logoImg from "@/assets/logo.png";
+import NavHeader from "@/components/NavHeader";
 
 const SignUp = () => {
   const [fullName, setFullName] = useState("");
@@ -26,7 +27,8 @@ const SignUp = () => {
     "w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-background px-6 pt-16 pb-12">
+      <NavHeader />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

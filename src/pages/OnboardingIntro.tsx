@@ -1,12 +1,14 @@
 import { motion } from "framer-motion";
 import { User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import NavHeader from "@/components/NavHeader";
 
 const OnboardingIntro = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-background px-6 pt-16 pb-12">
+      <NavHeader />
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
