@@ -127,7 +127,7 @@ const Index = () => {
               Remember Me
             </span>
           </label>
-          <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-gold transition-colors">
+          <Link to="/forgot-password" className="text-xs text-gold underline hover:text-gold-light transition-colors">
             Forgot Password?
           </Link>
         </div>
