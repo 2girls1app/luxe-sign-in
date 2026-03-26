@@ -9,7 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 const SignUp = () => {
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -23,7 +24,8 @@ const SignUp = () => {
   const profession = (location.state as any)?.profession || "";
 
   const handleSubmit = async () => {
-    if (!fullName || !email || !password || password !== confirmPassword || !captcha) return;
+    if (!firstName || !lastName || !email || !password || password !== confirmPassword || !captcha) return;
+    const fullName = `${firstName} ${lastName}`;
     setSigningUp(true);
     const { error } = await supabase.auth.signUp({
       email,
@@ -31,6 +33,8 @@ const SignUp = () => {
       options: {
         data: {
           full_name: fullName,
+          first_name: firstName,
+          last_name: lastName,
           profession: profession,
         },
       },
@@ -83,17 +87,20 @@ const SignUp = () => {
           1st Assist
         </h1>
 
-        <p className="text-xl font-light tracking-wide text-foreground">
-          Create Account
+        <div className="w-full flex flex-col items-center gap-1">
+          <h2 className="text-2xl font-bold tracking-wide text-foreground">
+            Create Account
+          </h2>
           {profession && (
-            <span className="block text-sm text-muted-foreground mt-1 capitalize">
+            <span className="text-sm font-light text-muted-foreground capitalize">
               {profession.replace("-", " ")}
             </span>
           )}
-        </p>
+        </div>
 
         <div className="w-full flex flex-col gap-4">
-          <input type="text" placeholder="Username" value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputClass} />
+          <input type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClass} />
+          <input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputClass} />
           <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
           <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} />
           <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={inputClass} />
@@ -121,7 +128,7 @@ const SignUp = () => {
 
         <button
           onClick={handleSubmit}
-          disabled={!fullName || !email || !password || password !== confirmPassword || !captcha || signingUp}
+          disabled={!firstName || !lastName || !email || !password || password !== confirmPassword || !captcha || signingUp}
           className="rounded-lg bg-primary px-10 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-gold-light active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {signingUp ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "Sign Up"}
