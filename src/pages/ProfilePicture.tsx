@@ -26,12 +26,14 @@ const ProfilePicture = () => {
   };
 
   const handleUpload = async () => {
+    const role = user?.user_metadata?.profession;
+    const isAdmin = role === "administrative" || role === "admin" || role === "admin-staff";
+
     if (!file || !user) {
-      // If no file selected or not authenticated, store preview in localStorage and continue
       if (preview) {
         localStorage.setItem("avatar_preview", preview);
       }
-      navigate("/onboarding-intro");
+      navigate(isAdmin ? "/profile" : "/onboarding-intro");
       return;
     }
 
