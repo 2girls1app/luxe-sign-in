@@ -20,7 +20,7 @@ const Index = () => {
       >
         <img src={logoImg} alt="Advanced Surgical Solutions" className="w-40 h-40 object-contain" />
         <h1 className="text-2xl font-light tracking-[0.2em] text-primary text-center uppercase">
-          Advanced Surgical Solutions
+          1st Assist
         </h1>
 
         <p className="text-2xl font-light tracking-wide text-primary">
