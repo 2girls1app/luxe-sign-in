@@ -12,6 +12,8 @@ import OnboardingIntro from "./pages/OnboardingIntro.tsx";
 import OnboardingQuestion from "./pages/OnboardingQuestion.tsx";
 import Profile from "./pages/Profile.tsx";
 import AuthCallback from "./pages/AuthCallback.tsx";
+import ForgotPassword from "./pages/ForgotPassword.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
