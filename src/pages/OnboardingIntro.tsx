@@ -7,11 +7,18 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const OnboardingIntro = () => {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, user, loading } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    // Priority: profile avatar_url > localStorage preview
+    if (loading) return;
+    const role = profile?.role || user?.user_metadata?.profession;
+    if (role === "administrative" || role === "admin" || role === "admin-staff") {
+      navigate("/profile", { replace: true });
+    }
+  }, [profile, user, navigate, loading]);
+
+  useEffect(() => {
     if (profile?.avatar_url) {
       setAvatarUrl(profile.avatar_url);
     } else {
