@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Search, User, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import NavHeader from "@/components/NavHeader";
 
 const procedures = [
   { id: "kidneys", label: "Kidneys", emoji: "🫘" },
