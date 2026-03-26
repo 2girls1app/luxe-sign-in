@@ -23,7 +23,8 @@ const SignUp = () => {
   const profession = (location.state as any)?.profession || "";
 
   const handleSubmit = async () => {
-    if (!fullName || !email || !password || password !== confirmPassword || !captcha) return;
+    if (!firstName || !lastName || !email || !password || password !== confirmPassword || !captcha) return;
+    const fullName = `${firstName} ${lastName}`;
     setSigningUp(true);
     const { error } = await supabase.auth.signUp({
       email,
@@ -31,6 +32,8 @@ const SignUp = () => {
       options: {
         data: {
           full_name: fullName,
+          first_name: firstName,
+          last_name: lastName,
           profession: profession,
         },
       },
