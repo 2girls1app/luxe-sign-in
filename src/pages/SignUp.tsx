@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Facebook } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import logoImg from "@/assets/logo.png";
+import NavHeader from "@/components/NavHeader";
 
 const SignUp = () => {
   const [fullName, setFullName] = useState("");
