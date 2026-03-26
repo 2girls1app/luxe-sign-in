@@ -89,7 +89,7 @@ const Index = () => {
         </h1>
 
         <p className="text-xl font-bold tracking-wide text-gold">
-          Welcome Back
+          Welcome Back!
         </p>
 
         <div className="w-full flex flex-col gap-4">
