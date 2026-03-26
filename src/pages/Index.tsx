@@ -88,7 +88,7 @@ const Index = () => {
           1st Assist
         </h1>
 
-        <p className="text-xl font-bold tracking-wide text-gold">
+        <p className="text-3xl font-light tracking-wide text-foreground">
           Welcome Back!
         </p>
 
