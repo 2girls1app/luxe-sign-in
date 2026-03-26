@@ -193,7 +193,7 @@ const Profile = () => {
                 </button>
               </div>
             )}
-            <p className="text-sm text-muted-foreground">{username}</p>
+            <p className="text-sm text-muted-foreground">{roleLabel || username}</p>
           </div>
         </div>
 
