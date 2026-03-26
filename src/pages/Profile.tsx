@@ -86,6 +86,23 @@ const Profile = () => {
     }
   };
 
+  const startEditingName = () => {
+    setNameInput(displayName === "User" ? "" : displayName);
+    setEditingName(true);
+  };
+
+  const saveName = async () => {
+    if (!user || !nameInput.trim()) return;
+    const { error } = await supabase.from("profiles").update({ display_name: nameInput.trim() } as any).eq("user_id", user.id);
+    if (error) {
+      toast({ title: "Error", description: "Failed to update name", variant: "destructive" });
+    } else {
+      toast({ title: "Name updated" });
+      refreshProfile();
+    }
+    setEditingName(false);
+  };
+
   const deleteFacility = async (id: string) => {
     const { error } = await supabase.from("facilities").delete().eq("id", id);
     if (!error) fetchFacilities();
