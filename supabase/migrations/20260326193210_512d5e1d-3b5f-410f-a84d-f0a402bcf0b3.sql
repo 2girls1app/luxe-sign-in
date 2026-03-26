@@ -1,0 +1,1 @@
+UPDATE public.profiles SET role = sub.profession FROM (SELECT u.id as user_id, u.raw_user_meta_data->>'profession' as profession FROM auth.users u WHERE u.raw_user_meta_data->>'profession' IS NOT NULL) sub WHERE profiles.user_id = sub.user_id AND profiles.role IS NULL
