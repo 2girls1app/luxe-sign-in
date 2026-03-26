@@ -49,6 +49,7 @@ const Profile = () => {
   }, [user]);
 
   useEffect(() => {
+    refreshProfile();
     fetchFacilities();
     fetchProcedures();
   }, [fetchFacilities, fetchProcedures]);
