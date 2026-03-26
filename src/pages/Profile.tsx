@@ -26,7 +26,7 @@ interface Procedure {
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
   const { toast } = useToast();
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
@@ -49,6 +49,7 @@ const Profile = () => {
   }, [user]);
 
   useEffect(() => {
+    refreshProfile();
     fetchFacilities();
     fetchProcedures();
   }, [fetchFacilities, fetchProcedures]);
