@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Camera, Upload, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import NavHeader from "@/components/NavHeader";
 
 const ProfilePicture = () => {
   const [preview, setPreview] = useState<string | null>(null);
