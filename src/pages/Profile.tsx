@@ -117,7 +117,7 @@ const Profile = () => {
           </div>
           <div>
             <p className="text-foreground font-medium">{displayName}</p>
-            <p className="text-sm text-muted-foreground">{role}</p>
+            <p className="text-sm text-muted-foreground">{username}</p>
           </div>
         </div>
 
