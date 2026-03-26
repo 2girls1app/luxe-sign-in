@@ -50,6 +50,9 @@ const Profile = () => {
   const emailUsername = user?.email?.split("@")[0] || "";
   const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.user_metadata?.name || emailUsername || "User";
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
+  const userRole = profile?.role || user?.user_metadata?.profession || "";
+  const roleLabel = userRole ? userRole.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) : "";
+  const isAdmin = ["administrative", "admin", "admin-staff"].includes(userRole);
   const username = emailUsername || displayName.toLowerCase().replace(/\s+/g, "");
 
   const fetchFacilities = useCallback(async () => {
@@ -190,26 +193,28 @@ const Profile = () => {
                 </button>
               </div>
             )}
-            <p className="text-sm text-muted-foreground">{username}</p>
+            <p className="text-sm text-muted-foreground">{roleLabel || username}</p>
           </div>
         </div>
 
-        {/* Surgery Specialty */}
-        <div>
-          <label className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-2 block">
-            Surgery Specialty
-          </label>
-          <Select value={specialty} onValueChange={updateSpecialty}>
-            <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-12">
-              <SelectValue placeholder="Select your surgery specialty" />
-            </SelectTrigger>
-            <SelectContent className="max-h-60">
-              {SPECIALTIES.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Surgery Specialty - hidden for admin */}
+        {!isAdmin && (
+          <div>
+            <label className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-2 block">
+              Surgery Specialty
+            </label>
+            <Select value={specialty} onValueChange={updateSpecialty}>
+              <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-12">
+                <SelectValue placeholder="Select your surgery specialty" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {SPECIALTIES.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Facilities Section */}
         <div>
