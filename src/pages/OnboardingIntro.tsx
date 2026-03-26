@@ -13,7 +13,8 @@ const OnboardingIntro = () => {
   useEffect(() => {
     if (loading) return;
     const role = profile?.role || user?.user_metadata?.profession;
-    if (role === "administrative" || role === "admin" || role === "admin-staff") {
+    const isAdmin = role === "administrative" || role === "admin" || role === "admin-staff";
+    if (isAdmin || profile?.onboarding_completed) {
       navigate("/profile", { replace: true });
     }
   }, [profile, user, navigate, loading]);
