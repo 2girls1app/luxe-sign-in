@@ -33,6 +33,8 @@ const Profile = () => {
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [searchProcedures, setSearchProcedures] = useState("");
   const [specialty, setSpecialty] = useState<string>(profile?.specialty || "");
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
 
   const SPECIALTIES = [
     "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
