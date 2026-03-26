@@ -63,10 +63,26 @@ const Profile = () => {
   }, [user]);
 
   useEffect(() => {
+    if (profile?.specialty) setSpecialty(profile.specialty);
+  }, [profile]);
+
+  useEffect(() => {
     refreshProfile();
     fetchFacilities();
     fetchProcedures();
   }, [fetchFacilities, fetchProcedures]);
+
+  const updateSpecialty = async (value: string) => {
+    setSpecialty(value);
+    if (!user) return;
+    const { error } = await supabase.from("profiles").update({ specialty: value } as any).eq("user_id", user.id);
+    if (error) {
+      toast({ title: "Error", description: "Failed to save specialty", variant: "destructive" });
+    } else {
+      toast({ title: "Specialty updated" });
+      refreshProfile();
+    }
+  };
 
   const deleteFacility = async (id: string) => {
     const { error } = await supabase.from("facilities").delete().eq("id", id);
