@@ -94,8 +94,8 @@ const Index = () => {
 
         <div className="w-full flex flex-col gap-4">
           <input
-            type="text"
-            placeholder="Username"
+            type="email"
+            placeholder="Email"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold"
