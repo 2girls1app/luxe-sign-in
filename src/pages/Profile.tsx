@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, User, LogOut, MapPin, Building2, Stethoscope, Trash2 } from "lucide-react";
+import { Search, User, LogOut, MapPin, Building2, Stethoscope, Trash2, Pencil, Check, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
 import AddFacilityDialog from "@/components/AddFacilityDialog";
@@ -33,6 +33,8 @@ const Profile = () => {
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [searchProcedures, setSearchProcedures] = useState("");
   const [specialty, setSpecialty] = useState<string>(profile?.specialty || "");
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
 
   const SPECIALTIES = [
     "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
@@ -82,6 +84,23 @@ const Profile = () => {
       toast({ title: "Specialty updated" });
       refreshProfile();
     }
+  };
+
+  const startEditingName = () => {
+    setNameInput(displayName === "User" ? "" : displayName);
+    setEditingName(true);
+  };
+
+  const saveName = async () => {
+    if (!user || !nameInput.trim()) return;
+    const { error } = await supabase.from("profiles").update({ display_name: nameInput.trim() } as any).eq("user_id", user.id);
+    if (error) {
+      toast({ title: "Error", description: "Failed to update name", variant: "destructive" });
+    } else {
+      toast({ title: "Name updated" });
+      refreshProfile();
+    }
+    setEditingName(false);
   };
 
   const deleteFacility = async (id: string) => {
@@ -144,8 +163,33 @@ const Profile = () => {
               <User size={28} className="text-primary" />
             )}
           </div>
-          <div>
-            <p className="text-foreground font-medium">{displayName}</p>
+          <div className="flex-1 min-w-0">
+            {editingName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && saveName()}
+                  autoFocus
+                  className="bg-secondary border border-border rounded-lg px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full"
+                  placeholder="Enter your name"
+                />
+                <button onClick={saveName} className="text-primary hover:text-primary/80 transition-colors">
+                  <Check size={16} />
+                </button>
+                <button onClick={() => setEditingName(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <p className="text-foreground font-medium">{displayName}</p>
+                <button onClick={startEditingName} className="text-muted-foreground hover:text-primary transition-colors">
+                  <Pencil size={12} />
+                </button>
+              </div>
+            )}
             <p className="text-sm text-muted-foreground">{username}</p>
           </div>
         </div>

@@ -25,7 +25,16 @@ const SignUp = () => {
   const handleSubmit = async () => {
     if (!fullName || !email || !password || password !== confirmPassword || !captcha) return;
     setSigningUp(true);
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          profession: profession,
+        },
+      },
+    });
     setSigningUp(false);
     if (error) {
       toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
