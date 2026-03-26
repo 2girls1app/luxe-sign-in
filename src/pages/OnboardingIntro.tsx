@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import NavHeader from "@/components/NavHeader";
 
 const OnboardingIntro = () => {
   const navigate = useNavigate();
