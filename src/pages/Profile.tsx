@@ -163,8 +163,33 @@ const Profile = () => {
               <User size={28} className="text-primary" />
             )}
           </div>
-          <div>
-            <p className="text-foreground font-medium">{displayName}</p>
+          <div className="flex-1 min-w-0">
+            {editingName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && saveName()}
+                  autoFocus
+                  className="bg-secondary border border-border rounded-lg px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full"
+                  placeholder="Enter your name"
+                />
+                <button onClick={saveName} className="text-primary hover:text-primary/80 transition-colors">
+                  <Check size={16} />
+                </button>
+                <button onClick={() => setEditingName(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <p className="text-foreground font-medium">{displayName}</p>
+                <button onClick={startEditingName} className="text-muted-foreground hover:text-primary transition-colors">
+                  <Pencil size={12} />
+                </button>
+              </div>
+            )}
             <p className="text-sm text-muted-foreground">{username}</p>
           </div>
         </div>
