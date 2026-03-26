@@ -3,17 +3,68 @@ import { motion } from "framer-motion";
 import { Camera, Upload, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const ProfilePicture = () => {
   const [preview, setPreview] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+    const selected = e.target.files?.[0];
+    if (selected) {
+      setFile(selected);
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result as string);
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(selected);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!file || !user) {
+      // If no file selected or not authenticated, store preview in localStorage and continue
+      if (preview) {
+        localStorage.setItem("avatar_preview", preview);
+      }
+      navigate("/onboarding-intro");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${user.id}/avatar.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("user_id", user.id);
+
+      localStorage.setItem("avatar_preview", publicUrl);
+      navigate("/onboarding-intro");
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error.message || "Could not upload photo",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -53,10 +104,11 @@ const ProfilePicture = () => {
         </div>
 
         <button
-          onClick={() => navigate("/onboarding-intro")}
-          className="rounded-lg bg-primary px-12 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-gold-light active:scale-95"
+          onClick={handleUpload}
+          disabled={uploading}
+          className="rounded-lg bg-primary px-12 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-gold-light active:scale-95 disabled:opacity-50"
         >
-          Upload
+          {uploading ? "Uploading..." : "Upload"}
         </button>
 
         <button
