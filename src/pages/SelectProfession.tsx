@@ -96,7 +96,7 @@ const SelectProfession = () => {
         <div className="w-full border-t border-border" />
 
         <p className="text-sm text-muted-foreground italic">
-          Advanced Surgical Solutions
+          1st Assist
         </p>
       </motion.div>
     </div>
