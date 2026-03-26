@@ -32,6 +32,18 @@ const Profile = () => {
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [searchProcedures, setSearchProcedures] = useState("");
+  const [specialty, setSpecialty] = useState<string>(profile?.specialty || "");
+
+  const SPECIALTIES = [
+    "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
+    "Cosmetic Surgery", "Critical Care Surgery", "Endocrine Surgery", "General Surgery",
+    "Gynecologic Surgery", "Hand Surgery", "Head and Neck Surgery", "Hepatobiliary Surgery",
+    "Maxillofacial Surgery", "Minimally Invasive Surgery", "Neurosurgery", "Obstetric Surgery",
+    "Oncologic Surgery", "Ophthalmic Surgery", "Oral Surgery", "Orthopedic Surgery",
+    "Otolaryngology Surgery", "Pediatric Surgery", "Plastic Surgery", "Podiatric Surgery",
+    "Reconstructive Surgery", "Spine Surgery", "Surgical Oncology", "Thoracic Surgery",
+    "Transplant Surgery", "Trauma Surgery", "Urologic Surgery", "Vascular Surgery",
+  ];
 
   const emailUsername = user?.email?.split("@")[0] || "";
   const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.user_metadata?.name || emailUsername || "User";
