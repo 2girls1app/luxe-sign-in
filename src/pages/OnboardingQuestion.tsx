@@ -10,13 +10,15 @@ const OnboardingQuestion = () => {
   const [step, setStep] = useState<"question" | "playlist">("question");
   const [playlist, setPlaylist] = useState("");
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, user, loading } = useAuth();
 
   useEffect(() => {
-    if (profile?.role === "admin-staff") {
+    if (loading) return;
+    const role = profile?.role || user?.user_metadata?.profession;
+    if (role === "administrative" || role === "admin" || role === "admin-staff") {
       navigate("/profile", { replace: true });
     }
-  }, [profile, navigate]);
+  }, [profile, user, navigate, loading]);
 
   const handleNext = () => {
     if (answer === "yes") {
