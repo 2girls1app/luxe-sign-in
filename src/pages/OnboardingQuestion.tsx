@@ -23,7 +23,8 @@ const OnboardingQuestion = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-background px-6 pt-16 pb-12">
+      <NavHeader />
       <AnimatePresence mode="wait">
         {step === "question" ? (
           <motion.div
