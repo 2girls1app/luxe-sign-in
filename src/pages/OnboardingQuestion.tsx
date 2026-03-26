@@ -10,13 +10,14 @@ const OnboardingQuestion = () => {
   const [step, setStep] = useState<"question" | "playlist">("question");
   const [playlist, setPlaylist] = useState("");
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
 
   useEffect(() => {
-    if (profile?.role === "administrative") {
+    const role = profile?.role || user?.user_metadata?.profession;
+    if (role === "administrative") {
       navigate("/profile", { replace: true });
     }
-  }, [profile, navigate]);
+  }, [profile, user, navigate]);
 
   const handleNext = () => {
     if (answer === "yes") {
