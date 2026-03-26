@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Facebook, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { lovable } from "@/integrations/lovable/index";
@@ -124,10 +124,6 @@ const Index = () => {
         </button>
 
         <div className="w-full flex flex-col gap-3">
-          <button className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-foreground transition-colors hover:bg-muted">
-            <Facebook size={18} />
-            Sign In with Facebook
-          </button>
           <button
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
