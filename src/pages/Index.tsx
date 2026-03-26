@@ -64,6 +64,17 @@ const Index = () => {
     // If redirected, page will reload and AuthCallback handles routing
   };
 
+  const handleAppleSignIn = async () => {
+    setAppleLoading(true);
+    const { error } = await lovable.auth.signInWithOAuth("apple", {
+      redirect_uri: window.location.origin,
+    });
+    if (error) {
+      setAppleLoading(false);
+      toast({ title: "Apple sign in failed", description: String(error), variant: "destructive" });
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
       <motion.div
