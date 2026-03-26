@@ -197,22 +197,24 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Surgery Specialty */}
-        <div>
-          <label className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-2 block">
-            Surgery Specialty
-          </label>
-          <Select value={specialty} onValueChange={updateSpecialty}>
-            <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-12">
-              <SelectValue placeholder="Select your surgery specialty" />
-            </SelectTrigger>
-            <SelectContent className="max-h-60">
-              {SPECIALTIES.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Surgery Specialty - hidden for admin */}
+        {!isAdmin && (
+          <div>
+            <label className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-2 block">
+              Surgery Specialty
+            </label>
+            <Select value={specialty} onValueChange={updateSpecialty}>
+              <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-12">
+                <SelectValue placeholder="Select your surgery specialty" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {SPECIALTIES.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Facilities Section */}
         <div>
