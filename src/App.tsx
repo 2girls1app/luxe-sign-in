@@ -12,6 +12,8 @@ import OnboardingIntro from "./pages/OnboardingIntro.tsx";
 import OnboardingQuestion from "./pages/OnboardingQuestion.tsx";
 import Profile from "./pages/Profile.tsx";
 import AuthCallback from "./pages/AuthCallback.tsx";
+import ForgotPassword from "./pages/ForgotPassword.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,8 @@ const App = () => (
             <Route path="/onboarding-question" element={<OnboardingQuestion />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
