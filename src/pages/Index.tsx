@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Facebook } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Facebook, Loader2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { lovable } from "@/integrations/lovable/index";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import logoImg from "@/assets/logo.png";
 
 
