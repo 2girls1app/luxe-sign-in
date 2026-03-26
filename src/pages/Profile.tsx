@@ -50,6 +50,9 @@ const Profile = () => {
   const emailUsername = user?.email?.split("@")[0] || "";
   const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.user_metadata?.name || emailUsername || "User";
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
+  const userRole = profile?.role || user?.user_metadata?.profession || "";
+  const roleLabel = userRole ? userRole.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) : "";
+  const isAdmin = ["administrative", "admin", "admin-staff"].includes(userRole);
   const username = emailUsername || displayName.toLowerCase().replace(/\s+/g, "");
 
   const fetchFacilities = useCallback(async () => {
