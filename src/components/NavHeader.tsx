@@ -11,7 +11,7 @@ const NavHeader = () => {
         className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
       >
         <ArrowLeft size={20} />
-        <span className="text-xs font-medium">Back</span>
+        <span className="text-xs font-medium">BACK</span>
       </button>
       <button
         onClick={() => navigate("/")}
