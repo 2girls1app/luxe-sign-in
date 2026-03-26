@@ -17,6 +17,7 @@ const Index = () => {
   const [remember, setRemember] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
 
   const handleSignIn = async () => {
     if (!username || !password) {
