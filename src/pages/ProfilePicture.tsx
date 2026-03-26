@@ -56,7 +56,9 @@ const ProfilePicture = () => {
         .eq("user_id", user.id);
 
       localStorage.setItem("avatar_preview", publicUrl);
-      navigate("/onboarding-intro");
+      const role = user?.user_metadata?.profession;
+      const isAdmin = role === "administrative" || role === "admin" || role === "admin-staff";
+      navigate(isAdmin ? "/profile" : "/onboarding-intro");
     } catch (error: any) {
       toast({
         title: "Upload failed",
