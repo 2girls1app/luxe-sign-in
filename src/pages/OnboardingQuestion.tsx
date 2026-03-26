@@ -13,7 +13,7 @@ const OnboardingQuestion = () => {
   const { profile } = useAuth();
 
   useEffect(() => {
-    if (profile?.role === "admin-staff") {
+    if (profile?.role === "administrative") {
       navigate("/profile", { replace: true });
     }
   }, [profile, navigate]);
