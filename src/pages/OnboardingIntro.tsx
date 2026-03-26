@@ -1,10 +1,24 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
+import { useAuth } from "@/contexts/AuthContext";
 
 const OnboardingIntro = () => {
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Priority: profile avatar_url > localStorage preview
+    if (profile?.avatar_url) {
+      setAvatarUrl(profile.avatar_url);
+    } else {
+      const stored = localStorage.getItem("avatar_preview");
+      if (stored) setAvatarUrl(stored);
+    }
+  }, [profile]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6 pt-16 pb-12">
@@ -16,7 +30,11 @@ const OnboardingIntro = () => {
         className="w-full max-w-sm flex flex-col items-center gap-8"
       >
         <div className="w-32 h-32 rounded-full overflow-hidden bg-card border-2 border-primary flex items-center justify-center">
-          <User size={56} className="text-primary" />
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+          ) : (
+            <User size={56} className="text-primary" />
+          )}
         </div>
 
         <h1 className="text-2xl font-light tracking-wide text-foreground text-center">
