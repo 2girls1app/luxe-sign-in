@@ -1,14 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThumbsUp, ThumbsDown, Search, Music, Disc, Mic } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
+import { useAuth } from "@/contexts/AuthContext";
 
 const OnboardingQuestion = () => {
   const [answer, setAnswer] = useState<"yes" | "no" | null>(null);
   const [step, setStep] = useState<"question" | "playlist">("question");
   const [playlist, setPlaylist] = useState("");
   const navigate = useNavigate();
+  const { profile } = useAuth();
+
+  useEffect(() => {
+    if (profile?.role === "admin-staff") {
+      navigate("/profile", { replace: true });
+    }
+  }, [profile, navigate]);
 
   const handleNext = () => {
     if (answer === "yes") {
