@@ -127,7 +127,7 @@ const SignUp = () => {
 
         <button
           onClick={handleSubmit}
-          disabled={!fullName || !email || !password || password !== confirmPassword || !captcha || signingUp}
+          disabled={!firstName || !lastName || !email || !password || password !== confirmPassword || !captcha || signingUp}
           className="rounded-lg bg-primary px-10 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-gold-light active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {signingUp ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "Sign Up"}
