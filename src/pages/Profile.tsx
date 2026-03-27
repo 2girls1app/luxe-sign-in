@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Pencil, Check, X } from "lucide-react";
+import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Pencil, Check, X, Music } from "lucide-react";
+import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
 import AddFacilityDialog from "@/components/AddFacilityDialog";
