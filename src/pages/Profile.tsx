@@ -160,13 +160,7 @@ const Profile = () => {
 
         {/* Profile Card */}
         <div className="flex items-center gap-4 rounded-xl bg-card border border-border p-4">
-          <div className="w-16 h-16 rounded-full overflow-hidden bg-secondary border-2 border-primary flex items-center justify-center">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <User size={28} className="text-primary" />
-            )}
-          </div>
+          <ProfileAvatarUpload />
           <div className="flex-1 min-w-0">
             {editingName ? (
               <div className="flex items-center gap-2">
