@@ -55,10 +55,25 @@ const ProcedurePreferences = () => {
     }
   }, [procedureId, user]);
 
+  const fetchFileCounts = useCallback(async () => {
+    if (!procedureId || !user) return;
+    const { data } = await supabase
+      .from("procedure_files")
+      .select("category")
+      .eq("procedure_id", procedureId)
+      .eq("user_id", user.id);
+    if (data) {
+      const counts: Record<string, number> = {};
+      data.forEach((d: any) => { counts[d.category] = (counts[d.category] || 0) + 1; });
+      setFileCounts(counts);
+    }
+  }, [procedureId, user]);
+
   useEffect(() => {
     fetchProcedure();
     fetchPreferences();
-  }, [fetchProcedure, fetchPreferences]);
+    fetchFileCounts();
+  }, [fetchProcedure, fetchPreferences, fetchFileCounts]);
 
   const handleSave = async (category: string, value: string) => {
     if (!procedureId || !user) return;
