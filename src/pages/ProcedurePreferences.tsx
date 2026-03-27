@@ -27,6 +27,8 @@ const ProcedurePreferences = () => {
   const [fileDrawerOpen, setFileDrawerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
+  const [providerName, setProviderName] = useState("");
+  const [summaryOpen, setSummaryOpen] = useState(false);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
