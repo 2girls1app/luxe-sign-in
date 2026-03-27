@@ -23,7 +23,7 @@ export const PREFERENCE_CATEGORIES: PreferenceCategory[] = [
   { key: "trays", label: "Trays", icon: LayoutGrid },
   { key: "supplies", label: "Supplies", icon: Package },
   { key: "suture", label: "Suture", icon: Ribbon },
-  { key: "steps", label: "Steps", icon: ListOrdered },
+  
   { key: "images", label: "Images", icon: Image, type: "file" },
   { key: "videos", label: "Videos", icon: Video, type: "file" },
   { key: "pdfs", label: "PDFs", icon: FileText, type: "file" },

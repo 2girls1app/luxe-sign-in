@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ClipboardList } from "lucide-react";
+import { ArrowLeft, ClipboardList, ListOrdered } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -190,14 +190,31 @@ const ProcedurePreferences = () => {
           </div>
         </div>
 
-        {/* View All button */}
-        <button
-          onClick={() => setSummaryOpen(true)}
-          className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-xs font-medium text-foreground hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-[0.98]"
-        >
-          <ClipboardList size={16} className="text-primary" />
-          View Full Preference Card
-        </button>
+        {/* Action bars */}
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => setSummaryOpen(true)}
+            className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-xs font-medium text-foreground hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-[0.98]"
+          >
+            <ClipboardList size={16} className="text-primary" />
+            View Full Preference Card
+          </button>
+          <button
+            onClick={() => setStepsOpen(true)}
+            className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-xs font-medium text-foreground hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-[0.98]"
+          >
+            <ListOrdered size={16} className="text-primary" />
+            Procedure Steps
+            {preferences["steps"] && (() => {
+              try {
+                const parsed = JSON.parse(preferences["steps"]);
+                if (Array.isArray(parsed) && parsed.length > 0)
+                  return <span className="text-[10px] text-muted-foreground ml-1">({parsed.length})</span>;
+              } catch {}
+              return null;
+            })()}
+          </button>
+        </div>
 
         {/* Widget grid - 3 per row */}
         <div className="grid grid-cols-3 gap-3">
