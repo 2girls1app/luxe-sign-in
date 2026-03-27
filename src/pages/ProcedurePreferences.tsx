@@ -28,18 +28,21 @@ const ProcedurePreferences = () => {
   const [saving, setSaving] = useState(false);
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
   const [providerName, setProviderName] = useState("");
+  const [facilityName, setFacilityName] = useState("");
   const [summaryOpen, setSummaryOpen] = useState(false);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
     const { data } = await supabase
       .from("procedures")
-      .select("name")
+      .select("name, facility_id, facilities(name)")
       .eq("id", procedureId)
       .eq("user_id", user.id)
       .single();
-    if (data) setProcedureName(data.name);
-    else navigate("/profile");
+    if (data) {
+      setProcedureName(data.name);
+      setFacilityName((data.facilities as any)?.name || "");
+    } else navigate("/profile");
   }, [procedureId, user, navigate]);
 
   const fetchPreferences = useCallback(async () => {
@@ -225,6 +228,7 @@ const ProcedurePreferences = () => {
         onOpenChange={setSummaryOpen}
         procedureName={procedureName}
         providerName={providerName}
+        facilityName={facilityName}
         preferences={preferences}
         fileCounts={fileCounts}
       />

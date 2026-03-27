@@ -9,6 +9,7 @@ interface PreferenceSummaryDrawerProps {
   onOpenChange: (open: boolean) => void;
   procedureName: string;
   providerName: string;
+  facilityName: string;
   preferences: Record<string, string>;
   fileCounts: Record<string, number>;
 }
@@ -18,6 +19,7 @@ const PreferenceSummaryDrawer = ({
   onOpenChange,
   procedureName,
   providerName,
+  facilityName,
   preferences,
   fileCounts,
 }: PreferenceSummaryDrawerProps) => {
@@ -84,6 +86,12 @@ const PreferenceSummaryDrawer = ({
       doc.text("Procedure:", ml, y);
       doc.setFont("helvetica", "normal");
       doc.text(procedureName || "Not specified", ml + 26, y);
+      y += 6;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Facility:", ml, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(facilityName || "Not specified", ml + 20, y);
       y += 6;
 
       doc.setFont("helvetica", "bold");
@@ -211,6 +219,7 @@ const PreferenceSummaryDrawer = ({
             <div className="space-y-1 text-sm border-b border-black pb-3 mb-4">
               <p><span className="font-bold">Surgeon:</span> {providerName || "Not specified"}</p>
               <p><span className="font-bold">Procedure:</span> {procedureName}</p>
+              <p><span className="font-bold">Facility:</span> {facilityName || "Not specified"}</p>
               <p><span className="font-bold">Date:</span> {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
             </div>
 
