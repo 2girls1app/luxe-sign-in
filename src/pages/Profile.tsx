@@ -38,6 +38,8 @@ const Profile = () => {
   const [specialty, setSpecialty] = useState<string>(profile?.specialty || "");
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
+  const [musicDrawerOpen, setMusicDrawerOpen] = useState(false);
+  const [hasMusicPrefs, setHasMusicPrefs] = useState(false);
 
   const SPECIALTIES = [
     "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
