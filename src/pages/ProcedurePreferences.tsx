@@ -19,6 +19,7 @@ const ProcedurePreferences = () => {
 
   const [procedureName, setProcedureName] = useState("");
   const [preferences, setPreferences] = useState<Record<string, string>>({});
+  const [updatedDates, setUpdatedDates] = useState<Record<string, string>>({});
   const [selectedCategory, setSelectedCategory] = useState<PreferenceCategory | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -39,13 +40,15 @@ const ProcedurePreferences = () => {
     if (!procedureId || !user) return;
     const { data } = await supabase
       .from("procedure_preferences")
-      .select("category, value")
+      .select("category, value, updated_at")
       .eq("procedure_id", procedureId)
       .eq("user_id", user.id);
     if (data) {
       const map: Record<string, string> = {};
-      data.forEach((d: any) => { map[d.category] = d.value; });
+      const dates: Record<string, string> = {};
+      data.forEach((d: any) => { map[d.category] = d.value; dates[d.category] = d.updated_at; });
       setPreferences(map);
+      setUpdatedDates(dates);
     }
   }, [procedureId, user]);
 
@@ -125,13 +128,14 @@ const ProcedurePreferences = () => {
         {/* Widget grid - 3 per row */}
         <div className="grid grid-cols-3 gap-3">
           {PREFERENCE_CATEGORIES.map((cat, i) => (
-            <PreferenceCategoryWidget
-              key={cat.key}
-              category={cat}
-              value={preferences[cat.key]}
-              onClick={() => openCategory(cat)}
-              index={i}
-            />
+              <PreferenceCategoryWidget
+                key={cat.key}
+                category={cat}
+                value={preferences[cat.key]}
+                updatedAt={updatedDates[cat.key]}
+                onClick={() => openCategory(cat)}
+                index={i}
+              />
           ))}
         </div>
       </motion.div>
