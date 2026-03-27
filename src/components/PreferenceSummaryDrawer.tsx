@@ -89,6 +89,12 @@ const PreferenceSummaryDrawer = ({
       y += 6;
 
       doc.setFont("helvetica", "bold");
+      doc.text("Facility:", ml, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(facilityName || "Not specified", ml + 20, y);
+      y += 6;
+
+      doc.setFont("helvetica", "bold");
       doc.text("Date:", ml, y);
       doc.setFont("helvetica", "normal");
       doc.text(new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }), ml + 14, y);
