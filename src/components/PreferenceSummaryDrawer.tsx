@@ -9,6 +9,7 @@ interface PreferenceSummaryDrawerProps {
   onOpenChange: (open: boolean) => void;
   procedureName: string;
   providerName: string;
+  facilityName: string;
   preferences: Record<string, string>;
   fileCounts: Record<string, number>;
 }
