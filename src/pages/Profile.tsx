@@ -89,12 +89,22 @@ const Profile = () => {
     setHasMusicPrefs((count ?? 0) > 0);
   }, [user]);
 
+  const fetchPendingCount = useCallback(async () => {
+    if (!user) return;
+    const { count } = await supabase
+      .from("pending_preference_changes")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending");
+    setPendingCount(count ?? 0);
+  }, [user]);
+
   useEffect(() => {
     refreshProfile();
     fetchFacilities();
     fetchProcedures();
     fetchMusicPrefsCount();
-  }, [fetchFacilities, fetchProcedures, fetchMusicPrefsCount]);
+    fetchPendingCount();
+  }, [fetchFacilities, fetchProcedures, fetchMusicPrefsCount, fetchPendingCount]);
 
   const updateSpecialty = async (value: string) => {
     setSpecialty(value);
