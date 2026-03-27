@@ -227,6 +227,14 @@ const ProcedurePreferences = () => {
         onFilesChanged={fetchFileCounts}
       />
 
+      <MedicationSelector
+        open={medicationOpen}
+        onOpenChange={setMedicationOpen}
+        currentValue={preferences["medication"] || ""}
+        onSave={handleSave}
+        saving={saving}
+      />
+
       <PreferenceSummaryDrawer
         open={summaryOpen}
         onOpenChange={setSummaryOpen}
