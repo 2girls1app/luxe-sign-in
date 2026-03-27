@@ -80,12 +80,14 @@ function getIconForProcedure(name: string, category: string | null): React.Eleme
 
 const ProcedureCard = ({ id, name, category, facilityName, notes, onDelete }: ProcedureCardProps) => {
   const Icon = getIconForProcedure(name, category);
+  const navigate = useNavigate();
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="group relative flex flex-col rounded-2xl bg-card border border-border overflow-hidden transition-shadow hover:shadow-lg hover:shadow-primary/5"
+      onClick={() => navigate(`/procedure/${id}/preferences`)}
+      className="group relative flex flex-col rounded-2xl bg-card border border-border overflow-hidden transition-shadow hover:shadow-lg hover:shadow-primary/5 cursor-pointer"
     >
       {/* Icon area */}
       <div className="flex items-center justify-center bg-primary/5 py-6">
