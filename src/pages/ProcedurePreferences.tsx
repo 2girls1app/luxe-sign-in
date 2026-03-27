@@ -86,10 +86,11 @@ const ProcedurePreferences = () => {
     if (!user) return;
     const { data } = await supabase
       .from("profiles")
-      .select("display_name")
+      .select("display_name, avatar_url")
       .eq("user_id", user.id)
       .single();
     if (data?.display_name) setProviderName(data.display_name);
+    if (data?.avatar_url) setProviderAvatar(data.avatar_url);
   }, [user]);
 
   useEffect(() => {
