@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ClipboardList, ListOrdered } from "lucide-react";
+import { ArrowLeft, ClipboardList, ListOrdered, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +14,7 @@ import FileUploadDrawer from "@/components/FileUploadDrawer";
 import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
 import MedicationSelector from "@/components/MedicationSelector";
 import StepsDrawer from "@/components/StepsDrawer";
+import SharePreferenceCardDrawer from "@/components/SharePreferenceCardDrawer";
 
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
@@ -34,6 +35,7 @@ const ProcedurePreferences = () => {
   const [providerName, setProviderName] = useState("");
   const [facilityName, setFacilityName] = useState("");
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
@@ -160,34 +162,42 @@ const ProcedurePreferences = () => {
         className="w-full max-w-sm mx-auto flex flex-col gap-6"
       >
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/profile")}
-            className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-medium text-foreground truncate">{procedureName}</h1>
-            <p className="text-xs text-muted-foreground">Procedure Preferences</p>
-            {(() => {
-              const allDates = Object.values(updatedDates).filter(Boolean);
-              if (allDates.length === 0) return null;
-              const latest = allDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
-              const formatUpdatedDate = (dateStr: string) => {
-                const diffMs = new Date().getTime() - new Date(dateStr).getTime();
-                const diffMins = Math.floor(diffMs / 60000);
-                const diffHours = Math.floor(diffMs / 3600000);
-                const diffDays = Math.floor(diffMs / 86400000);
-                if (diffMins < 1) return "Just now";
-                if (diffMins < 60) return `${diffMins}m ago`;
-                if (diffHours < 24) return `${diffHours}h ago`;
-                if (diffDays < 7) return `${diffDays}d ago`;
-                return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-              };
-              return <p className="text-[10px] text-muted-foreground/60">Last update: {formatUpdatedDate(latest)}</p>;
-            })()}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/profile")}
+              className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg font-medium text-foreground truncate">{procedureName}</h1>
+              <p className="text-xs text-muted-foreground">Procedure Preferences</p>
+              {(() => {
+                const allDates = Object.values(updatedDates).filter(Boolean);
+                if (allDates.length === 0) return null;
+                const latest = allDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+                const formatUpdatedDate = (dateStr: string) => {
+                  const diffMs = new Date().getTime() - new Date(dateStr).getTime();
+                  const diffMins = Math.floor(diffMs / 60000);
+                  const diffHours = Math.floor(diffMs / 3600000);
+                  const diffDays = Math.floor(diffMs / 86400000);
+                  if (diffMins < 1) return "Just now";
+                  if (diffMins < 60) return `${diffMins}m ago`;
+                  if (diffHours < 24) return `${diffHours}h ago`;
+                  if (diffDays < 7) return `${diffDays}d ago`;
+                  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                };
+                return <p className="text-[10px] text-muted-foreground/60">Last update: {formatUpdatedDate(latest)}</p>;
+              })()}
+            </div>
           </div>
+          <button
+            onClick={() => setShareOpen(true)}
+            className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary"
+          >
+            <Share2 size={20} />
+          </button>
         </div>
 
         {/* Action bars */}
@@ -273,6 +283,13 @@ const ProcedurePreferences = () => {
         facilityName={facilityName}
         preferences={preferences}
         fileCounts={fileCounts}
+      />
+
+      <SharePreferenceCardDrawer
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        procedureId={procedureId || ""}
+        procedureName={procedureName}
       />
     </div>
   );

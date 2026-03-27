@@ -239,6 +239,44 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_procedure_cards: {
+        Row: {
+          created_at: string
+          id: string
+          permission: string
+          procedure_id: string
+          share_token: string
+          shared_by: string
+          shared_with: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permission?: string
+          procedure_id: string
+          share_token?: string
+          shared_by: string
+          shared_with: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permission?: string
+          procedure_id?: string
+          share_token?: string
+          shared_by?: string
+          shared_with?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_procedure_cards_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
