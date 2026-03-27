@@ -139,10 +139,16 @@ const Profile = () => {
     navigate("/");
   };
 
-  const filteredProcedures = procedures.filter((p) =>
-    p.name.toLowerCase().includes(searchProcedures.toLowerCase()) ||
-    (p.category && p.category.toLowerCase().includes(searchProcedures.toLowerCase()))
-  );
+  const filteredProcedures = procedures
+    .filter((p) =>
+      p.name.toLowerCase().includes(searchProcedures.toLowerCase()) ||
+      (p.category && p.category.toLowerCase().includes(searchProcedures.toLowerCase()))
+    )
+    .sort((a, b) => {
+      if (a.is_favorite && !b.is_favorite) return -1;
+      if (!a.is_favorite && b.is_favorite) return 1;
+      return 0;
+    });
 
   const getFacilityName = (facilityId: string | null) => {
     if (!facilityId) return null;
