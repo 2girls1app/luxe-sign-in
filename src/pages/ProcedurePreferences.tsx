@@ -137,7 +137,9 @@ const ProcedurePreferences = () => {
 
   const openCategory = (cat: PreferenceCategory) => {
     setSelectedCategory(cat);
-    if (cat.type === "file") {
+    if (cat.key === "medication") {
+      setMedicationOpen(true);
+    } else if (cat.type === "file") {
       setFileDrawerOpen(true);
     } else {
       setDrawerOpen(true);
