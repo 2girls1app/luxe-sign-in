@@ -33,7 +33,7 @@ const ProfilePicture = () => {
       if (preview) {
         localStorage.setItem("avatar_preview", preview);
       }
-      navigate(isAdmin ? "/profile" : "/onboarding-intro");
+      navigate("/profile");
       return;
     }
 
