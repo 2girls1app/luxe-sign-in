@@ -12,6 +12,7 @@ import PreferenceCategoryWidget, {
 import PreferenceDetailDrawer from "@/components/PreferenceDetailDrawer";
 import FileUploadDrawer from "@/components/FileUploadDrawer";
 import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
+import MedicationSelector from "@/components/MedicationSelector";
 
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
@@ -25,6 +26,7 @@ const ProcedurePreferences = () => {
   const [selectedCategory, setSelectedCategory] = useState<PreferenceCategory | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [fileDrawerOpen, setFileDrawerOpen] = useState(false);
+  const [medicationOpen, setMedicationOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
   const [providerName, setProviderName] = useState("");
@@ -131,11 +133,14 @@ const ProcedurePreferences = () => {
     await fetchPreferences();
     setSaving(false);
     setDrawerOpen(false);
+    setMedicationOpen(false);
   };
 
   const openCategory = (cat: PreferenceCategory) => {
     setSelectedCategory(cat);
-    if (cat.type === "file") {
+    if (cat.key === "medication") {
+      setMedicationOpen(true);
+    } else if (cat.type === "file") {
       setFileDrawerOpen(true);
     } else {
       setDrawerOpen(true);
@@ -221,6 +226,14 @@ const ProcedurePreferences = () => {
         category={selectedCategory}
         procedureId={procedureId || ""}
         onFilesChanged={fetchFileCounts}
+      />
+
+      <MedicationSelector
+        open={medicationOpen}
+        onOpenChange={setMedicationOpen}
+        currentValue={preferences["medication"] || ""}
+        onSave={handleSave}
+        saving={saving}
       />
 
       <PreferenceSummaryDrawer

@@ -25,6 +25,29 @@ const PreferenceSummaryDrawer = ({
 }: PreferenceSummaryDrawerProps) => {
   const [generating, setGenerating] = useState(false);
 
+  const formatMedValue = (val: string): string => {
+    try {
+      const meds = JSON.parse(val);
+      if (Array.isArray(meds)) {
+        return meds.map((m: any) => {
+          let line = m.name;
+          const details: string[] = [];
+          if (m.dosage) details.push(m.dosage);
+          if (m.route) details.push(m.route);
+          if (m.notes) details.push(m.notes);
+          if (details.length > 0) line += ` — ${details.join(", ")}`;
+          return line;
+        }).join("\n");
+      }
+    } catch { /* legacy free text */ }
+    return val;
+  };
+
+  const getDisplayValue = (key: string, val: string): string => {
+    if (key === "medication") return formatMedValue(val);
+    return val;
+  };
+
   const fileCategories = PREFERENCE_CATEGORIES.filter((c) => c.type === "file");
 
   // Ordered sections for the preference card
@@ -118,8 +141,9 @@ const PreferenceSummaryDrawer = ({
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
         if (val && val.trim()) {
+          const displayVal = getDisplayValue(section.key, val);
           doc.setTextColor(30, 30, 30);
-          const lines = doc.splitTextToSize(val, cw);
+          const lines = doc.splitTextToSize(displayVal, cw);
           lines.forEach((line: string) => {
             checkPage(6);
             doc.text(line, ml, y);
@@ -240,7 +264,7 @@ const PreferenceSummaryDrawer = ({
                 <div key={section.key} className="border-b border-gray-200 py-2.5">
                   <p className="text-[11px] font-bold uppercase tracking-wide text-black">{section.label}</p>
                   {val && val.trim() ? (
-                    <p className="text-sm text-gray-800 whitespace-pre-wrap mt-0.5">{val}</p>
+                    <p className="text-sm text-gray-800 whitespace-pre-wrap mt-0.5">{getDisplayValue(section.key, val)}</p>
                   ) : (
                     <p className="text-sm text-gray-400 italic mt-0.5">Not specified</p>
                   )}
