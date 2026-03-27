@@ -173,7 +173,20 @@ const Profile = () => {
         </div>
 
         {/* Profile Card */}
-        <div className="flex items-center gap-4 rounded-xl bg-card border border-border p-4">
+        <div className="relative flex items-center gap-4 rounded-xl bg-card border border-border p-4">
+          {/* Music icon - top right */}
+          {!isAdmin && (
+            <button
+              onClick={() => setMusicDrawerOpen(true)}
+              className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-primary/10 transition-colors group"
+              aria-label="Music preferences"
+            >
+              <Music size={16} className={hasMusicPrefs ? "text-primary" : "text-muted-foreground group-hover:text-primary"} />
+              {hasMusicPrefs && (
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
+              )}
+            </button>
+          )}
           <ProfileAvatarUpload />
           <div className="flex-1 min-w-0">
             {editingName ? (
