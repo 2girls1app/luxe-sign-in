@@ -72,11 +72,22 @@ const ProcedurePreferences = () => {
     }
   }, [procedureId, user]);
 
+  const fetchProviderName = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("user_id", user.id)
+      .single();
+    if (data?.display_name) setProviderName(data.display_name);
+  }, [user]);
+
   useEffect(() => {
     fetchProcedure();
     fetchPreferences();
     fetchFileCounts();
-  }, [fetchProcedure, fetchPreferences, fetchFileCounts]);
+    fetchProviderName();
+  }, [fetchProcedure, fetchPreferences, fetchFileCounts, fetchProviderName]);
 
   const handleSave = async (category: string, value: string) => {
     if (!procedureId || !user) return;
