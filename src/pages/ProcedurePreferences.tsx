@@ -247,12 +247,6 @@ const ProcedurePreferences = () => {
         onSave={handleSave}
         saving={saving}
       />
-        open={medicationOpen}
-        onOpenChange={setMedicationOpen}
-        currentValue={preferences["medication"] || ""}
-        onSave={handleSave}
-        saving={saving}
-      />
 
       <PreferenceSummaryDrawer
         open={summaryOpen}
