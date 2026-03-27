@@ -23,7 +23,6 @@ const PreferenceSummaryDrawer = ({
 }: PreferenceSummaryDrawerProps) => {
   const [generating, setGenerating] = useState(false);
 
-  const textCategories = PREFERENCE_CATEGORIES.filter((c) => c.type !== "file");
   const fileCategories = PREFERENCE_CATEGORIES.filter((c) => c.type === "file");
 
   // Ordered sections for the preference card
