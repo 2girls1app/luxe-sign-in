@@ -133,6 +133,7 @@ const ProcedurePreferences = () => {
     await fetchPreferences();
     setSaving(false);
     setDrawerOpen(false);
+    setMedicationOpen(false);
   };
 
   const openCategory = (cat: PreferenceCategory) => {
