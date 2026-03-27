@@ -71,6 +71,11 @@ const PreferenceCategoryWidget = ({ category, value, updatedAt, onClick, index }
           {value}
         </span>
       )}
+      {hasValue && updatedAt && (
+        <span className="text-[9px] text-muted-foreground/60 mt-auto pt-1">
+          {formatUpdatedDate(updatedAt)}
+        </span>
+      )}
     </motion.button>
   );
 };

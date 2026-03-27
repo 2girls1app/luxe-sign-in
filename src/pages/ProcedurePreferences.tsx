@@ -128,13 +128,14 @@ const ProcedurePreferences = () => {
         {/* Widget grid - 3 per row */}
         <div className="grid grid-cols-3 gap-3">
           {PREFERENCE_CATEGORIES.map((cat, i) => (
-            <PreferenceCategoryWidget
-              key={cat.key}
-              category={cat}
-              value={preferences[cat.key]}
-              onClick={() => openCategory(cat)}
-              index={i}
-            />
+              <PreferenceCategoryWidget
+                key={cat.key}
+                category={cat}
+                value={preferences[cat.key]}
+                updatedAt={updatedDates[cat.key]}
+                onClick={() => openCategory(cat)}
+                index={i}
+              />
           ))}
         </div>
       </motion.div>
