@@ -8,7 +8,9 @@ interface ProcedureCardProps {
   category: string | null;
   facilityName: string | null;
   notes: string | null;
+  isFavorite: boolean;
   onDelete: (id: string) => void;
+  onToggleFavorite: (id: string, current: boolean) => void;
 }
 
 const PROCEDURE_ICON_MAP: Record<string, React.ElementType> = {
@@ -78,7 +80,7 @@ function getIconForProcedure(name: string, category: string | null): React.Eleme
   return Stethoscope;
 }
 
-const ProcedureCard = ({ id, name, category, facilityName, notes, onDelete }: ProcedureCardProps) => {
+const ProcedureCard = ({ id, name, category, facilityName, notes, isFavorite, onDelete, onToggleFavorite }: ProcedureCardProps) => {
   const Icon = getIconForProcedure(name, category);
   const navigate = useNavigate();
 
@@ -114,6 +116,21 @@ const ProcedureCard = ({ id, name, category, facilityName, notes, onDelete }: Pr
           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{notes}</p>
         )}
       </div>
+
+      {/* Favorite button */}
+      <button
+        onClick={(e) => { e.stopPropagation(); onToggleFavorite(id, isFavorite); }}
+        className="absolute top-2 left-2 p-1.5 rounded-full bg-background/80 transition-all hover:scale-110"
+        aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+      >
+        <Heart
+          size={14}
+          className={isFavorite
+            ? "text-primary fill-primary"
+            : "text-muted-foreground hover:text-primary"
+          }
+        />
+      </button>
 
       {/* Delete button */}
       <button
