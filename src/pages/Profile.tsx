@@ -26,6 +26,7 @@ interface Procedure {
   category: string | null;
   facility_id: string | null;
   notes: string | null;
+  is_favorite: boolean;
 }
 
 const Profile = () => {
