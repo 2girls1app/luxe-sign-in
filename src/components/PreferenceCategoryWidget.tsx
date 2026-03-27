@@ -51,9 +51,10 @@ const formatUpdatedDate = (dateStr: string) => {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-const PreferenceCategoryWidget = ({ category, value, updatedAt, onClick, index }: PreferenceCategoryWidgetProps) => {
+const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onClick, index }: PreferenceCategoryWidgetProps) => {
   const Icon = category.icon;
-  const hasValue = !!value;
+  const isFile = category.type === "file";
+  const hasValue = isFile ? (fileCount !== undefined && fileCount > 0) : !!value;
 
   return (
     <motion.button
