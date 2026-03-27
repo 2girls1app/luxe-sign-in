@@ -134,6 +134,15 @@ const Profile = () => {
     else toast({ title: "Error", description: error.message, variant: "destructive" });
   };
 
+  const toggleFavorite = async (id: string, current: boolean) => {
+    const { error } = await supabase.from("procedures").update({ is_favorite: !current } as any).eq("id", id);
+    if (!error) {
+      setProcedures((prev) => prev.map((p) => p.id === id ? { ...p, is_favorite: !current } : p));
+    } else {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
