@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter,
 } from "@/components/ui/drawer";
@@ -53,9 +53,13 @@ const PreferenceDetailDrawer = ({
   open, onOpenChange, category, currentValue, onSave, saving,
 }: PreferenceDetailDrawerProps) => {
   const [value, setValue] = useState(currentValue);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setValue(currentValue);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+    }
   }, [currentValue, open]);
 
   if (!category) return null;
@@ -93,7 +97,7 @@ const PreferenceDetailDrawer = ({
               ))}
             </RadioGroup>
           ) : category.key === "position" ? (
-            <ScrollArea className="max-h-[50vh]">
+            <div ref={scrollRef} className="max-h-[50vh] overflow-y-auto">
               <RadioGroup value={value} onValueChange={setValue} className="grid grid-cols-2 gap-3">
                 {POSITIONS.map((pos) => (
                   <Label
@@ -120,7 +124,7 @@ const PreferenceDetailDrawer = ({
                   </Label>
                 ))}
               </RadioGroup>
-            </ScrollArea>
+            </div>
           ) : category.key === "skinprep" ? (
             <RadioGroup value={value} onValueChange={setValue} className="grid grid-cols-2 gap-3">
               {SKIN_PREPS.map((prep) => (
