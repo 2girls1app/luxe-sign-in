@@ -219,6 +219,7 @@ const PreferenceSummaryDrawer = ({
             <div className="space-y-1 text-sm border-b border-black pb-3 mb-4">
               <p><span className="font-bold">Surgeon:</span> {providerName || "Not specified"}</p>
               <p><span className="font-bold">Procedure:</span> {procedureName}</p>
+              <p><span className="font-bold">Facility:</span> {facilityName || "Not specified"}</p>
               <p><span className="font-bold">Date:</span> {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
             </div>
 
