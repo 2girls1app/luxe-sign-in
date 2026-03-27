@@ -141,8 +141,9 @@ const PreferenceSummaryDrawer = ({
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
         if (val && val.trim()) {
+          const displayVal = getDisplayValue(section.key, val);
           doc.setTextColor(30, 30, 30);
-          const lines = doc.splitTextToSize(val, cw);
+          const lines = doc.splitTextToSize(displayVal, cw);
           lines.forEach((line: string) => {
             checkPage(6);
             doc.text(line, ml, y);
