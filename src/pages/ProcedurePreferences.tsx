@@ -28,6 +28,7 @@ const ProcedurePreferences = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [fileDrawerOpen, setFileDrawerOpen] = useState(false);
   const [medicationOpen, setMedicationOpen] = useState(false);
+  const [stepsOpen, setStepsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
   const [providerName, setProviderName] = useState("");
