@@ -45,12 +45,31 @@ const PreferenceDetailDrawer = ({
           </DrawerDescription>
         </DrawerHeader>
         <div className="px-4 pb-2">
-          <Textarea
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder={`Enter your ${category.label.toLowerCase()} preference...`}
-            className="min-h-[100px] bg-secondary border-border text-foreground placeholder:text-muted-foreground resize-none"
-          />
+          {category.key === "gloves" ? (
+            <RadioGroup value={value} onValueChange={setValue} className="grid grid-cols-3 gap-3">
+              {GLOVE_SIZES.map((size) => (
+                <Label
+                  key={size}
+                  htmlFor={`glove-${size}`}
+                  className={`flex items-center justify-center rounded-xl border px-3 py-3 text-sm font-medium cursor-pointer transition-all ${
+                    value === size
+                      ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
+                      : "border-border bg-secondary text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                  }`}
+                >
+                  <RadioGroupItem value={size} id={`glove-${size}`} className="sr-only" />
+                  {size}
+                </Label>
+              ))}
+            </RadioGroup>
+          ) : (
+            <Textarea
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder={`Enter your ${category.label.toLowerCase()} preference...`}
+              className="min-h-[100px] bg-secondary border-border text-foreground placeholder:text-muted-foreground resize-none"
+            />
+          )}
         </div>
         <DrawerFooter>
           <Button
