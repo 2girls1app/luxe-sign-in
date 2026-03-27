@@ -74,6 +74,59 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_preference_changes: {
+        Row: {
+          category: string
+          created_at: string
+          denial_reason: string | null
+          id: string
+          is_read: boolean
+          new_value: string
+          old_value: string | null
+          procedure_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_by: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          denial_reason?: string | null
+          id?: string
+          is_read?: boolean
+          new_value: string
+          old_value?: string | null
+          procedure_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_by: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          denial_reason?: string | null
+          id?: string
+          is_read?: boolean
+          new_value?: string
+          old_value?: string | null
+          procedure_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_preference_changes_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       procedure_files: {
         Row: {
           category: string
@@ -282,7 +335,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_edit_access: {
+        Args: { _procedure_id: string; _user_id: string }
+        Returns: boolean
+      }
+      owns_procedure: {
+        Args: { _procedure_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
