@@ -83,6 +83,35 @@ const PreferenceDetailDrawer = ({
                 </Label>
               ))}
             </RadioGroup>
+          ) : category.key === "position" ? (
+            <ScrollArea className="max-h-[50vh]">
+              <RadioGroup value={value} onValueChange={setValue} className="grid grid-cols-2 gap-3">
+                {POSITIONS.map((pos) => (
+                  <Label
+                    key={pos.name}
+                    htmlFor={`pos-${pos.name}`}
+                    className={`flex flex-col items-center gap-2 rounded-xl border p-3 cursor-pointer transition-all ${
+                      value === pos.name
+                        ? "border-primary bg-primary/15 shadow-sm shadow-primary/10"
+                        : "border-border bg-secondary hover:border-primary/40"
+                    }`}
+                  >
+                    <RadioGroupItem value={pos.name} id={`pos-${pos.name}`} className="sr-only" />
+                    <img
+                      src={pos.img}
+                      alt={pos.name}
+                      loading="lazy"
+                      width={100}
+                      height={100}
+                      className="w-20 h-20 object-contain"
+                    />
+                    <span className={`text-xs font-medium ${value === pos.name ? "text-primary" : "text-muted-foreground"}`}>
+                      {pos.name}
+                    </span>
+                  </Label>
+                ))}
+              </RadioGroup>
+            </ScrollArea>
           ) : (
             <Textarea
               value={value}
