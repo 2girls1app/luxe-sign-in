@@ -284,6 +284,13 @@ const ProcedurePreferences = () => {
         preferences={preferences}
         fileCounts={fileCounts}
       />
+
+      <SharePreferenceCardDrawer
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        procedureId={procedureId || ""}
+        procedureName={procedureName}
+      />
     </div>
   );
 };
