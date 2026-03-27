@@ -19,7 +19,16 @@ import sittingImg from "@/assets/positions/sitting.png";
 import jackknifeImg from "@/assets/positions/jackknife.png";
 
 const GLOVE_SIZES = ["5", "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9"];
-
+const SKIN_PREPS = [
+  { name: "Betadine", desc: "Povidone-iodine solution" },
+  { name: "Chlorhexidine", desc: "CHG antiseptic" },
+  { name: "ChloraPrep", desc: "CHG + isopropyl alcohol" },
+  { name: "DuraPrep", desc: "Iodine povacrylex + alcohol" },
+  { name: "Alcohol", desc: "Isopropyl alcohol" },
+  { name: "Hibiclens", desc: "Chlorhexidine gluconate" },
+  { name: "Techni-Care", desc: "Non-iodine, non-alcohol" },
+  { name: "None", desc: "No skin prep" },
+];
 const POSITIONS: { name: string; img: string }[] = [
   { name: "Supine", img: supineImg },
   { name: "Prone", img: proneImg },
