@@ -30,6 +30,20 @@ const SKIN_PREPS = [
   { name: "Techni-Care", desc: "Non-iodine, non-alcohol" },
   { name: "None", desc: "No skin prep" },
 ];
+const DRESSINGS = [
+  { name: "Steri-Strips", desc: "Adhesive wound closure strips" },
+  { name: "Tegaderm", desc: "Transparent film dressing" },
+  { name: "Xeroform", desc: "Petrolatum gauze dressing" },
+  { name: "Adaptic", desc: "Non-adhering contact layer" },
+  { name: "Mepilex", desc: "Foam absorbent dressing" },
+  { name: "Aquacel", desc: "Hydrofiber wound dressing" },
+  { name: "Kerlix", desc: "Gauze bandage roll" },
+  { name: "ABD Pad", desc: "Abdominal pad dressing" },
+  { name: "Ace Wrap", desc: "Elastic compression bandage" },
+  { name: "Coban", desc: "Self-adherent wrap" },
+  { name: "Dermabond", desc: "Skin adhesive/glue" },
+  { name: "None", desc: "No dressing" },
+];
 const POSITIONS: { name: string; img: string }[] = [
   { name: "Supine", img: supineImg },
   { name: "Prone", img: proneImg },
