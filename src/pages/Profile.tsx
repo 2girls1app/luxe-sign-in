@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
 import AddFacilityDialog from "@/components/AddFacilityDialog";
 import AddProcedureDialog from "@/components/AddProcedureDialog";
+import ProcedureCard from "@/components/ProcedureCard";
 import ProfileAvatarUpload from "@/components/ProfileAvatarUpload";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -276,27 +277,17 @@ const Profile = () => {
           ) : filteredProcedures.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">No matching procedures</p>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-2 gap-3">
               {filteredProcedures.map((p) => (
-                <motion.div key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start justify-between rounded-xl bg-card border border-border p-4">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-foreground font-medium text-sm">{p.name}</p>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {p.category && (
-                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">{p.category}</span>
-                      )}
-                      {getFacilityName(p.facility_id) && (
-                        <span className="text-xs bg-secondary text-muted-foreground px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <Building2 size={10} /> {getFacilityName(p.facility_id)}
-                        </span>
-                      )}
-                    </div>
-                    {p.notes && <p className="text-xs text-muted-foreground mt-1 truncate">{p.notes}</p>}
-                  </div>
-                  <button onClick={() => deleteProcedure(p.id)} className="text-muted-foreground hover:text-destructive transition-colors ml-2 mt-0.5">
-                    <Trash2 size={14} />
-                  </button>
-                </motion.div>
+                <ProcedureCard
+                  key={p.id}
+                  id={p.id}
+                  name={p.name}
+                  category={p.category}
+                  facilityName={getFacilityName(p.facility_id)}
+                  notes={p.notes}
+                  onDelete={deleteProcedure}
+                />
               ))}
             </div>
           )}
