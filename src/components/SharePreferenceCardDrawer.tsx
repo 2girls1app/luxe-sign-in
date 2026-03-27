@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, Share2, MessageSquare } from "lucide-react";
+import { Copy, Check, Share2, MessageSquare, Eye, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface SharePreferenceCardDrawerProps {
@@ -19,6 +19,7 @@ const SharePreferenceCardDrawer = ({
 }: SharePreferenceCardDrawerProps) => {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+  const [permission, setPermission] = useState<"view" | "edit">("view");
 
   const shareUrl = `${window.location.origin}/shared/procedure/${procedureId}`;
 
@@ -34,15 +35,15 @@ const SharePreferenceCardDrawer = ({
   };
 
   const handleTextLink = () => {
+    const action = permission === "edit" ? "edit" : "view";
     if (navigator.share) {
       navigator.share({
         title: `${procedureName} — Preference Card`,
-        text: `Check out my preference card for ${procedureName}`,
+        text: `You've been invited to ${action} my preference card for ${procedureName}`,
         url: shareUrl,
       }).catch(() => {});
     } else {
-      // Fallback: open SMS with link pre-filled
-      window.open(`sms:?body=${encodeURIComponent(`Check out my preference card for ${procedureName}: ${shareUrl}`)}`);
+      window.open(`sms:?body=${encodeURIComponent(`You've been invited to ${action} my preference card for ${procedureName}: ${shareUrl}`)}`);
     }
   };
 
@@ -60,7 +61,7 @@ const SharePreferenceCardDrawer = ({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[60vh] bg-background">
+      <DrawerContent className="max-h-[70vh] bg-background">
         <DrawerHeader className="pb-2">
           <DrawerTitle className="text-base font-semibold text-foreground">
             Share Preference Card
@@ -71,6 +72,40 @@ const SharePreferenceCardDrawer = ({
         </DrawerHeader>
 
         <div className="px-4 pb-6 space-y-3">
+          {/* Permission toggle */}
+          <div>
+            <p className="text-[11px] font-medium text-muted-foreground mb-2">Access level</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPermission("view")}
+                className={`flex-1 flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium transition-all ${
+                  permission === "view"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Eye size={14} />
+                View Only
+              </button>
+              <button
+                onClick={() => setPermission("edit")}
+                className={`flex-1 flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium transition-all ${
+                  permission === "edit"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Pencil size={14} />
+                Can Suggest Edits
+              </button>
+            </div>
+            {permission === "edit" && (
+              <p className="text-[10px] text-primary/70 mt-1.5">
+                Edits require your approval before going live
+              </p>
+            )}
+          </div>
+
           {/* Share URL preview */}
           <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5">
             <p className="text-xs text-muted-foreground truncate flex-1 font-mono">{shareUrl}</p>

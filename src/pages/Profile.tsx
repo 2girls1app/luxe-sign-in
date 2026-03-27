@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Pencil, Check, X, Music } from "lucide-react";
+import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Pencil, Check, X, Music, Bell } from "lucide-react";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
+import NotificationsDrawer from "@/components/NotificationsDrawer";
 import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
 import AddFacilityDialog from "@/components/AddFacilityDialog";
@@ -41,6 +42,8 @@ const Profile = () => {
   const [nameInput, setNameInput] = useState("");
   const [musicDrawerOpen, setMusicDrawerOpen] = useState(false);
   const [hasMusicPrefs, setHasMusicPrefs] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
   const SPECIALTIES = [
     "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
@@ -86,12 +89,22 @@ const Profile = () => {
     setHasMusicPrefs((count ?? 0) > 0);
   }, [user]);
 
+  const fetchPendingCount = useCallback(async () => {
+    if (!user) return;
+    const { count } = await supabase
+      .from("pending_preference_changes")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending");
+    setPendingCount(count ?? 0);
+  }, [user]);
+
   useEffect(() => {
     refreshProfile();
     fetchFacilities();
     fetchProcedures();
     fetchMusicPrefsCount();
-  }, [fetchFacilities, fetchProcedures, fetchMusicPrefsCount]);
+    fetchPendingCount();
+  }, [fetchFacilities, fetchProcedures, fetchMusicPrefsCount, fetchPendingCount]);
 
   const updateSpecialty = async (value: string) => {
     setSpecialty(value);
@@ -183,9 +196,23 @@ const Profile = () => {
             {greeting},{" "}
             <span className="text-primary font-medium">{displayName}</span>
           </h1>
-          <button onClick={handleSignOut} className="text-muted-foreground hover:text-foreground transition-colors">
-            <LogOut size={20} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setNotificationsOpen(true)}
+              className="relative text-muted-foreground hover:text-foreground transition-colors p-1"
+              aria-label="Notifications"
+            >
+              <Bell size={20} />
+              {pendingCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold px-1">
+                  {pendingCount}
+                </span>
+              )}
+            </button>
+            <button onClick={handleSignOut} className="text-muted-foreground hover:text-foreground transition-colors">
+              <LogOut size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Profile Card */}
@@ -346,6 +373,11 @@ const Profile = () => {
           }}
         />
       )}
+      <NotificationsDrawer
+        open={notificationsOpen}
+        onOpenChange={setNotificationsOpen}
+        onCountChange={setPendingCount}
+      />
     </div>
   );
 };
