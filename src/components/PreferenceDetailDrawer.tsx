@@ -30,6 +30,20 @@ const SKIN_PREPS = [
   { name: "Techni-Care", desc: "Non-iodine, non-alcohol" },
   { name: "None", desc: "No skin prep" },
 ];
+const DRESSINGS = [
+  { name: "Steri-Strips", desc: "Adhesive wound closure strips" },
+  { name: "Tegaderm", desc: "Transparent film dressing" },
+  { name: "Xeroform", desc: "Petrolatum gauze dressing" },
+  { name: "Adaptic", desc: "Non-adhering contact layer" },
+  { name: "Mepilex", desc: "Foam absorbent dressing" },
+  { name: "Aquacel", desc: "Hydrofiber wound dressing" },
+  { name: "Kerlix", desc: "Gauze bandage roll" },
+  { name: "ABD Pad", desc: "Abdominal pad dressing" },
+  { name: "Ace Wrap", desc: "Elastic compression bandage" },
+  { name: "Coban", desc: "Self-adherent wrap" },
+  { name: "Dermabond", desc: "Skin adhesive/glue" },
+  { name: "None", desc: "No dressing" },
+];
 const POSITIONS: { name: string; img: string }[] = [
   { name: "Supine", img: supineImg },
   { name: "Prone", img: proneImg },
@@ -158,6 +172,41 @@ const PreferenceDetailDrawer = ({
                   </button>
                 );
               })}
+            </div>
+          ) : category.key === "dressings" ? (
+            <div ref={scrollRef} className="max-h-[50vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3">
+                {DRESSINGS.map((d) => {
+                  const selected = value.split(", ").filter(Boolean);
+                  const isChecked = selected.includes(d.name);
+                  const toggle = () => {
+                    const next = isChecked
+                      ? selected.filter((s) => s !== d.name)
+                      : [...selected, d.name];
+                    setValue(next.join(", "));
+                  };
+                  return (
+                    <button
+                      key={d.name}
+                      type="button"
+                      onClick={toggle}
+                      className={`flex items-start gap-2 rounded-xl border p-3 cursor-pointer transition-all text-left ${
+                        isChecked
+                          ? "border-primary bg-primary/15 shadow-sm shadow-primary/10"
+                          : "border-border bg-secondary hover:border-primary/40"
+                      }`}
+                    >
+                      <Checkbox checked={isChecked} className="mt-0.5 pointer-events-none" />
+                      <div className="flex flex-col gap-0.5">
+                        <span className={`text-sm font-medium ${isChecked ? "text-primary" : "text-foreground"}`}>
+                          {d.name}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground leading-tight">{d.desc}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           ) : (
             <Textarea
