@@ -117,7 +117,7 @@ const ProcedureCard = ({ id, name, category, facilityName, notes, onDelete }: Pr
 
       {/* Delete button */}
       <button
-        onClick={() => onDelete(id)}
+        onClick={(e) => { e.stopPropagation(); onDelete(id); }}
         className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
         aria-label="Delete procedure"
       >
