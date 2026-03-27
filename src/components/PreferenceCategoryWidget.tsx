@@ -25,6 +25,7 @@ export const PREFERENCE_CATEGORIES: PreferenceCategory[] = [
 interface PreferenceCategoryWidgetProps {
   category: PreferenceCategory;
   value?: string;
+  updatedAt?: string;
   onClick: () => void;
   index: number;
 }
