@@ -120,7 +120,7 @@ const PreferenceDetailDrawer = ({
                   </Label>
                 ))}
               </RadioGroup>
-            </ScrollArea>
+            </div>
           ) : category.key === "skinprep" ? (
             <RadioGroup value={value} onValueChange={setValue} className="grid grid-cols-2 gap-3">
               {SKIN_PREPS.map((prep) => (
