@@ -74,6 +74,44 @@ export type Database = {
         }
         Relationships: []
       }
+      procedure_preferences: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          procedure_id: string
+          updated_at: string
+          user_id: string
+          value: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          procedure_id: string
+          updated_at?: string
+          user_id: string
+          value?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          procedure_id?: string
+          updated_at?: string
+          user_id?: string
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "procedure_preferences_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       procedures: {
         Row: {
           category: string | null

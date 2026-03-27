@@ -1,5 +1,6 @@
 import { Trash2, Building2, Heart, Brain, Bone, Eye, Baby, Scissors, Stethoscope, Activity, Syringe, Shield, Waypoints, Cross, HandMetal, Ear, Pill, Footprints, Ribbon, Flame, Zap } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 interface ProcedureCardProps {
   id: string;
@@ -79,12 +80,14 @@ function getIconForProcedure(name: string, category: string | null): React.Eleme
 
 const ProcedureCard = ({ id, name, category, facilityName, notes, onDelete }: ProcedureCardProps) => {
   const Icon = getIconForProcedure(name, category);
+  const navigate = useNavigate();
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="group relative flex flex-col rounded-2xl bg-card border border-border overflow-hidden transition-shadow hover:shadow-lg hover:shadow-primary/5"
+      onClick={() => navigate(`/procedure/${id}/preferences`)}
+      className="group relative flex flex-col rounded-2xl bg-card border border-border overflow-hidden transition-shadow hover:shadow-lg hover:shadow-primary/5 cursor-pointer"
     >
       {/* Icon area */}
       <div className="flex items-center justify-center bg-primary/5 py-6">
@@ -114,7 +117,7 @@ const ProcedureCard = ({ id, name, category, facilityName, notes, onDelete }: Pr
 
       {/* Delete button */}
       <button
-        onClick={() => onDelete(id)}
+        onClick={(e) => { e.stopPropagation(); onDelete(id); }}
         className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
         aria-label="Delete procedure"
       >
