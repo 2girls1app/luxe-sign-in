@@ -10,6 +10,7 @@ import PreferenceCategoryWidget, {
   type PreferenceCategory,
 } from "@/components/PreferenceCategoryWidget";
 import PreferenceDetailDrawer from "@/components/PreferenceDetailDrawer";
+import FileUploadDrawer from "@/components/FileUploadDrawer";
 
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
