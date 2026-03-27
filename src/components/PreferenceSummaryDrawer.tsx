@@ -217,7 +217,7 @@ const PreferenceSummaryDrawer = ({
       <DrawerContent className="max-h-[90vh] bg-background">
         <DrawerHeader className="flex flex-row items-center justify-between pb-2">
           <DrawerTitle className="text-base font-semibold text-foreground">
-            All Preferences
+            Full Preference Card
           </DrawerTitle>
           <div className="flex gap-2">
             <Button
