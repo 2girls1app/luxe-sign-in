@@ -33,6 +33,7 @@ const ProcedurePreferences = () => {
   const [saving, setSaving] = useState(false);
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
   const [providerName, setProviderName] = useState("");
+  const [providerAvatar, setProviderAvatar] = useState("");
   const [facilityName, setFacilityName] = useState("");
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
