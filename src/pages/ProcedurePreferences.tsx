@@ -166,38 +166,54 @@ const ProcedurePreferences = () => {
       >
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => navigate("/profile")}
-              className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-foreground"
+              className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-foreground shrink-0"
             >
               <ArrowLeft size={20} />
             </button>
+            <Avatar className="h-9 w-9 shrink-0 border border-border">
+              <AvatarImage src={providerAvatar} alt={providerName} />
+              <AvatarFallback className="bg-card text-muted-foreground">
+                <User size={16} />
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-medium text-foreground truncate">{procedureName}</h1>
-              <p className="text-xs text-muted-foreground">Procedure Preferences</p>
-              {(() => {
-                const allDates = Object.values(updatedDates).filter(Boolean);
-                if (allDates.length === 0) return null;
-                const latest = allDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
-                const formatUpdatedDate = (dateStr: string) => {
-                  const diffMs = new Date().getTime() - new Date(dateStr).getTime();
-                  const diffMins = Math.floor(diffMs / 60000);
-                  const diffHours = Math.floor(diffMs / 3600000);
-                  const diffDays = Math.floor(diffMs / 86400000);
-                  if (diffMins < 1) return "Just now";
-                  if (diffMins < 60) return `${diffMins}m ago`;
-                  if (diffHours < 24) return `${diffHours}h ago`;
-                  if (diffDays < 7) return `${diffDays}d ago`;
-                  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-                };
-                return <p className="text-[10px] text-muted-foreground/60">Last update: {formatUpdatedDate(latest)}</p>;
-              })()}
+              {providerName && (
+                <p className="text-[11px] font-medium text-primary truncate">{providerName}</p>
+              )}
+              <h1 className="text-base font-medium text-foreground truncate leading-tight">{procedureName}</h1>
+              <div className="flex items-center gap-1.5">
+                <p className="text-[10px] text-muted-foreground">Procedure Preferences</p>
+                {(() => {
+                  const allDates = Object.values(updatedDates).filter(Boolean);
+                  if (allDates.length === 0) return null;
+                  const latest = allDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+                  const formatUpdatedDate = (dateStr: string) => {
+                    const diffMs = new Date().getTime() - new Date(dateStr).getTime();
+                    const diffMins = Math.floor(diffMs / 60000);
+                    const diffHours = Math.floor(diffMs / 3600000);
+                    const diffDays = Math.floor(diffMs / 86400000);
+                    if (diffMins < 1) return "Just now";
+                    if (diffMins < 60) return `${diffMins}m ago`;
+                    if (diffHours < 24) return `${diffHours}h ago`;
+                    if (diffDays < 7) return `${diffDays}d ago`;
+                    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                  };
+                  return (
+                    <>
+                      <span className="text-[10px] text-muted-foreground/40">·</span>
+                      <p className="text-[10px] text-muted-foreground/60">{formatUpdatedDate(latest)}</p>
+                    </>
+                  );
+                })()}
+              </div>
             </div>
           </div>
           <button
             onClick={() => setShareOpen(true)}
-            className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary"
+            className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary shrink-0"
           >
             <Share2 size={20} />
           </button>
