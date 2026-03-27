@@ -13,6 +13,7 @@ import AuthCallback from "./pages/AuthCallback.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import ProcedurePreferences from "./pages/ProcedurePreferences.tsx";
 
 const queryClient = new QueryClient();
 
