@@ -228,6 +228,7 @@ const ProcedurePreferences = () => {
         onOpenChange={setSummaryOpen}
         procedureName={procedureName}
         providerName={providerName}
+        facilityName={facilityName}
         preferences={preferences}
         fileCounts={fileCounts}
       />
