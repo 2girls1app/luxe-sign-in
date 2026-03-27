@@ -56,14 +56,16 @@ const formatUpdatedDate = (dateStr: string) => {
 const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onClick, index }: PreferenceCategoryWidgetProps) => {
   const Icon = category.icon;
   const isFile = category.type === "file";
-  const isMedication = category.key === "medication";
+  const isSteps = category.key === "steps";
 
-  // Parse medication count for display
-  const getMedPreview = () => {
-    if (!isMedication || !value) return null;
+  const getJsonPreview = () => {
+    if (!value) return null;
     try {
       const parsed = JSON.parse(value);
-      if (Array.isArray(parsed)) return `${parsed.length} med${parsed.length !== 1 ? "s" : ""}`;
+      if (Array.isArray(parsed)) {
+        if (isMedication) return `${parsed.length} med${parsed.length !== 1 ? "s" : ""}`;
+        if (isSteps) return `${parsed.length} step${parsed.length !== 1 ? "s" : ""}`;
+      }
     } catch {
       return value;
     }
