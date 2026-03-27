@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Pencil, Check, X } from "lucide-react";
+import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Pencil, Check, X, Music } from "lucide-react";
+import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
 import AddFacilityDialog from "@/components/AddFacilityDialog";
@@ -37,6 +38,8 @@ const Profile = () => {
   const [specialty, setSpecialty] = useState<string>(profile?.specialty || "");
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
+  const [musicDrawerOpen, setMusicDrawerOpen] = useState(false);
+  const [hasMusicPrefs, setHasMusicPrefs] = useState(false);
 
   const SPECIALTIES = [
     "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
@@ -73,11 +76,21 @@ const Profile = () => {
     if (profile?.specialty) setSpecialty(profile.specialty);
   }, [profile]);
 
+  const fetchMusicPrefsCount = useCallback(async () => {
+    if (!user) return;
+    const { count } = await supabase
+      .from("music_preferences")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id);
+    setHasMusicPrefs((count ?? 0) > 0);
+  }, [user]);
+
   useEffect(() => {
     refreshProfile();
     fetchFacilities();
     fetchProcedures();
-  }, [fetchFacilities, fetchProcedures]);
+    fetchMusicPrefsCount();
+  }, [fetchFacilities, fetchProcedures, fetchMusicPrefsCount]);
 
   const updateSpecialty = async (value: string) => {
     setSpecialty(value);
@@ -160,7 +173,20 @@ const Profile = () => {
         </div>
 
         {/* Profile Card */}
-        <div className="flex items-center gap-4 rounded-xl bg-card border border-border p-4">
+        <div className="relative flex items-center gap-4 rounded-xl bg-card border border-border p-4">
+          {/* Music icon - top right */}
+          {!isAdmin && (
+            <button
+              onClick={() => setMusicDrawerOpen(true)}
+              className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-primary/10 transition-colors group"
+              aria-label="Music preferences"
+            >
+              <Music size={16} className={hasMusicPrefs ? "text-primary" : "text-muted-foreground group-hover:text-primary"} />
+              {hasMusicPrefs && (
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
+              )}
+            </button>
+          )}
           <ProfileAvatarUpload />
           <div className="flex-1 min-w-0">
             {editingName ? (
@@ -293,6 +319,15 @@ const Profile = () => {
           )}
         </div>
       </motion.div>
+      {!isAdmin && (
+        <MusicPreferencesDrawer
+          open={musicDrawerOpen}
+          onOpenChange={(open) => {
+            setMusicDrawerOpen(open);
+            if (!open) fetchMusicPrefsCount();
+          }}
+        />
+      )}
     </div>
   );
 };

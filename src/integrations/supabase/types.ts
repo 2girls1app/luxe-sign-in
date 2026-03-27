@@ -50,6 +50,30 @@ export type Database = {
         }
         Relationships: []
       }
+      music_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          type: string
+          user_id: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          type: string
+          user_id: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          type?: string
+          user_id?: string
+          value?: string
+        }
+        Relationships: []
+      }
       procedures: {
         Row: {
           category: string | null
