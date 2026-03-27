@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import MusicServicePrompt from "./MusicServicePrompt";
 
 interface MusicPreference {
   id: string;
@@ -44,7 +45,7 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
   const [search, setSearch] = useState("");
   const [customInput, setCustomInput] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [showPandoraPrompt, setShowPandoraPrompt] = useState(false);
   const fetchPreferences = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
@@ -74,7 +75,8 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
         value,
       } as any);
     }
-    fetchPreferences();
+    await fetchPreferences();
+    setShowPandoraPrompt(true);
   };
 
   const addCustom = async () => {
@@ -90,7 +92,8 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
       value: trimmed,
     } as any);
     setCustomInput("");
-    fetchPreferences();
+    await fetchPreferences();
+    setShowPandoraPrompt(true);
   };
 
   const getItemsForTab = () => {
@@ -235,6 +238,14 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
                 </p>
               )}
             </div>
+
+            {/* Pandora prompt */}
+            {showPandoraPrompt && preferences.length > 0 && (
+              <MusicServicePrompt
+                preferences={preferences}
+                onDismiss={() => setShowPandoraPrompt(false)}
+              />
+            )}
 
             {/* Add custom */}
             <div className="px-5 py-3 border-t border-border">
