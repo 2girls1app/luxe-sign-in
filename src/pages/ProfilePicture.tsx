@@ -116,7 +116,7 @@ const ProfilePicture = () => {
         </button>
 
         <button
-          onClick={() => navigate("/onboarding-intro")}
+          onClick={() => navigate("/profile")}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           Skip for now

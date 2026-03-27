@@ -24,8 +24,6 @@ const AuthCallback = () => {
 
       if (!profile?.role) {
         navigate("/select-profession", { replace: true });
-      } else if (!profile?.onboarding_completed) {
-        navigate("/onboarding-intro", { replace: true });
       } else {
         navigate("/profile", { replace: true });
       }
