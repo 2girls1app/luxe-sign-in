@@ -56,12 +56,10 @@ const PreferenceDetailDrawer = ({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (open && scrollRef.current) {
+    setValue(currentValue);
+    if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
-  }, [open]);
-
-    setValue(currentValue);
   }, [currentValue, open]);
 
   if (!category) return null;
