@@ -45,6 +45,13 @@ const PreferenceSummaryDrawer = ({
 
   const getDisplayValue = (key: string, val: string): string => {
     if (key === "medication") return formatMedValue(val);
+    if (key === "steps") {
+      try {
+        const steps = JSON.parse(val);
+        if (Array.isArray(steps)) return steps.map((s, i) => `${i + 1}. ${s}`).join("\n");
+      } catch { /* fallback */ }
+      return val;
+    }
     return val;
   };
 
