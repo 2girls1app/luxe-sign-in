@@ -240,6 +240,20 @@ const ProcedurePreferences = () => {
         saving={saving}
       />
 
+      <StepsDrawer
+        open={stepsOpen}
+        onOpenChange={setStepsOpen}
+        currentValue={preferences["steps"] || ""}
+        onSave={handleSave}
+        saving={saving}
+      />
+        open={medicationOpen}
+        onOpenChange={setMedicationOpen}
+        currentValue={preferences["medication"] || ""}
+        onSave={handleSave}
+        saving={saving}
+      />
+
       <PreferenceSummaryDrawer
         open={summaryOpen}
         onOpenChange={setSummaryOpen}
