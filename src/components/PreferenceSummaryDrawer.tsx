@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, FileText } from "lucide-react";
+import { Download, Printer } from "lucide-react";
 import { PREFERENCE_CATEGORIES } from "@/components/PreferenceCategoryWidget";
 
 interface PreferenceSummaryDrawerProps {
