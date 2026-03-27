@@ -239,6 +239,14 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
               )}
             </div>
 
+            {/* Pandora prompt */}
+            {showPandoraPrompt && preferences.length > 0 && (
+              <MusicServicePrompt
+                preferences={preferences}
+                onDismiss={() => setShowPandoraPrompt(false)}
+              />
+            )}
+
             {/* Add custom */}
             <div className="px-5 py-3 border-t border-border">
               <div className="flex gap-2">
