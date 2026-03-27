@@ -26,6 +26,7 @@ interface Procedure {
   category: string | null;
   facility_id: string | null;
   notes: string | null;
+  is_favorite: boolean;
 }
 
 const Profile = () => {
@@ -68,8 +69,8 @@ const Profile = () => {
 
   const fetchProcedures = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from("procedures").select("id, name, category, facility_id, notes").eq("user_id", user.id).order("created_at", { ascending: false });
-    if (data) setProcedures(data);
+    const { data } = await supabase.from("procedures").select("id, name, category, facility_id, notes, is_favorite").eq("user_id", user.id).order("created_at", { ascending: false });
+    if (data) setProcedures(data as Procedure[]);
   }, [user]);
 
   useEffect(() => {
@@ -133,15 +134,30 @@ const Profile = () => {
     else toast({ title: "Error", description: error.message, variant: "destructive" });
   };
 
+  const toggleFavorite = async (id: string, current: boolean) => {
+    const { error } = await supabase.from("procedures").update({ is_favorite: !current } as any).eq("id", id);
+    if (!error) {
+      setProcedures((prev) => prev.map((p) => p.id === id ? { ...p, is_favorite: !current } : p));
+    } else {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
   };
 
-  const filteredProcedures = procedures.filter((p) =>
-    p.name.toLowerCase().includes(searchProcedures.toLowerCase()) ||
-    (p.category && p.category.toLowerCase().includes(searchProcedures.toLowerCase()))
-  );
+  const filteredProcedures = procedures
+    .filter((p) =>
+      p.name.toLowerCase().includes(searchProcedures.toLowerCase()) ||
+      (p.category && p.category.toLowerCase().includes(searchProcedures.toLowerCase()))
+    )
+    .sort((a, b) => {
+      if (a.is_favorite && !b.is_favorite) return -1;
+      if (!a.is_favorite && b.is_favorite) return 1;
+      return 0;
+    });
 
   const getFacilityName = (facilityId: string | null) => {
     if (!facilityId) return null;
@@ -312,7 +328,9 @@ const Profile = () => {
                   category={p.category}
                   facilityName={getFacilityName(p.facility_id)}
                   notes={p.notes}
+                  isFavorite={p.is_favorite}
                   onDelete={deleteProcedure}
+                  onToggleFavorite={toggleFavorite}
                 />
               ))}
             </div>

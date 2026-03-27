@@ -162,6 +162,7 @@ export type Database = {
           created_at: string
           facility_id: string | null
           id: string
+          is_favorite: boolean
           name: string
           notes: string | null
           updated_at: string
@@ -172,6 +173,7 @@ export type Database = {
           created_at?: string
           facility_id?: string | null
           id?: string
+          is_favorite?: boolean
           name: string
           notes?: string | null
           updated_at?: string
@@ -182,6 +184,7 @@ export type Database = {
           created_at?: string
           facility_id?: string | null
           id?: string
+          is_favorite?: boolean
           name?: string
           notes?: string | null
           updated_at?: string
