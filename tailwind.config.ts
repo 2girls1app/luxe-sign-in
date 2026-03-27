@@ -24,6 +24,10 @@ export default {
           light: "hsl(var(--gold-light))",
           dark: "hsl(var(--gold-dark))",
         },
+        "music-blue": {
+          DEFAULT: "hsl(var(--music-blue))",
+          foreground: "hsl(var(--music-blue-foreground))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
