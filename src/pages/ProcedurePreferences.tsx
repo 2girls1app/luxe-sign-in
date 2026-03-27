@@ -26,6 +26,7 @@ const ProcedurePreferences = () => {
   const [selectedCategory, setSelectedCategory] = useState<PreferenceCategory | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [fileDrawerOpen, setFileDrawerOpen] = useState(false);
+  const [medicationOpen, setMedicationOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
   const [providerName, setProviderName] = useState("");
