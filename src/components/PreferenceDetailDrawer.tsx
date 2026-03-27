@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import type { PreferenceCategory } from "@/components/PreferenceCategoryWidget";
 
 const GLOVE_SIZES = ["5", "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9"];
+const POSITIONS = ["Supine", "Prone", "Lateral", "Lithotomy", "Trendelenburg", "Reverse Trendelenburg", "Sitting", "Jackknife"];
 
 interface PreferenceDetailDrawerProps {
   open: boolean;
