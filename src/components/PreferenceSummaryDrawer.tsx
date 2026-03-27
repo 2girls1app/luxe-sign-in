@@ -19,6 +19,7 @@ const PreferenceSummaryDrawer = ({
   onOpenChange,
   procedureName,
   providerName,
+  facilityName,
   preferences,
   fileCounts,
 }: PreferenceSummaryDrawerProps) => {
