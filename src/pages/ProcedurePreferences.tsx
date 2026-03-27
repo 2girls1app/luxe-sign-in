@@ -19,6 +19,7 @@ const ProcedurePreferences = () => {
 
   const [procedureName, setProcedureName] = useState("");
   const [preferences, setPreferences] = useState<Record<string, string>>({});
+  const [updatedDates, setUpdatedDates] = useState<Record<string, string>>({});
   const [selectedCategory, setSelectedCategory] = useState<PreferenceCategory | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
