@@ -30,6 +30,7 @@ export const PREFERENCE_CATEGORIES: PreferenceCategory[] = [
 interface PreferenceCategoryWidgetProps {
   category: PreferenceCategory;
   value?: string;
+  fileCount?: number;
   updatedAt?: string;
   onClick: () => void;
   index: number;
