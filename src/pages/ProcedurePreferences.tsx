@@ -196,7 +196,7 @@ const ProcedurePreferences = () => {
           className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-xs font-medium text-foreground hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-[0.98]"
         >
           <ClipboardList size={16} className="text-primary" />
-          View All Preferences
+          View Full Preference Card
         </button>
 
         {/* Widget grid - 3 per row */}
