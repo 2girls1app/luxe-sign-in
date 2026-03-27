@@ -8,8 +8,6 @@ import Index from "./pages/Index.tsx";
 import SignUp from "./pages/SignUp.tsx";
 import SelectProfession from "./pages/SelectProfession.tsx";
 import ProfilePicture from "./pages/ProfilePicture.tsx";
-import OnboardingIntro from "./pages/OnboardingIntro.tsx";
-import OnboardingQuestion from "./pages/OnboardingQuestion.tsx";
 import Profile from "./pages/Profile.tsx";
 import AuthCallback from "./pages/AuthCallback.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
@@ -30,8 +28,6 @@ const App = () => (
             <Route path="/select-profession" element={<SelectProfession />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/profile-picture" element={<ProfilePicture />} />
-            <Route path="/onboarding-intro" element={<OnboardingIntro />} />
-            <Route path="/onboarding-question" element={<OnboardingQuestion />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

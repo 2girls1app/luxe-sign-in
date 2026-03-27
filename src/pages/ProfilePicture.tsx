@@ -33,7 +33,7 @@ const ProfilePicture = () => {
       if (preview) {
         localStorage.setItem("avatar_preview", preview);
       }
-      navigate(isAdmin ? "/profile" : "/onboarding-intro");
+      navigate("/profile");
       return;
     }
 
@@ -60,7 +60,7 @@ const ProfilePicture = () => {
       localStorage.setItem("avatar_preview", publicUrl);
       const role = user?.user_metadata?.profession;
       const isAdmin = role === "administrative" || role === "admin" || role === "admin-staff";
-      navigate(isAdmin ? "/profile" : "/onboarding-intro");
+      navigate("/profile");
     } catch (error: any) {
       toast({
         title: "Upload failed",
@@ -116,7 +116,7 @@ const ProfilePicture = () => {
         </button>
 
         <button
-          onClick={() => navigate("/onboarding-intro")}
+          onClick={() => navigate("/profile")}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           Skip for now

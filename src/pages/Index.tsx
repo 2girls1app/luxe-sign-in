@@ -43,8 +43,6 @@ const Index = () => {
           .single();
         if (!profile?.role) {
           navigate("/select-profession");
-        } else if (!profile?.onboarding_completed) {
-          navigate("/onboarding-intro");
         } else {
           navigate("/profile");
         }
