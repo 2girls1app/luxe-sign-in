@@ -10,6 +10,7 @@ import PreferenceCategoryWidget, {
   type PreferenceCategory,
 } from "@/components/PreferenceCategoryWidget";
 import PreferenceDetailDrawer from "@/components/PreferenceDetailDrawer";
+import FileUploadDrawer from "@/components/FileUploadDrawer";
 
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
@@ -22,7 +23,9 @@ const ProcedurePreferences = () => {
   const [updatedDates, setUpdatedDates] = useState<Record<string, string>>({});
   const [selectedCategory, setSelectedCategory] = useState<PreferenceCategory | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [fileDrawerOpen, setFileDrawerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
@@ -52,10 +55,25 @@ const ProcedurePreferences = () => {
     }
   }, [procedureId, user]);
 
+  const fetchFileCounts = useCallback(async () => {
+    if (!procedureId || !user) return;
+    const { data } = await supabase
+      .from("procedure_files")
+      .select("category")
+      .eq("procedure_id", procedureId)
+      .eq("user_id", user.id);
+    if (data) {
+      const counts: Record<string, number> = {};
+      data.forEach((d: any) => { counts[d.category] = (counts[d.category] || 0) + 1; });
+      setFileCounts(counts);
+    }
+  }, [procedureId, user]);
+
   useEffect(() => {
     fetchProcedure();
     fetchPreferences();
-  }, [fetchProcedure, fetchPreferences]);
+    fetchFileCounts();
+  }, [fetchProcedure, fetchPreferences, fetchFileCounts]);
 
   const handleSave = async (category: string, value: string) => {
     if (!procedureId || !user) return;
@@ -100,7 +118,11 @@ const ProcedurePreferences = () => {
 
   const openCategory = (cat: PreferenceCategory) => {
     setSelectedCategory(cat);
-    setDrawerOpen(true);
+    if (cat.type === "file") {
+      setFileDrawerOpen(true);
+    } else {
+      setDrawerOpen(true);
+    }
   };
 
   return (
@@ -132,6 +154,7 @@ const ProcedurePreferences = () => {
                 key={cat.key}
                 category={cat}
                 value={preferences[cat.key]}
+                fileCount={fileCounts[cat.key]}
                 updatedAt={updatedDates[cat.key]}
                 onClick={() => openCategory(cat)}
                 index={i}
@@ -147,6 +170,14 @@ const ProcedurePreferences = () => {
         currentValue={selectedCategory ? (preferences[selectedCategory.key] || "") : ""}
         onSave={handleSave}
         saving={saving}
+      />
+
+      <FileUploadDrawer
+        open={fileDrawerOpen}
+        onOpenChange={setFileDrawerOpen}
+        category={selectedCategory}
+        procedureId={procedureId || ""}
+        onFilesChanged={fetchFileCounts}
       />
     </div>
   );

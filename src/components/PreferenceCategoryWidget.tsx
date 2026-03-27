@@ -2,12 +2,14 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import {
   Pill, Hand, RotateCcw, Droplets, Wrench, Scissors, LayoutGrid, Package, Ribbon,
+  Image, Video, FileText,
 } from "lucide-react";
 
 export interface PreferenceCategory {
   key: string;
   label: string;
   icon: React.ElementType;
+  type?: "text" | "file";
 }
 
 export const PREFERENCE_CATEGORIES: PreferenceCategory[] = [
@@ -20,11 +22,15 @@ export const PREFERENCE_CATEGORIES: PreferenceCategory[] = [
   { key: "trays", label: "Trays", icon: LayoutGrid },
   { key: "supplies", label: "Supplies", icon: Package },
   { key: "suture", label: "Suture", icon: Ribbon },
+  { key: "images", label: "Images", icon: Image, type: "file" },
+  { key: "videos", label: "Videos", icon: Video, type: "file" },
+  { key: "pdfs", label: "PDFs", icon: FileText, type: "file" },
 ];
 
 interface PreferenceCategoryWidgetProps {
   category: PreferenceCategory;
   value?: string;
+  fileCount?: number;
   updatedAt?: string;
   onClick: () => void;
   index: number;
@@ -45,9 +51,10 @@ const formatUpdatedDate = (dateStr: string) => {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-const PreferenceCategoryWidget = ({ category, value, updatedAt, onClick, index }: PreferenceCategoryWidgetProps) => {
+const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onClick, index }: PreferenceCategoryWidgetProps) => {
   const Icon = category.icon;
-  const hasValue = !!value;
+  const isFile = category.type === "file";
+  const hasValue = isFile ? (fileCount !== undefined && fileCount > 0) : !!value;
 
   return (
     <motion.button
@@ -66,7 +73,12 @@ const PreferenceCategoryWidget = ({ category, value, updatedAt, onClick, index }
         <Icon size={22} className="text-primary" />
       </div>
       <span className="text-xs font-medium text-foreground">{category.label}</span>
-      {hasValue && (
+      {isFile && hasValue && (
+        <span className="text-[10px] text-muted-foreground truncate max-w-full px-1">
+          {fileCount} file{fileCount !== 1 ? "s" : ""}
+        </span>
+      )}
+      {!isFile && hasValue && (
         <span className="text-[10px] text-muted-foreground truncate max-w-full px-1">
           {value}
         </span>
