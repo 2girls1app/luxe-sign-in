@@ -45,7 +45,7 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
   const [search, setSearch] = useState("");
   const [customInput, setCustomInput] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [showPandoraPrompt, setShowPandoraPrompt] = useState(false);
   const fetchPreferences = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
