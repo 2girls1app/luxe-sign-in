@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
 import AddFacilityDialog from "@/components/AddFacilityDialog";
 import AddProcedureDialog from "@/components/AddProcedureDialog";
+import ProcedureCard from "@/components/ProcedureCard";
 import ProfileAvatarUpload from "@/components/ProfileAvatarUpload";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
