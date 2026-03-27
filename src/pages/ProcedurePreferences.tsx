@@ -23,7 +23,9 @@ const ProcedurePreferences = () => {
   const [updatedDates, setUpdatedDates] = useState<Record<string, string>>({});
   const [selectedCategory, setSelectedCategory] = useState<PreferenceCategory | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [fileDrawerOpen, setFileDrawerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
