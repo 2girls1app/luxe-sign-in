@@ -76,11 +76,21 @@ const Profile = () => {
     if (profile?.specialty) setSpecialty(profile.specialty);
   }, [profile]);
 
+  const fetchMusicPrefsCount = useCallback(async () => {
+    if (!user) return;
+    const { count } = await supabase
+      .from("music_preferences")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id);
+    setHasMusicPrefs((count ?? 0) > 0);
+  }, [user]);
+
   useEffect(() => {
     refreshProfile();
     fetchFacilities();
     fetchProcedures();
-  }, [fetchFacilities, fetchProcedures]);
+    fetchMusicPrefsCount();
+  }, [fetchFacilities, fetchProcedures, fetchMusicPrefsCount]);
 
   const updateSpecialty = async (value: string) => {
     setSpecialty(value);
