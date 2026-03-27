@@ -186,9 +186,23 @@ const Profile = () => {
             {greeting},{" "}
             <span className="text-primary font-medium">{displayName}</span>
           </h1>
-          <button onClick={handleSignOut} className="text-muted-foreground hover:text-foreground transition-colors">
-            <LogOut size={20} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setNotificationsOpen(true)}
+              className="relative text-muted-foreground hover:text-foreground transition-colors p-1"
+              aria-label="Notifications"
+            >
+              <Bell size={20} />
+              {pendingCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold px-1">
+                  {pendingCount}
+                </span>
+              )}
+            </button>
+            <button onClick={handleSignOut} className="text-muted-foreground hover:text-foreground transition-colors">
+              <LogOut size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Profile Card */}
