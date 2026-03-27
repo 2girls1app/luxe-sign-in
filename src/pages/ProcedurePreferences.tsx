@@ -118,7 +118,11 @@ const ProcedurePreferences = () => {
 
   const openCategory = (cat: PreferenceCategory) => {
     setSelectedCategory(cat);
-    setDrawerOpen(true);
+    if (cat.type === "file") {
+      setFileDrawerOpen(true);
+    } else {
+      setDrawerOpen(true);
+    }
   };
 
   return (
