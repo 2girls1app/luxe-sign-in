@@ -5,9 +5,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import MultiSelectGrid from "@/components/MultiSelectGrid";
+import { MULTI_SELECT_CATEGORIES } from "@/data/preferenceOptions";
 import type { PreferenceCategory } from "@/components/PreferenceCategoryWidget";
 
 import supineImg from "@/assets/positions/supine.png";
@@ -20,16 +20,6 @@ import sittingImg from "@/assets/positions/sitting.png";
 import jackknifeImg from "@/assets/positions/jackknife.png";
 
 const GLOVE_SIZES = ["5", "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9"];
-const SKIN_PREPS = [
-  { name: "Betadine", desc: "Povidone-iodine solution" },
-  { name: "Chlorhexidine", desc: "CHG antiseptic" },
-  { name: "ChloraPrep", desc: "CHG + isopropyl alcohol" },
-  { name: "DuraPrep", desc: "Iodine povacrylex + alcohol" },
-  { name: "Alcohol", desc: "Isopropyl alcohol" },
-  { name: "Hibiclens", desc: "Chlorhexidine gluconate" },
-  { name: "Techni-Care", desc: "Non-iodine, non-alcohol" },
-  { name: "None", desc: "No skin prep" },
-];
 const POSITIONS: { name: string; img: string }[] = [
   { name: "Supine", img: supineImg },
   { name: "Prone", img: proneImg },
@@ -66,6 +56,7 @@ const PreferenceDetailDrawer = ({
   if (!category) return null;
 
   const Icon = category.icon;
+  const multiSelectOptions = MULTI_SELECT_CATEGORIES[category.key];
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -126,39 +117,8 @@ const PreferenceDetailDrawer = ({
                 ))}
               </RadioGroup>
             </div>
-          ) : category.key === "skinprep" ? (
-            <div className="grid grid-cols-2 gap-3">
-              {SKIN_PREPS.map((prep) => {
-                const selected = value.split(", ").filter(Boolean);
-                const isChecked = selected.includes(prep.name);
-                const toggle = () => {
-                  const next = isChecked
-                    ? selected.filter((s) => s !== prep.name)
-                    : [...selected, prep.name];
-                  setValue(next.join(", "));
-                };
-                return (
-                  <button
-                    key={prep.name}
-                    type="button"
-                    onClick={toggle}
-                    className={`flex items-start gap-2 rounded-xl border p-3 cursor-pointer transition-all text-left ${
-                      isChecked
-                        ? "border-primary bg-primary/15 shadow-sm shadow-primary/10"
-                        : "border-border bg-secondary hover:border-primary/40"
-                    }`}
-                  >
-                    <Checkbox checked={isChecked} className="mt-0.5 pointer-events-none" />
-                    <div className="flex flex-col gap-0.5">
-                      <span className={`text-sm font-medium ${isChecked ? "text-primary" : "text-foreground"}`}>
-                        {prep.name}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground leading-tight">{prep.desc}</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+          ) : multiSelectOptions ? (
+            <MultiSelectGrid options={multiSelectOptions} value={value} onChange={setValue} />
           ) : (
             <Textarea
               value={value}
