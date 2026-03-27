@@ -33,6 +33,8 @@ const Index = () => {
     if (error) {
       toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
     } else {
+      localStorage.setItem("rememberMe", remember ? "true" : "false");
+      sessionStorage.setItem("activeSession", "true");
       // Check profile for redirect
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
