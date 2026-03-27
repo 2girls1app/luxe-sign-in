@@ -56,6 +56,7 @@ const formatUpdatedDate = (dateStr: string) => {
 const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onClick, index }: PreferenceCategoryWidgetProps) => {
   const Icon = category.icon;
   const isFile = category.type === "file";
+  const isMedication = category.key === "medication";
   const isSteps = category.key === "steps";
 
   const getJsonPreview = () => {
