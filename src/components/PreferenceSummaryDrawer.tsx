@@ -25,6 +25,29 @@ const PreferenceSummaryDrawer = ({
 }: PreferenceSummaryDrawerProps) => {
   const [generating, setGenerating] = useState(false);
 
+  const formatMedValue = (val: string): string => {
+    try {
+      const meds = JSON.parse(val);
+      if (Array.isArray(meds)) {
+        return meds.map((m: any) => {
+          let line = m.name;
+          const details: string[] = [];
+          if (m.dosage) details.push(m.dosage);
+          if (m.route) details.push(m.route);
+          if (m.notes) details.push(m.notes);
+          if (details.length > 0) line += ` — ${details.join(", ")}`;
+          return line;
+        }).join("\n");
+      }
+    } catch { /* legacy free text */ }
+    return val;
+  };
+
+  const getDisplayValue = (key: string, val: string): string => {
+    if (key === "medication") return formatMedValue(val);
+    return val;
+  };
+
   const fileCategories = PREFERENCE_CATEGORIES.filter((c) => c.type === "file");
 
   // Ordered sections for the preference card
