@@ -1,16 +1,20 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Download, Printer } from "lucide-react";
+import { ArrowLeft, Download, Printer, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { PREFERENCE_CATEGORIES } from "@/components/PreferenceCategoryWidget";
+import PreferenceDetailDrawer from "@/components/PreferenceDetailDrawer";
+import type { PreferenceCategory } from "@/components/PreferenceCategoryWidget";
 
 const SharedPreferenceCard = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
 
   const [procedureName, setProcedureName] = useState("");
   const [providerName, setProviderName] = useState("");
@@ -20,6 +24,11 @@ const SharedPreferenceCard = () => {
   const [loadError, setLoadError] = useState("");
   const [pageLoading, setPageLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [canEdit, setCanEdit] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<PreferenceCategory | null>(null);
+  const [editDrawerOpen, setEditDrawerOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const fetchSharedData = useCallback(async () => {
     if (!procedureId || !user) return;
@@ -33,10 +42,20 @@ const SharedPreferenceCard = () => {
       .single();
 
     if (!procedure) {
+      setLoadError("You don't have access to this preference card.");
+      setPageLoading(false);
+      return;
+    }
+
+    const ownerUserId = procedure.user_id;
+    const userIsOwner = ownerUserId === user.id;
+    setIsOwner(userIsOwner);
+
+    if (!userIsOwner) {
       // Check shared access
       const { data: shared } = await supabase
         .from("shared_procedure_cards")
-        .select("procedure_id")
+        .select("permission")
         .eq("procedure_id", procedureId)
         .eq("shared_with", user.id)
         .limit(1);
@@ -47,14 +66,9 @@ const SharedPreferenceCard = () => {
         return;
       }
 
-      // Fetch procedure data as shared user - need to get from procedure_preferences
-      // Since RLS only allows owner, we need the owner's data through the share
-      setLoadError("You don't have access to view this procedure's details.");
-      setPageLoading(false);
-      return;
+      setCanEdit(shared[0].permission === "edit");
     }
 
-    // User owns this procedure or can see it
     setProcedureName(procedure.name);
     setFacilityName((procedure.facilities as any)?.name || "");
 
@@ -62,7 +76,7 @@ const SharedPreferenceCard = () => {
     const { data: profile } = await supabase
       .from("profiles")
       .select("display_name")
-      .eq("user_id", procedure.user_id)
+      .eq("user_id", ownerUserId)
       .single();
     if (profile?.display_name) setProviderName(profile.display_name);
 
@@ -98,6 +112,40 @@ const SharedPreferenceCard = () => {
     }
     if (user) fetchSharedData();
   }, [user, authLoading, fetchSharedData, navigate, procedureId]);
+
+  const handleSubmitChange = async (category: string, value: string) => {
+    if (!procedureId || !user) return;
+    setSaving(true);
+
+    const trimmed = value.trim();
+    const oldValue = preferences[category] || "";
+
+    if (trimmed === oldValue) {
+      setSaving(false);
+      setEditDrawerOpen(false);
+      return;
+    }
+
+    // Submit as pending change
+    const { error } = await supabase
+      .from("pending_preference_changes")
+      .insert({
+        procedure_id: procedureId,
+        category,
+        old_value: oldValue,
+        new_value: trimmed,
+        submitted_by: user.id,
+      });
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Change submitted for approval", description: "The doctor will review your suggestion." });
+    }
+
+    setSaving(false);
+    setEditDrawerOpen(false);
+  };
 
   const formatMedValue = (val: string): string => {
     try {
@@ -292,7 +340,12 @@ const SharedPreferenceCard = () => {
             </button>
             <div>
               <h1 className="text-lg font-medium text-foreground">{procedureName}</h1>
-              <p className="text-xs text-muted-foreground">Shared Preference Card</p>
+              <p className="text-xs text-muted-foreground">
+                Shared Preference Card
+                {canEdit && !isOwner && (
+                  <span className="ml-1.5 text-primary">· Can suggest edits</span>
+                )}
+              </p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -322,9 +375,27 @@ const SharedPreferenceCard = () => {
 
           {sectionOrder.map((section) => {
             const val = preferences[section.key];
+            const prefCategory = PREFERENCE_CATEGORIES.find((c) => c.key === section.key);
+            const canEditSection = canEdit && !isOwner && prefCategory && prefCategory.type !== "file";
+
             return (
-              <div key={section.key} className="border-b border-gray-200 py-2.5">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-black">{section.label}</p>
+              <div key={section.key} className="border-b border-gray-200 py-2.5 group">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-black">{section.label}</p>
+                  {canEditSection && (
+                    <button
+                      onClick={() => {
+                        if (prefCategory) {
+                          setEditingCategory(prefCategory);
+                          setEditDrawerOpen(true);
+                        }
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100"
+                    >
+                      <Pencil size={12} className="text-gray-500" />
+                    </button>
+                  )}
+                </div>
                 {val && val.trim() ? (
                   <p className="text-sm text-gray-800 whitespace-pre-wrap mt-0.5">{getDisplayValue(section.key, val)}</p>
                 ) : (
@@ -347,6 +418,18 @@ const SharedPreferenceCard = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Edit drawer for suggesting changes */}
+      {editingCategory && (
+        <PreferenceDetailDrawer
+          open={editDrawerOpen}
+          onOpenChange={setEditDrawerOpen}
+          category={editingCategory}
+          currentValue={preferences[editingCategory.key] || ""}
+          onSave={handleSubmitChange}
+          saving={saving}
+        />
+      )}
     </div>
   );
 };
