@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { Music, X, Plus, Search, Check } from "lucide-react";
+import { Music, X, Plus, Search, Check, ExternalLink, CheckCircle2, Radio } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import MusicServicePrompt from "./MusicServicePrompt";
 
 interface MusicPreference {
   id: string;
@@ -44,8 +43,8 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
   const [activeTab, setActiveTab] = useState<TabType>("genre");
   const [search, setSearch] = useState("");
   const [customInput, setCustomInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showPandoraPrompt, setShowPandoraPrompt] = useState(false);
+  const [pandoraConnected, setPandoraConnected] = useState(false);
+
   const fetchPreferences = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
@@ -56,9 +55,22 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
     if (data) setPreferences(data as MusicPreference[]);
   }, [user]);
 
+  const fetchPandoraStatus = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("pandora_connected")
+      .eq("user_id", user.id)
+      .single();
+    if (data) setPandoraConnected(!!(data as any).pandora_connected);
+  }, [user]);
+
   useEffect(() => {
-    if (open) fetchPreferences();
-  }, [open, fetchPreferences]);
+    if (open) {
+      fetchPreferences();
+      fetchPandoraStatus();
+    }
+  }, [open, fetchPreferences, fetchPandoraStatus]);
 
   const isSelected = (type: string, value: string) =>
     preferences.some((p) => p.type === type && p.value === value);
@@ -76,7 +88,6 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
       } as any);
     }
     await fetchPreferences();
-    setShowPandoraPrompt(true);
   };
 
   const addCustom = async () => {
@@ -93,7 +104,24 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
     } as any);
     setCustomInput("");
     await fetchPreferences();
-    setShowPandoraPrompt(true);
+  };
+
+  const buildPandoraUrl = () => {
+    const artists = preferences.filter((p) => p.type === "artist").map((p) => p.value);
+    const genres = preferences.filter((p) => p.type === "genre").map((p) => p.value);
+    const searchTerm = artists.length > 0 ? artists[0] : genres[0] || "relaxing music";
+    return `https://www.pandora.com/search/${encodeURIComponent(searchTerm)}/all`;
+  };
+
+  const handlePandoraConnect = async () => {
+    window.open(buildPandoraUrl(), "_blank", "noopener,noreferrer");
+    if (!user) return;
+    await supabase
+      .from("profiles")
+      .update({ pandora_connected: true } as any)
+      .eq("user_id", user.id);
+    setPandoraConnected(true);
+    toast({ title: "Pandora opened with your preferences!" });
   };
 
   const getItemsForTab = () => {
@@ -131,7 +159,6 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -139,7 +166,6 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
             className="fixed inset-0 bg-black/60 z-50"
             onClick={() => onOpenChange(false)}
           />
-          {/* Drawer */}
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
@@ -152,7 +178,7 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
               <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
             </div>
 
-            {/* Header */}
+            {/* Header with Connect to Pandora button */}
             <div className="flex items-center justify-between px-5 pb-3">
               <div className="flex items-center gap-2">
                 <Music size={20} className="text-primary" />
@@ -163,12 +189,35 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
                   </span>
                 )}
               </div>
-              <button
-                onClick={() => onOpenChange(false)}
-                className="text-muted-foreground hover:text-foreground transition-colors p-1"
-              >
-                <X size={20} />
-              </button>
+              <div className="flex items-center gap-2">
+                {/* Pandora Connect Button */}
+                <button
+                  onClick={handlePandoraConnect}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                    pandoraConnected
+                      ? "bg-music-blue/20 text-music-blue border border-music-blue/30"
+                      : "bg-transparent text-music-blue border border-music-blue/40 hover:bg-music-blue/10 hover:border-music-blue/60"
+                  }`}
+                >
+                  {pandoraConnected ? (
+                    <>
+                      <CheckCircle2 size={13} />
+                      Open in Pandora
+                    </>
+                  ) : (
+                    <>
+                      <Radio size={13} />
+                      Connect to Pandora
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => onOpenChange(false)}
+                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                >
+                  <X size={20} />
+                </button>
+              </div>
             </div>
 
             {/* Tabs */}
@@ -238,14 +287,6 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
                 </p>
               )}
             </div>
-
-            {/* Pandora prompt */}
-            {showPandoraPrompt && preferences.length > 0 && (
-              <MusicServicePrompt
-                preferences={preferences}
-                onDismiss={() => setShowPandoraPrompt(false)}
-              />
-            )}
 
             {/* Add custom */}
             <div className="px-5 py-3 border-t border-border">
