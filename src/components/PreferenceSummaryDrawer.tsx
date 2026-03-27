@@ -26,114 +26,142 @@ const PreferenceSummaryDrawer = ({
   const textCategories = PREFERENCE_CATEGORIES.filter((c) => c.type !== "file");
   const fileCategories = PREFERENCE_CATEGORIES.filter((c) => c.type === "file");
 
+  // Ordered sections for the preference card
+  const sectionOrder = [
+    { key: "position", label: "Position" },
+    { key: "gloves", label: "Glove Size / Style" },
+    { key: "equipment", label: "Equipment" },
+    { key: "supplies", label: "Supplies" },
+    { key: "instruments", label: "Instrumentation" },
+    { key: "trays", label: "Trays" },
+    { key: "suture", label: "Suture & Usage" },
+    { key: "skin_prep", label: "Skin Prep" },
+    { key: "medication", label: "Medications" },
+  ];
+
   const generatePDF = async () => {
     setGenerating(true);
     try {
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF({ unit: "mm", format: "letter" });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 20;
-      const contentWidth = pageWidth - margin * 2;
-      let y = margin;
+      const pw = doc.internal.pageSize.getWidth();
+      const ph = doc.internal.pageSize.getHeight();
+      const ml = 18; // left margin
+      const mr = 18; // right margin
+      const cw = pw - ml - mr;
+      let y = 18;
 
-      // Header bar
-      doc.setFillColor(24, 24, 27); // zinc-900
-      doc.rect(0, 0, pageWidth, 38, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(18);
-      doc.setFont("helvetica", "bold");
-      doc.text(procedureName, margin, 18);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.text("Procedure Preference Card", margin, 26);
-      doc.setFontSize(9);
-      doc.setTextColor(180, 180, 180);
-      doc.text(`Provider: ${providerName}`, margin, 33);
-      doc.text(`Generated: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`, pageWidth - margin, 33, { align: "right" });
+      const drawLine = (yPos: number, weight = 0.3) => {
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(weight);
+        doc.line(ml, yPos, pw - mr, yPos);
+      };
 
-      y = 48;
-      doc.setTextColor(60, 60, 60);
-
-      const addCategory = (label: string, value: string | null, isFile = false, fileCount = 0) => {
-        if (y > pageHeight - 30) {
+      const checkPage = (needed: number) => {
+        if (y + needed > ph - 18) {
           doc.addPage();
-          y = margin;
+          y = 18;
         }
+      };
 
-        // Category label
-        doc.setFillColor(245, 245, 245);
-        doc.roundedRect(margin, y, contentWidth, 8, 1, 1, "F");
-        doc.setFontSize(10);
+      // === TITLE ===
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.text("PREFERENCE CARD", pw / 2, y, { align: "center" });
+      y += 8;
+      drawLine(y, 0.6);
+      y += 6;
+
+      // === Surgeon & Procedure ===
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("Surgeon:", ml, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(providerName || "Not specified", ml + 22, y);
+      y += 6;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Procedure:", ml, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(procedureName || "Not specified", ml + 26, y);
+      y += 6;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Date:", ml, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }), ml + 14, y);
+      y += 4;
+      drawLine(y, 0.6);
+      y += 6;
+
+      // === Sections ===
+      sectionOrder.forEach((section) => {
+        const val = preferences[section.key];
+        checkPage(18);
+
+        // Label
         doc.setFont("helvetica", "bold");
-        doc.setTextColor(40, 40, 40);
-        doc.text(label, margin + 4, y + 5.5);
-        y += 11;
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(section.label.toUpperCase(), ml, y);
+        y += 5;
 
         // Value
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
-        doc.setTextColor(80, 80, 80);
-
-        if (isFile) {
-          const text = fileCount > 0 ? `${fileCount} file${fileCount !== 1 ? "s" : ""} uploaded` : "No files uploaded";
-          doc.text(text, margin + 4, y + 4);
-          y += 10;
-        } else if (value && value.trim()) {
-          const lines = doc.splitTextToSize(value, contentWidth - 8);
+        if (val && val.trim()) {
+          doc.setTextColor(30, 30, 30);
+          const lines = doc.splitTextToSize(val, cw);
           lines.forEach((line: string) => {
-            if (y > pageHeight - 20) {
-              doc.addPage();
-              y = margin;
-            }
-            doc.text(line, margin + 4, y + 4);
-            y += 5.5;
+            checkPage(6);
+            doc.text(line, ml, y);
+            y += 5;
           });
-          y += 4;
         } else {
-          doc.setTextColor(170, 170, 170);
-          doc.text("No preference set", margin + 4, y + 4);
-          doc.setTextColor(80, 80, 80);
-          y += 10;
+          doc.setTextColor(140, 140, 140);
+          doc.text("Not specified", ml, y);
+          y += 5;
         }
 
         y += 2;
-      };
-
-      // Text-based preferences
-      textCategories.forEach((cat) => {
-        addCategory(cat.label, preferences[cat.key] || null);
+        drawLine(y, 0.2);
+        y += 5;
       });
 
-      // File-based preferences
-      if (y > pageHeight - 40) {
-        doc.addPage();
-        y = margin;
-      }
-      y += 4;
-      doc.setFillColor(24, 24, 27);
-      doc.roundedRect(margin, y, contentWidth, 7, 1, 1, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(9);
+      // === Attached Files Section ===
+      checkPage(14);
       doc.setFont("helvetica", "bold");
-      doc.text("ATTACHED FILES", margin + 4, y + 5);
-      y += 12;
-      doc.setTextColor(60, 60, 60);
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text("ATTACHED FILES", ml, y);
+      y += 5;
 
       fileCategories.forEach((cat) => {
-        addCategory(cat.label, null, true, fileCounts[cat.key] || 0);
+        checkPage(7);
+        const count = fileCounts[cat.key] || 0;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(30, 30, 30);
+        const fileText = count > 0 ? `${count} file${count !== 1 ? "s" : ""}` : "None";
+        doc.text(`${cat.label}: ${fileText}`, ml, y);
+        y += 5;
       });
 
-      // Footer
-      const lastPage = doc.getNumberOfPages();
-      for (let i = 1; i <= lastPage; i++) {
+      y += 2;
+      drawLine(y, 0.2);
+
+      // === Footer on all pages ===
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
         doc.setTextColor(160, 160, 160);
-        doc.text(`Page ${i} of ${lastPage}`, pageWidth / 2, pageHeight - 10, { align: "center" });
+        doc.setFont("helvetica", "normal");
+        doc.text(`Page ${i} of ${totalPages}`, pw / 2, ph - 10, { align: "center" });
       }
 
-      doc.save(`${procedureName.replace(/\s+/g, "_")}_Preferences.pdf`);
+      doc.save(`${procedureName.replace(/\s+/g, "_")}_Preference_Card.pdf`);
     } catch (err) {
       console.error("PDF generation error:", err);
     } finally {
