@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import {
   Pill, Hand, RotateCcw, Droplets, Wrench, Scissors, LayoutGrid, Package, Ribbon,
-  Image, Video, FileText,
+  Image, Video, FileText, ListOrdered,
 } from "lucide-react";
 
 export interface PreferenceCategory {
@@ -23,6 +23,7 @@ export const PREFERENCE_CATEGORIES: PreferenceCategory[] = [
   { key: "trays", label: "Trays", icon: LayoutGrid },
   { key: "supplies", label: "Supplies", icon: Package },
   { key: "suture", label: "Suture", icon: Ribbon },
+  { key: "steps", label: "Steps", icon: ListOrdered },
   { key: "images", label: "Images", icon: Image, type: "file" },
   { key: "videos", label: "Videos", icon: Video, type: "file" },
   { key: "pdfs", label: "PDFs", icon: FileText, type: "file" },
@@ -56,13 +57,16 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onCli
   const Icon = category.icon;
   const isFile = category.type === "file";
   const isMedication = category.key === "medication";
+  const isSteps = category.key === "steps";
 
-  // Parse medication count for display
-  const getMedPreview = () => {
-    if (!isMedication || !value) return null;
+  const getJsonPreview = () => {
+    if (!value) return null;
     try {
       const parsed = JSON.parse(value);
-      if (Array.isArray(parsed)) return `${parsed.length} med${parsed.length !== 1 ? "s" : ""}`;
+      if (Array.isArray(parsed)) {
+        if (isMedication) return `${parsed.length} med${parsed.length !== 1 ? "s" : ""}`;
+        if (isSteps) return `${parsed.length} step${parsed.length !== 1 ? "s" : ""}`;
+      }
     } catch {
       return value;
     }
@@ -95,7 +99,7 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onCli
       )}
       {!isFile && hasValue && (
         <span className="text-[10px] text-muted-foreground truncate max-w-full px-1">
-          {isMedication ? getMedPreview() : value}
+          {(isMedication || isSteps) ? getJsonPreview() : value}
         </span>
       )}
     </motion.button>

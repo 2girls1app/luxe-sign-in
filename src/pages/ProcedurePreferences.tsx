@@ -13,6 +13,7 @@ import PreferenceDetailDrawer from "@/components/PreferenceDetailDrawer";
 import FileUploadDrawer from "@/components/FileUploadDrawer";
 import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
 import MedicationSelector from "@/components/MedicationSelector";
+import StepsDrawer from "@/components/StepsDrawer";
 
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
@@ -27,6 +28,7 @@ const ProcedurePreferences = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [fileDrawerOpen, setFileDrawerOpen] = useState(false);
   const [medicationOpen, setMedicationOpen] = useState(false);
+  const [stepsOpen, setStepsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
   const [providerName, setProviderName] = useState("");
@@ -140,6 +142,8 @@ const ProcedurePreferences = () => {
     setSelectedCategory(cat);
     if (cat.key === "medication") {
       setMedicationOpen(true);
+    } else if (cat.key === "steps") {
+      setStepsOpen(true);
     } else if (cat.type === "file") {
       setFileDrawerOpen(true);
     } else {
@@ -192,7 +196,7 @@ const ProcedurePreferences = () => {
           className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-xs font-medium text-foreground hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-[0.98]"
         >
           <ClipboardList size={16} className="text-primary" />
-          View All Preferences
+          View Full Preference Card
         </button>
 
         {/* Widget grid - 3 per row */}
@@ -232,6 +236,14 @@ const ProcedurePreferences = () => {
         open={medicationOpen}
         onOpenChange={setMedicationOpen}
         currentValue={preferences["medication"] || ""}
+        onSave={handleSave}
+        saving={saving}
+      />
+
+      <StepsDrawer
+        open={stepsOpen}
+        onOpenChange={setStepsOpen}
+        currentValue={preferences["steps"] || ""}
         onSave={handleSave}
         saving={saving}
       />

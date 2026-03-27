@@ -45,6 +45,13 @@ const PreferenceSummaryDrawer = ({
 
   const getDisplayValue = (key: string, val: string): string => {
     if (key === "medication") return formatMedValue(val);
+    if (key === "steps") {
+      try {
+        const steps = JSON.parse(val);
+        if (Array.isArray(steps)) return steps.map((s, i) => `${i + 1}. ${s}`).join("\n");
+      } catch { /* fallback */ }
+      return val;
+    }
     return val;
   };
 
@@ -59,8 +66,9 @@ const PreferenceSummaryDrawer = ({
     { key: "instruments", label: "Instrumentation" },
     { key: "trays", label: "Trays" },
     { key: "suture", label: "Suture & Usage" },
-    { key: "skin_prep", label: "Skin Prep" },
+    { key: "skinprep", label: "Skin Prep" },
     { key: "medication", label: "Medications" },
+    { key: "steps", label: "Procedure Steps" },
   ];
 
   const generatePDF = async () => {
@@ -209,7 +217,7 @@ const PreferenceSummaryDrawer = ({
       <DrawerContent className="max-h-[90vh] bg-background">
         <DrawerHeader className="flex flex-row items-center justify-between pb-2">
           <DrawerTitle className="text-base font-semibold text-foreground">
-            All Preferences
+            Full Preference Card
           </DrawerTitle>
           <div className="flex gap-2">
             <Button
@@ -256,8 +264,9 @@ const PreferenceSummaryDrawer = ({
               { key: "instruments", label: "Instrumentation" },
               { key: "trays", label: "Trays" },
               { key: "suture", label: "Suture & Usage" },
-              { key: "skin_prep", label: "Skin Prep" },
+              { key: "skinprep", label: "Skin Prep" },
               { key: "medication", label: "Medications" },
+              { key: "steps", label: "Procedure Steps" },
             ].map((section) => {
               const val = preferences[section.key];
               return (
