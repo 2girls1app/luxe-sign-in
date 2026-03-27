@@ -49,12 +49,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    // If "Remember Me" was not checked, clear session on new browser session
+    const rememberMe = localStorage.getItem("rememberMe");
+    const activeSession = sessionStorage.getItem("activeSession");
+    if (rememberMe === "false" && !activeSession) {
+      supabase.auth.signOut().then(() => {
+        setLoading(false);
+      });
+      // Still set up listener for future sign-ins
+    } else {
+      sessionStorage.setItem("activeSession", "true");
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          // Use setTimeout to avoid Supabase deadlock
           setTimeout(() => fetchProfile(session.user.id), 0);
         } else {
           setProfile(null);
@@ -64,6 +75,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      // Skip restoring session if remember me was off and this is a new browser session
+      if (rememberMe === "false" && !activeSession) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
