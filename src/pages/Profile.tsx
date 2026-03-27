@@ -69,8 +69,8 @@ const Profile = () => {
 
   const fetchProcedures = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from("procedures").select("id, name, category, facility_id, notes").eq("user_id", user.id).order("created_at", { ascending: false });
-    if (data) setProcedures(data);
+    const { data } = await supabase.from("procedures").select("id, name, category, facility_id, notes, is_favorite").eq("user_id", user.id).order("created_at", { ascending: false });
+    if (data) setProcedures(data as Procedure[]);
   }, [user]);
 
   useEffect(() => {
