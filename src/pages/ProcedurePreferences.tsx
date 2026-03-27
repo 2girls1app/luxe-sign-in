@@ -12,6 +12,7 @@ import PreferenceCategoryWidget, {
 import PreferenceDetailDrawer from "@/components/PreferenceDetailDrawer";
 import FileUploadDrawer from "@/components/FileUploadDrawer";
 import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
+import MedicationSelector from "@/components/MedicationSelector";
 
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
