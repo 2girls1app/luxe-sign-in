@@ -162,16 +162,17 @@ const ProcedurePreferences = () => {
         className="w-full max-w-sm mx-auto flex flex-col gap-6"
       >
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/profile")}
-            className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-medium text-foreground truncate">{procedureName}</h1>
-            <p className="text-xs text-muted-foreground">Procedure Preferences</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate("/profile")}
+                className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-foreground"
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg font-medium text-foreground truncate">{procedureName}</h1>
+                <p className="text-xs text-muted-foreground">Procedure Preferences</p>
             {(() => {
               const allDates = Object.values(updatedDates).filter(Boolean);
               if (allDates.length === 0) return null;
