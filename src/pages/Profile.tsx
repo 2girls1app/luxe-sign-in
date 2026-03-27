@@ -328,7 +328,9 @@ const Profile = () => {
                   category={p.category}
                   facilityName={getFacilityName(p.facility_id)}
                   notes={p.notes}
+                  isFavorite={p.is_favorite}
                   onDelete={deleteProcedure}
+                  onToggleFavorite={toggleFavorite}
                 />
               ))}
             </div>
