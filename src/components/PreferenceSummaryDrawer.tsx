@@ -202,57 +202,57 @@ const PreferenceSummaryDrawer = ({
           </div>
         </DrawerHeader>
 
-        <div className="overflow-y-auto px-4 pb-6 space-y-4 max-h-[70vh]">
-          {/* Procedure header */}
-          <div className="rounded-xl bg-card border border-border p-4">
-            <h2 className="text-sm font-semibold text-foreground">{procedureName}</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Procedure Preference Summary</p>
-          </div>
+        <div className="overflow-y-auto px-4 pb-6 max-h-[70vh]">
+          <div className="bg-white text-black rounded-lg border border-gray-200 p-6 space-y-0">
+            {/* PDF-style header */}
+            <div className="text-center border-b border-black pb-3 mb-4">
+              <h2 className="text-lg font-bold tracking-wide text-black">PREFERENCE CARD</h2>
+            </div>
 
-          {/* Text preferences */}
-          {textCategories.map((cat) => {
-            const val = preferences[cat.key];
-            const Icon = cat.icon;
-            return (
-              <div key={cat.key} className="rounded-xl bg-card border border-border p-3">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Icon size={14} className="text-primary" />
-                  </div>
-                  <span className="text-xs font-semibold text-foreground">{cat.label}</span>
+            <div className="space-y-1 text-sm border-b border-black pb-3 mb-4">
+              <p><span className="font-bold">Surgeon:</span> {providerName || "Not specified"}</p>
+              <p><span className="font-bold">Procedure:</span> {procedureName}</p>
+              <p><span className="font-bold">Date:</span> {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
+            </div>
+
+            {/* Sections */}
+            {[
+              { key: "position", label: "Position" },
+              { key: "gloves", label: "Glove Size / Style" },
+              { key: "equipment", label: "Equipment" },
+              { key: "supplies", label: "Supplies" },
+              { key: "instruments", label: "Instrumentation" },
+              { key: "trays", label: "Trays" },
+              { key: "suture", label: "Suture & Usage" },
+              { key: "skin_prep", label: "Skin Prep" },
+              { key: "medication", label: "Medications" },
+            ].map((section) => {
+              const val = preferences[section.key];
+              return (
+                <div key={section.key} className="border-b border-gray-200 py-2.5">
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-black">{section.label}</p>
+                  {val && val.trim() ? (
+                    <p className="text-sm text-gray-800 whitespace-pre-wrap mt-0.5">{val}</p>
+                  ) : (
+                    <p className="text-sm text-gray-400 italic mt-0.5">Not specified</p>
+                  )}
                 </div>
-                {val && val.trim() ? (
-                  <p className="text-xs text-muted-foreground leading-relaxed pl-9 whitespace-pre-wrap">{val}</p>
-                ) : (
-                  <p className="text-xs text-muted-foreground/50 italic pl-9">No preference set</p>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
 
-          {/* File section header */}
-          <div className="flex items-center gap-2 pt-2">
-            <FileText size={14} className="text-muted-foreground" />
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Attached Files</span>
+            {/* Files */}
+            <div className="pt-3">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-black mb-2">Attached Files</p>
+              {fileCategories.map((cat) => {
+                const count = fileCounts[cat.key] || 0;
+                return (
+                  <p key={cat.key} className="text-sm text-gray-800">
+                    {cat.label}: {count > 0 ? `${count} file${count !== 1 ? "s" : ""}` : "None"}
+                  </p>
+                );
+              })}
+            </div>
           </div>
-
-          {fileCategories.map((cat) => {
-            const count = fileCounts[cat.key] || 0;
-            const Icon = cat.icon;
-            return (
-              <div key={cat.key} className="rounded-xl bg-card border border-border p-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Icon size={14} className="text-primary" />
-                  </div>
-                  <span className="text-xs font-semibold text-foreground">{cat.label}</span>
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    {count > 0 ? `${count} file${count !== 1 ? "s" : ""}` : "None"}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
         </div>
       </DrawerContent>
     </Drawer>
