@@ -42,6 +42,9 @@ All colors MUST be HSL.
     --gold-light: 43 60% 70%;
     --gold-dark: 43 40% 40%;
 
+    --music-blue: 210 70% 55%;
+    --music-blue-foreground: 0 0% 100%;
+
     --sidebar-background: 0 0% 10%;
     --sidebar-foreground: 0 0% 95%;
     --sidebar-primary: 43 50% 55%;

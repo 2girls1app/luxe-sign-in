@@ -122,6 +122,7 @@ export type Database = {
           display_name: string | null
           id: string
           onboarding_completed: boolean
+          pandora_connected: boolean
           role: string | null
           specialty: string | null
           updated_at: string
@@ -133,6 +134,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           onboarding_completed?: boolean
+          pandora_connected?: boolean
           role?: string | null
           specialty?: string | null
           updated_at?: string
@@ -144,6 +146,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           onboarding_completed?: boolean
+          pandora_connected?: boolean
           role?: string | null
           specialty?: string | null
           updated_at?: string

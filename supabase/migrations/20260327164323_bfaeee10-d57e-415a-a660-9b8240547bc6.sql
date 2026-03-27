@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN pandora_connected boolean NOT NULL DEFAULT false;
