@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Headphones, X, Plus, Search, Check, Disc3, AudioLines, Mic2, Sparkles } from "lucide-react";
+import { Music, X, Plus, Search, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,12 +32,6 @@ const POPULAR_ARTISTS = [
 
 type TabType = "genre" | "artist" | "mood";
 
-const TAB_META: Record<TabType, { label: string; icon: React.ElementType }> = {
-  genre: { label: "Genres", icon: Disc3 },
-  artist: { label: "Artists", icon: Mic2 },
-  mood: { label: "Moods", icon: Sparkles },
-};
-
 interface MusicPreferencesDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -50,8 +44,8 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
   const [activeTab, setActiveTab] = useState<TabType>("genre");
   const [search, setSearch] = useState("");
   const [customInput, setCustomInput] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showPandoraPrompt, setShowPandoraPrompt] = useState(false);
-
   const fetchPreferences = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
@@ -63,10 +57,7 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
   }, [user]);
 
   useEffect(() => {
-    if (open) {
-      fetchPreferences();
-      setShowPandoraPrompt(false);
-    }
+    if (open) fetchPreferences();
   }, [open, fetchPreferences]);
 
   const isSelected = (type: string, value: string) =>
@@ -79,7 +70,9 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
       await supabase.from("music_preferences").delete().eq("id", existing.id);
     } else {
       await supabase.from("music_preferences").insert({
-        user_id: user.id, type, value,
+        user_id: user.id,
+        type,
+        value,
       } as any);
     }
     await fetchPreferences();
@@ -94,7 +87,9 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
       return;
     }
     await supabase.from("music_preferences").insert({
-      user_id: user.id, type: activeTab, value: trimmed,
+      user_id: user.id,
+      type: activeTab,
+      value: trimmed,
     } as any);
     setCustomInput("");
     await fetchPreferences();
@@ -122,6 +117,12 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
     c.toLowerCase().includes(search.toLowerCase()) && !filtered.includes(c)
   )];
 
+  const tabs: { key: TabType; label: string }[] = [
+    { key: "genre", label: "Genres" },
+    { key: "artist", label: "Artists" },
+    { key: "mood", label: "Moods" },
+  ];
+
   const totalCount = preferences.length;
 
   if (!open) return null;
@@ -130,83 +131,64 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop with blur */}
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/60 z-50"
             onClick={() => onOpenChange(false)}
           />
-
           {/* Drawer */}
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 320 }}
-            className="fixed inset-x-0 bottom-0 z-50 max-h-[90vh] rounded-t-[28px] flex flex-col overflow-hidden"
-            style={{
-              background: "linear-gradient(180deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%)",
-            }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] rounded-t-3xl bg-card border-t border-border flex flex-col"
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-muted-foreground/20" />
+              <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
             </div>
 
-            {/* Header with gradient accent */}
-            <div className="relative px-6 pb-4 pt-1">
-              {/* Subtle glow behind header */}
-              <div
-                className="absolute -top-10 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full opacity-15 blur-3xl pointer-events-none"
-                style={{ background: "hsl(var(--primary))" }}
-              />
-
-              <div className="flex items-center justify-between relative">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--gold-dark)) 100%)" }}>
-                    <Headphones size={20} className="text-primary-foreground" />
-                  </div>
-                  <div>
-                    <h2 className="text-foreground font-bold text-lg tracking-tight">Your Sound</h2>
-                    <p className="text-muted-foreground text-xs">
-                      {totalCount > 0 ? `${totalCount} preference${totalCount !== 1 ? "s" : ""} selected` : "Curate your listening experience"}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => onOpenChange(false)}
-                  className="w-8 h-8 rounded-full bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
-                >
-                  <X size={16} className="text-muted-foreground" />
-                </button>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pb-3">
+              <div className="flex items-center gap-2">
+                <Music size={20} className="text-primary" />
+                <h2 className="text-foreground font-semibold text-lg">Music Preferences</h2>
+                {totalCount > 0 && (
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                    {totalCount}
+                  </span>
+                )}
               </div>
+              <button
+                onClick={() => onOpenChange(false)}
+                className="text-muted-foreground hover:text-foreground transition-colors p-1"
+              >
+                <X size={20} />
+              </button>
             </div>
 
-            {/* Tabs - pill style */}
-            <div className="flex gap-2 px-6 pb-4">
-              {(Object.keys(TAB_META) as TabType[]).map((key) => {
-                const meta = TAB_META[key];
-                const TabIcon = meta.icon;
-                const count = preferences.filter((p) => p.type === key).length;
-                const active = activeTab === key;
+            {/* Tabs */}
+            <div className="flex gap-1 px-5 pb-3">
+              {tabs.map((tab) => {
+                const count = preferences.filter((p) => p.type === tab.key).length;
                 return (
                   <button
-                    key={key}
-                    onClick={() => { setActiveTab(key); setSearch(""); }}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-semibold rounded-2xl transition-all duration-200 ${
-                      active
-                        ? "text-primary-foreground shadow-lg"
-                        : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                    key={tab.key}
+                    onClick={() => { setActiveTab(tab.key); setSearch(""); }}
+                    className={`flex-1 py-2 text-sm font-medium rounded-xl transition-colors ${
+                      activeTab === tab.key
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-muted-foreground hover:text-foreground"
                     }`}
-                    style={active ? { background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--gold-dark)) 100%)" } : undefined}
                   >
-                    <TabIcon size={14} />
-                    {meta.label}
+                    {tab.label}
                     {count > 0 && (
-                      <span className={`text-[10px] ml-0.5 font-bold ${active ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                        {count}
+                      <span className={`ml-1 text-xs ${activeTab === tab.key ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                        ({count})
                       </span>
                     )}
                   </button>
@@ -215,49 +197,45 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
             </div>
 
             {/* Search */}
-            <div className="px-6 pb-3">
+            <div className="px-5 pb-3">
               <div className="relative">
-                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder={`Search ${activeTab === "artist" ? "artists" : activeTab + "s"}...`}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full rounded-2xl border-0 bg-muted/40 pl-9 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/40 transition-shadow"
+                  className="w-full rounded-xl border border-border bg-secondary pl-8 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
             </div>
 
             {/* Items grid */}
-            <div className="flex-1 overflow-y-auto px-6 pb-3">
+            <div className="flex-1 overflow-y-auto px-5 pb-3">
               <div className="flex flex-wrap gap-2">
                 {allItems.map((item) => {
                   const selected = isSelected(activeTab, item);
                   return (
-                    <motion.button
+                    <button
                       key={item}
-                      layout
-                      whileTap={{ scale: 0.95 }}
                       onClick={() => togglePreference(activeTab, item)}
-                      className={`flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all duration-200 ${
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all ${
                         selected
-                          ? "text-primary-foreground shadow-lg shadow-primary/20"
-                          : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border/50"
+                          ? "bg-primary text-primary-foreground shadow-md"
+                          : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80 border border-border"
                       }`}
-                      style={selected ? { background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--gold-dark)) 100%)" } : undefined}
                     >
-                      {selected && <Check size={12} className="text-primary-foreground" />}
+                      {selected && <Check size={12} />}
                       {item}
-                    </motion.button>
+                    </button>
                   );
                 })}
               </div>
 
               {allItems.length === 0 && search && (
-                <div className="text-center py-8">
-                  <AudioLines size={32} className="mx-auto text-muted-foreground/30 mb-2" />
-                  <p className="text-sm text-muted-foreground">No matches found</p>
-                </div>
+                <p className="text-sm text-muted-foreground text-center py-6">
+                  No matches found
+                </p>
               )}
             </div>
 
@@ -270,7 +248,7 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
             )}
 
             {/* Add custom */}
-            <div className="px-6 py-4 border-t border-border/30">
+            <div className="px-5 py-3 border-t border-border">
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -278,13 +256,12 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
                   value={customInput}
                   onChange={(e) => setCustomInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addCustom()}
-                  className="flex-1 rounded-2xl border-0 bg-muted/40 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/40 transition-shadow"
+                  className="flex-1 rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 <button
                   onClick={addCustom}
                   disabled={!customInput.trim()}
-                  className="px-5 py-3 rounded-2xl text-sm font-semibold disabled:opacity-30 transition-all flex items-center gap-1.5 text-primary-foreground hover:shadow-lg hover:shadow-primary/20"
-                  style={{ background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--gold-dark)) 100%)" }}
+                  className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-40 transition-colors flex items-center gap-1"
                 >
                   <Plus size={14} /> Add
                 </button>

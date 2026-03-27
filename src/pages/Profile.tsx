@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Pencil, Check, X, Headphones } from "lucide-react";
+import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Pencil, Check, X, Music } from "lucide-react";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
@@ -178,16 +178,12 @@ const Profile = () => {
           {!isAdmin && (
             <button
               onClick={() => setMusicDrawerOpen(true)}
-              className="absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 group hover:shadow-lg hover:shadow-primary/20 active:scale-95"
-              style={hasMusicPrefs
-                ? { background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--gold-dark)) 100%)" }
-                : { background: "hsl(var(--muted) / 0.5)" }
-              }
+              className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-primary/10 transition-colors group"
               aria-label="Music preferences"
             >
-              <Headphones size={14} className={hasMusicPrefs ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"} />
+              <Music size={16} className={hasMusicPrefs ? "text-primary" : "text-muted-foreground group-hover:text-primary"} />
               {hasMusicPrefs && (
-                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-primary border-2 border-card" />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
               )}
             </button>
           )}
