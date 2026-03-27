@@ -187,7 +187,7 @@ const Profile = () => {
             >
               <Headphones size={14} className={hasMusicPrefs ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"} />
               {hasMusicPrefs && (
-                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-card" />
+                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-primary border-2 border-card" />
               )}
             </button>
           )}
