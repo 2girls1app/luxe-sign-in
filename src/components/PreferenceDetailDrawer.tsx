@@ -6,10 +6,30 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { PreferenceCategory } from "@/components/PreferenceCategoryWidget";
 
+import supineImg from "@/assets/positions/supine.png";
+import proneImg from "@/assets/positions/prone.png";
+import lateralImg from "@/assets/positions/lateral.png";
+import lithotomyImg from "@/assets/positions/lithotomy.png";
+import trendelenburgImg from "@/assets/positions/trendelenburg.png";
+import reverseTrendelenburgImg from "@/assets/positions/reverse-trendelenburg.png";
+import sittingImg from "@/assets/positions/sitting.png";
+import jackknifeImg from "@/assets/positions/jackknife.png";
+
 const GLOVE_SIZES = ["5", "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9"];
-const POSITIONS = ["Supine", "Prone", "Lateral", "Lithotomy", "Trendelenburg", "Reverse Trendelenburg", "Sitting", "Jackknife"];
+
+const POSITIONS: { name: string; img: string }[] = [
+  { name: "Supine", img: supineImg },
+  { name: "Prone", img: proneImg },
+  { name: "Lateral", img: lateralImg },
+  { name: "Lithotomy", img: lithotomyImg },
+  { name: "Trendelenburg", img: trendelenburgImg },
+  { name: "Reverse Trendelenburg", img: reverseTrendelenburgImg },
+  { name: "Sitting", img: sittingImg },
+  { name: "Jackknife", img: jackknifeImg },
+];
 
 interface PreferenceDetailDrawerProps {
   open: boolean;
@@ -63,6 +83,35 @@ const PreferenceDetailDrawer = ({
                 </Label>
               ))}
             </RadioGroup>
+          ) : category.key === "position" ? (
+            <ScrollArea className="max-h-[50vh]">
+              <RadioGroup value={value} onValueChange={setValue} className="grid grid-cols-2 gap-3">
+                {POSITIONS.map((pos) => (
+                  <Label
+                    key={pos.name}
+                    htmlFor={`pos-${pos.name}`}
+                    className={`flex flex-col items-center gap-2 rounded-xl border p-3 cursor-pointer transition-all ${
+                      value === pos.name
+                        ? "border-primary bg-primary/15 shadow-sm shadow-primary/10"
+                        : "border-border bg-secondary hover:border-primary/40"
+                    }`}
+                  >
+                    <RadioGroupItem value={pos.name} id={`pos-${pos.name}`} className="sr-only" />
+                    <img
+                      src={pos.img}
+                      alt={pos.name}
+                      loading="lazy"
+                      width={100}
+                      height={100}
+                      className="w-20 h-20 object-contain"
+                    />
+                    <span className={`text-xs font-medium ${value === pos.name ? "text-primary" : "text-muted-foreground"}`}>
+                      {pos.name}
+                    </span>
+                  </Label>
+                ))}
+              </RadioGroup>
+            </ScrollArea>
           ) : (
             <Textarea
               value={value}
