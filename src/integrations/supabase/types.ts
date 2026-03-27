@@ -74,6 +74,50 @@ export type Database = {
         }
         Relationships: []
       }
+      procedure_files: {
+        Row: {
+          category: string
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          procedure_id: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          procedure_id: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          procedure_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "procedure_files_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       procedure_preferences: {
         Row: {
           category: string
