@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ClipboardList } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +11,7 @@ import PreferenceCategoryWidget, {
 } from "@/components/PreferenceCategoryWidget";
 import PreferenceDetailDrawer from "@/components/PreferenceDetailDrawer";
 import FileUploadDrawer from "@/components/FileUploadDrawer";
+import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
 
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
@@ -26,6 +27,8 @@ const ProcedurePreferences = () => {
   const [fileDrawerOpen, setFileDrawerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
+  const [providerName, setProviderName] = useState("");
+  const [summaryOpen, setSummaryOpen] = useState(false);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
@@ -69,11 +72,22 @@ const ProcedurePreferences = () => {
     }
   }, [procedureId, user]);
 
+  const fetchProviderName = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("user_id", user.id)
+      .single();
+    if (data?.display_name) setProviderName(data.display_name);
+  }, [user]);
+
   useEffect(() => {
     fetchProcedure();
     fetchPreferences();
     fetchFileCounts();
-  }, [fetchProcedure, fetchPreferences, fetchFileCounts]);
+    fetchProviderName();
+  }, [fetchProcedure, fetchPreferences, fetchFileCounts, fetchProviderName]);
 
   const handleSave = async (category: string, value: string) => {
     if (!procedureId || !user) return;
@@ -164,6 +178,15 @@ const ProcedurePreferences = () => {
           </div>
         </div>
 
+        {/* View All button */}
+        <button
+          onClick={() => setSummaryOpen(true)}
+          className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-xs font-medium text-foreground hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-[0.98]"
+        >
+          <ClipboardList size={16} className="text-primary" />
+          View All Preferences
+        </button>
+
         {/* Widget grid - 3 per row */}
         <div className="grid grid-cols-3 gap-3">
           {PREFERENCE_CATEGORIES.map((cat, i) => (
@@ -195,6 +218,15 @@ const ProcedurePreferences = () => {
         category={selectedCategory}
         procedureId={procedureId || ""}
         onFilesChanged={fetchFileCounts}
+      />
+
+      <PreferenceSummaryDrawer
+        open={summaryOpen}
+        onOpenChange={setSummaryOpen}
+        procedureName={procedureName}
+        providerName={providerName}
+        preferences={preferences}
+        fileCounts={fileCounts}
       />
     </div>
   );
