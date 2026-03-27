@@ -93,7 +93,7 @@ const PreferenceDetailDrawer = ({
               ))}
             </RadioGroup>
           ) : category.key === "position" ? (
-            <ScrollArea className="max-h-[50vh]">
+            <div ref={scrollRef} className="max-h-[50vh] overflow-y-auto">
               <RadioGroup value={value} onValueChange={setValue} className="grid grid-cols-2 gap-3">
                 {POSITIONS.map((pos) => (
                   <Label
