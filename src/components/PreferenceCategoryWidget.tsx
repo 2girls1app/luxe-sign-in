@@ -2,12 +2,14 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import {
   Pill, Hand, RotateCcw, Droplets, Wrench, Scissors, LayoutGrid, Package, Ribbon,
+  Image, Video, FileText,
 } from "lucide-react";
 
 export interface PreferenceCategory {
   key: string;
   label: string;
   icon: React.ElementType;
+  type?: "text" | "file";
 }
 
 export const PREFERENCE_CATEGORIES: PreferenceCategory[] = [
@@ -20,6 +22,9 @@ export const PREFERENCE_CATEGORIES: PreferenceCategory[] = [
   { key: "trays", label: "Trays", icon: LayoutGrid },
   { key: "supplies", label: "Supplies", icon: Package },
   { key: "suture", label: "Suture", icon: Ribbon },
+  { key: "images", label: "Images", icon: Image, type: "file" },
+  { key: "videos", label: "Videos", icon: Video, type: "file" },
+  { key: "pdfs", label: "PDFs", icon: FileText, type: "file" },
 ];
 
 interface PreferenceCategoryWidgetProps {
