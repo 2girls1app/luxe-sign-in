@@ -121,6 +121,26 @@ const PreferenceDetailDrawer = ({
                 ))}
               </RadioGroup>
             </ScrollArea>
+          ) : category.key === "skinprep" ? (
+            <RadioGroup value={value} onValueChange={setValue} className="grid grid-cols-2 gap-3">
+              {SKIN_PREPS.map((prep) => (
+                <Label
+                  key={prep.name}
+                  htmlFor={`prep-${prep.name}`}
+                  className={`flex flex-col items-start gap-1 rounded-xl border p-3 cursor-pointer transition-all ${
+                    value === prep.name
+                      ? "border-primary bg-primary/15 shadow-sm shadow-primary/10"
+                      : "border-border bg-secondary hover:border-primary/40"
+                  }`}
+                >
+                  <RadioGroupItem value={prep.name} id={`prep-${prep.name}`} className="sr-only" />
+                  <span className={`text-sm font-medium ${value === prep.name ? "text-primary" : "text-foreground"}`}>
+                    {prep.name}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground leading-tight">{prep.desc}</span>
+                </Label>
+              ))}
+            </RadioGroup>
           ) : (
             <Textarea
               value={value}
