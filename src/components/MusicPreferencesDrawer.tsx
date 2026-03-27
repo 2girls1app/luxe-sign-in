@@ -92,7 +92,8 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
       value: trimmed,
     } as any);
     setCustomInput("");
-    fetchPreferences();
+    await fetchPreferences();
+    setShowPandoraPrompt(true);
   };
 
   const getItemsForTab = () => {
