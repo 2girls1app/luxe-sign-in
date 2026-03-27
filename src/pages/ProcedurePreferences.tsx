@@ -171,6 +171,14 @@ const ProcedurePreferences = () => {
         onSave={handleSave}
         saving={saving}
       />
+
+      <FileUploadDrawer
+        open={fileDrawerOpen}
+        onOpenChange={setFileDrawerOpen}
+        category={selectedCategory}
+        procedureId={procedureId || ""}
+        onFilesChanged={fetchFileCounts}
+      />
     </div>
   );
 };
