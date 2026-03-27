@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, FileText } from "lucide-react";
+import { Download, Printer } from "lucide-react";
 import { PREFERENCE_CATEGORIES } from "@/components/PreferenceCategoryWidget";
 
 interface PreferenceSummaryDrawerProps {
@@ -23,117 +23,144 @@ const PreferenceSummaryDrawer = ({
 }: PreferenceSummaryDrawerProps) => {
   const [generating, setGenerating] = useState(false);
 
-  const textCategories = PREFERENCE_CATEGORIES.filter((c) => c.type !== "file");
   const fileCategories = PREFERENCE_CATEGORIES.filter((c) => c.type === "file");
+
+  // Ordered sections for the preference card
+  const sectionOrder = [
+    { key: "position", label: "Position" },
+    { key: "gloves", label: "Glove Size / Style" },
+    { key: "equipment", label: "Equipment" },
+    { key: "supplies", label: "Supplies" },
+    { key: "instruments", label: "Instrumentation" },
+    { key: "trays", label: "Trays" },
+    { key: "suture", label: "Suture & Usage" },
+    { key: "skin_prep", label: "Skin Prep" },
+    { key: "medication", label: "Medications" },
+  ];
 
   const generatePDF = async () => {
     setGenerating(true);
     try {
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF({ unit: "mm", format: "letter" });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 20;
-      const contentWidth = pageWidth - margin * 2;
-      let y = margin;
+      const pw = doc.internal.pageSize.getWidth();
+      const ph = doc.internal.pageSize.getHeight();
+      const ml = 18; // left margin
+      const mr = 18; // right margin
+      const cw = pw - ml - mr;
+      let y = 18;
 
-      // Header bar
-      doc.setFillColor(24, 24, 27); // zinc-900
-      doc.rect(0, 0, pageWidth, 38, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(18);
-      doc.setFont("helvetica", "bold");
-      doc.text(procedureName, margin, 18);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.text("Procedure Preference Card", margin, 26);
-      doc.setFontSize(9);
-      doc.setTextColor(180, 180, 180);
-      doc.text(`Provider: ${providerName}`, margin, 33);
-      doc.text(`Generated: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`, pageWidth - margin, 33, { align: "right" });
+      const drawLine = (yPos: number, weight = 0.3) => {
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(weight);
+        doc.line(ml, yPos, pw - mr, yPos);
+      };
 
-      y = 48;
-      doc.setTextColor(60, 60, 60);
-
-      const addCategory = (label: string, value: string | null, isFile = false, fileCount = 0) => {
-        if (y > pageHeight - 30) {
+      const checkPage = (needed: number) => {
+        if (y + needed > ph - 18) {
           doc.addPage();
-          y = margin;
+          y = 18;
         }
+      };
 
-        // Category label
-        doc.setFillColor(245, 245, 245);
-        doc.roundedRect(margin, y, contentWidth, 8, 1, 1, "F");
-        doc.setFontSize(10);
+      // === TITLE ===
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.text("PREFERENCE CARD", pw / 2, y, { align: "center" });
+      y += 8;
+      drawLine(y, 0.6);
+      y += 6;
+
+      // === Surgeon & Procedure ===
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("Surgeon:", ml, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(providerName || "Not specified", ml + 22, y);
+      y += 6;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Procedure:", ml, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(procedureName || "Not specified", ml + 26, y);
+      y += 6;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Date:", ml, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }), ml + 14, y);
+      y += 4;
+      drawLine(y, 0.6);
+      y += 6;
+
+      // === Sections ===
+      sectionOrder.forEach((section) => {
+        const val = preferences[section.key];
+        checkPage(18);
+
+        // Label
         doc.setFont("helvetica", "bold");
-        doc.setTextColor(40, 40, 40);
-        doc.text(label, margin + 4, y + 5.5);
-        y += 11;
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(section.label.toUpperCase(), ml, y);
+        y += 5;
 
         // Value
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
-        doc.setTextColor(80, 80, 80);
-
-        if (isFile) {
-          const text = fileCount > 0 ? `${fileCount} file${fileCount !== 1 ? "s" : ""} uploaded` : "No files uploaded";
-          doc.text(text, margin + 4, y + 4);
-          y += 10;
-        } else if (value && value.trim()) {
-          const lines = doc.splitTextToSize(value, contentWidth - 8);
+        if (val && val.trim()) {
+          doc.setTextColor(30, 30, 30);
+          const lines = doc.splitTextToSize(val, cw);
           lines.forEach((line: string) => {
-            if (y > pageHeight - 20) {
-              doc.addPage();
-              y = margin;
-            }
-            doc.text(line, margin + 4, y + 4);
-            y += 5.5;
+            checkPage(6);
+            doc.text(line, ml, y);
+            y += 5;
           });
-          y += 4;
         } else {
-          doc.setTextColor(170, 170, 170);
-          doc.text("No preference set", margin + 4, y + 4);
-          doc.setTextColor(80, 80, 80);
-          y += 10;
+          doc.setTextColor(140, 140, 140);
+          doc.text("Not specified", ml, y);
+          y += 5;
         }
 
         y += 2;
-      };
-
-      // Text-based preferences
-      textCategories.forEach((cat) => {
-        addCategory(cat.label, preferences[cat.key] || null);
+        drawLine(y, 0.2);
+        y += 5;
       });
 
-      // File-based preferences
-      if (y > pageHeight - 40) {
-        doc.addPage();
-        y = margin;
-      }
-      y += 4;
-      doc.setFillColor(24, 24, 27);
-      doc.roundedRect(margin, y, contentWidth, 7, 1, 1, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(9);
+      // === Attached Files Section ===
+      checkPage(14);
       doc.setFont("helvetica", "bold");
-      doc.text("ATTACHED FILES", margin + 4, y + 5);
-      y += 12;
-      doc.setTextColor(60, 60, 60);
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text("ATTACHED FILES", ml, y);
+      y += 5;
 
       fileCategories.forEach((cat) => {
-        addCategory(cat.label, null, true, fileCounts[cat.key] || 0);
+        checkPage(7);
+        const count = fileCounts[cat.key] || 0;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(30, 30, 30);
+        const fileText = count > 0 ? `${count} file${count !== 1 ? "s" : ""}` : "None";
+        doc.text(`${cat.label}: ${fileText}`, ml, y);
+        y += 5;
       });
 
-      // Footer
-      const lastPage = doc.getNumberOfPages();
-      for (let i = 1; i <= lastPage; i++) {
+      y += 2;
+      drawLine(y, 0.2);
+
+      // === Footer on all pages ===
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
         doc.setTextColor(160, 160, 160);
-        doc.text(`Page ${i} of ${lastPage}`, pageWidth / 2, pageHeight - 10, { align: "center" });
+        doc.setFont("helvetica", "normal");
+        doc.text(`Page ${i} of ${totalPages}`, pw / 2, ph - 10, { align: "center" });
       }
 
-      doc.save(`${procedureName.replace(/\s+/g, "_")}_Preferences.pdf`);
+      doc.save(`${procedureName.replace(/\s+/g, "_")}_Preference_Card.pdf`);
     } catch (err) {
       console.error("PDF generation error:", err);
     } finally {
@@ -174,57 +201,57 @@ const PreferenceSummaryDrawer = ({
           </div>
         </DrawerHeader>
 
-        <div className="overflow-y-auto px-4 pb-6 space-y-4 max-h-[70vh]">
-          {/* Procedure header */}
-          <div className="rounded-xl bg-card border border-border p-4">
-            <h2 className="text-sm font-semibold text-foreground">{procedureName}</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Procedure Preference Summary</p>
-          </div>
+        <div className="overflow-y-auto px-4 pb-6 max-h-[70vh]">
+          <div className="bg-white text-black rounded-lg border border-gray-200 p-6 space-y-0">
+            {/* PDF-style header */}
+            <div className="text-center border-b border-black pb-3 mb-4">
+              <h2 className="text-lg font-bold tracking-wide text-black">PREFERENCE CARD</h2>
+            </div>
 
-          {/* Text preferences */}
-          {textCategories.map((cat) => {
-            const val = preferences[cat.key];
-            const Icon = cat.icon;
-            return (
-              <div key={cat.key} className="rounded-xl bg-card border border-border p-3">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Icon size={14} className="text-primary" />
-                  </div>
-                  <span className="text-xs font-semibold text-foreground">{cat.label}</span>
+            <div className="space-y-1 text-sm border-b border-black pb-3 mb-4">
+              <p><span className="font-bold">Surgeon:</span> {providerName || "Not specified"}</p>
+              <p><span className="font-bold">Procedure:</span> {procedureName}</p>
+              <p><span className="font-bold">Date:</span> {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
+            </div>
+
+            {/* Sections */}
+            {[
+              { key: "position", label: "Position" },
+              { key: "gloves", label: "Glove Size / Style" },
+              { key: "equipment", label: "Equipment" },
+              { key: "supplies", label: "Supplies" },
+              { key: "instruments", label: "Instrumentation" },
+              { key: "trays", label: "Trays" },
+              { key: "suture", label: "Suture & Usage" },
+              { key: "skin_prep", label: "Skin Prep" },
+              { key: "medication", label: "Medications" },
+            ].map((section) => {
+              const val = preferences[section.key];
+              return (
+                <div key={section.key} className="border-b border-gray-200 py-2.5">
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-black">{section.label}</p>
+                  {val && val.trim() ? (
+                    <p className="text-sm text-gray-800 whitespace-pre-wrap mt-0.5">{val}</p>
+                  ) : (
+                    <p className="text-sm text-gray-400 italic mt-0.5">Not specified</p>
+                  )}
                 </div>
-                {val && val.trim() ? (
-                  <p className="text-xs text-muted-foreground leading-relaxed pl-9 whitespace-pre-wrap">{val}</p>
-                ) : (
-                  <p className="text-xs text-muted-foreground/50 italic pl-9">No preference set</p>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
 
-          {/* File section header */}
-          <div className="flex items-center gap-2 pt-2">
-            <FileText size={14} className="text-muted-foreground" />
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Attached Files</span>
+            {/* Files */}
+            <div className="pt-3">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-black mb-2">Attached Files</p>
+              {fileCategories.map((cat) => {
+                const count = fileCounts[cat.key] || 0;
+                return (
+                  <p key={cat.key} className="text-sm text-gray-800">
+                    {cat.label}: {count > 0 ? `${count} file${count !== 1 ? "s" : ""}` : "None"}
+                  </p>
+                );
+              })}
+            </div>
           </div>
-
-          {fileCategories.map((cat) => {
-            const count = fileCounts[cat.key] || 0;
-            const Icon = cat.icon;
-            return (
-              <div key={cat.key} className="rounded-xl bg-card border border-border p-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Icon size={14} className="text-primary" />
-                  </div>
-                  <span className="text-xs font-semibold text-foreground">{cat.label}</span>
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    {count > 0 ? `${count} file${count !== 1 ? "s" : ""}` : "None"}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
         </div>
       </DrawerContent>
     </Drawer>
