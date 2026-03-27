@@ -264,7 +264,7 @@ const PreferenceSummaryDrawer = ({
                 <div key={section.key} className="border-b border-gray-200 py-2.5">
                   <p className="text-[11px] font-bold uppercase tracking-wide text-black">{section.label}</p>
                   {val && val.trim() ? (
-                    <p className="text-sm text-gray-800 whitespace-pre-wrap mt-0.5">{val}</p>
+                    <p className="text-sm text-gray-800 whitespace-pre-wrap mt-0.5">{getDisplayValue(section.key, val)}</p>
                   ) : (
                     <p className="text-sm text-gray-400 italic mt-0.5">Not specified</p>
                   )}
