@@ -73,7 +73,12 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onCli
         <Icon size={22} className="text-primary" />
       </div>
       <span className="text-xs font-medium text-foreground">{category.label}</span>
-      {hasValue && (
+      {isFile && hasValue && (
+        <span className="text-[10px] text-muted-foreground truncate max-w-full px-1">
+          {fileCount} file{fileCount !== 1 ? "s" : ""}
+        </span>
+      )}
+      {!isFile && hasValue && (
         <span className="text-[10px] text-muted-foreground truncate max-w-full px-1">
           {value}
         </span>
