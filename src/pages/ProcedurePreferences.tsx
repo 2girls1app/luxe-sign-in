@@ -154,6 +154,7 @@ const ProcedurePreferences = () => {
                 key={cat.key}
                 category={cat}
                 value={preferences[cat.key]}
+                fileCount={fileCounts[cat.key]}
                 updatedAt={updatedDates[cat.key]}
                 onClick={() => openCategory(cat)}
                 index={i}
