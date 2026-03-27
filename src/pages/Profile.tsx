@@ -373,6 +373,11 @@ const Profile = () => {
           }}
         />
       )}
+      <NotificationsDrawer
+        open={notificationsOpen}
+        onOpenChange={setNotificationsOpen}
+        onCountChange={setPendingCount}
+      />
     </div>
   );
 };
