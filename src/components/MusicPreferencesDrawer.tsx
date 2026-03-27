@@ -75,7 +75,8 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
         value,
       } as any);
     }
-    fetchPreferences();
+    await fetchPreferences();
+    setShowPandoraPrompt(true);
   };
 
   const addCustom = async () => {
