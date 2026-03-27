@@ -6,10 +6,30 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { PreferenceCategory } from "@/components/PreferenceCategoryWidget";
 
+import supineImg from "@/assets/positions/supine.png";
+import proneImg from "@/assets/positions/prone.png";
+import lateralImg from "@/assets/positions/lateral.png";
+import lithotomyImg from "@/assets/positions/lithotomy.png";
+import trendelenburgImg from "@/assets/positions/trendelenburg.png";
+import reverseTrendelenburgImg from "@/assets/positions/reverse-trendelenburg.png";
+import sittingImg from "@/assets/positions/sitting.png";
+import jackknifeImg from "@/assets/positions/jackknife.png";
+
 const GLOVE_SIZES = ["5", "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9"];
-const POSITIONS = ["Supine", "Prone", "Lateral", "Lithotomy", "Trendelenburg", "Reverse Trendelenburg", "Sitting", "Jackknife"];
+
+const POSITIONS: { name: string; img: string }[] = [
+  { name: "Supine", img: supineImg },
+  { name: "Prone", img: proneImg },
+  { name: "Lateral", img: lateralImg },
+  { name: "Lithotomy", img: lithotomyImg },
+  { name: "Trendelenburg", img: trendelenburgImg },
+  { name: "Reverse Trendelenburg", img: reverseTrendelenburgImg },
+  { name: "Sitting", img: sittingImg },
+  { name: "Jackknife", img: jackknifeImg },
+];
 
 interface PreferenceDetailDrawerProps {
   open: boolean;
