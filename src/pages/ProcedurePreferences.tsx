@@ -178,6 +178,15 @@ const ProcedurePreferences = () => {
           </div>
         </div>
 
+        {/* View All button */}
+        <button
+          onClick={() => setSummaryOpen(true)}
+          className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-xs font-medium text-foreground hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-[0.98]"
+        >
+          <ClipboardList size={16} className="text-primary" />
+          View All Preferences
+        </button>
+
         {/* Widget grid - 3 per row */}
         <div className="grid grid-cols-3 gap-3">
           {PREFERENCE_CATEGORIES.map((cat, i) => (
@@ -209,6 +218,15 @@ const ProcedurePreferences = () => {
         category={selectedCategory}
         procedureId={procedureId || ""}
         onFilesChanged={fetchFileCounts}
+      />
+
+      <PreferenceSummaryDrawer
+        open={summaryOpen}
+        onOpenChange={setSummaryOpen}
+        procedureName={procedureName}
+        providerName={providerName}
+        preferences={preferences}
+        fileCounts={fileCounts}
       />
     </div>
   );
