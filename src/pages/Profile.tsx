@@ -42,6 +42,8 @@ const Profile = () => {
   const [nameInput, setNameInput] = useState("");
   const [musicDrawerOpen, setMusicDrawerOpen] = useState(false);
   const [hasMusicPrefs, setHasMusicPrefs] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
   const SPECIALTIES = [
     "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
