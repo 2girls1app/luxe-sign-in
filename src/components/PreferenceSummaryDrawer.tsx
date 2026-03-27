@@ -59,8 +59,9 @@ const PreferenceSummaryDrawer = ({
     { key: "instruments", label: "Instrumentation" },
     { key: "trays", label: "Trays" },
     { key: "suture", label: "Suture & Usage" },
-    { key: "skin_prep", label: "Skin Prep" },
+    { key: "skinprep", label: "Skin Prep" },
     { key: "medication", label: "Medications" },
+    { key: "steps", label: "Procedure Steps" },
   ];
 
   const generatePDF = async () => {
