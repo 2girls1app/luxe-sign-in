@@ -40,13 +40,15 @@ const ProcedurePreferences = () => {
     if (!procedureId || !user) return;
     const { data } = await supabase
       .from("procedure_preferences")
-      .select("category, value")
+      .select("category, value, updated_at")
       .eq("procedure_id", procedureId)
       .eq("user_id", user.id);
     if (data) {
       const map: Record<string, string> = {};
-      data.forEach((d: any) => { map[d.category] = d.value; });
+      const dates: Record<string, string> = {};
+      data.forEach((d: any) => { map[d.category] = d.value; dates[d.category] = d.updated_at; });
       setPreferences(map);
+      setUpdatedDates(dates);
     }
   }, [procedureId, user]);
 
