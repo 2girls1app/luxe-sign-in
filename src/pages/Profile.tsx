@@ -319,6 +319,15 @@ const Profile = () => {
           )}
         </div>
       </motion.div>
+      {!isAdmin && (
+        <MusicPreferencesDrawer
+          open={musicDrawerOpen}
+          onOpenChange={(open) => {
+            setMusicDrawerOpen(open);
+            if (!open) fetchMusicPrefsCount();
+          }}
+        />
+      )}
     </div>
   );
 };
