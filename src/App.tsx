@@ -15,6 +15,7 @@ import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ProcedurePreferences from "./pages/ProcedurePreferences.tsx";
 import SharedPreferenceCard from "./pages/SharedPreferenceCard.tsx";
+import FacilityDetail from "./pages/FacilityDetail.tsx";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/procedure/:procedureId/preferences" element={<ProcedurePreferences />} />
             <Route path="/shared/procedure/:procedureId" element={<SharedPreferenceCard />} />
+            <Route path="/facility/:facilityId" element={<FacilityDetail />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

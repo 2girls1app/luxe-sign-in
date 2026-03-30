@@ -297,7 +297,7 @@ const Profile = () => {
           ) : (
             <div className="flex flex-col gap-2">
               {facilities.map((f) => (
-                <motion.div key={f.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start justify-between rounded-xl bg-card border border-border p-4">
+                <motion.div key={f.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start justify-between rounded-xl bg-card border border-border p-4 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => navigate(`/facility/${f.id}`)}>
                   <div className="flex-1 min-w-0">
                     <p className="text-foreground font-medium text-sm">{f.name}</p>
                     {f.location && (
@@ -307,7 +307,7 @@ const Profile = () => {
                     )}
                     {f.notes && <p className="text-xs text-muted-foreground mt-1 truncate">{f.notes}</p>}
                   </div>
-                  <button onClick={() => deleteFacility(f.id)} className="text-muted-foreground hover:text-destructive transition-colors ml-2 mt-0.5">
+                  <button onClick={(e) => { e.stopPropagation(); deleteFacility(f.id); }} className="text-muted-foreground hover:text-destructive transition-colors ml-2 mt-0.5">
                     <Trash2 size={14} />
                   </button>
                 </motion.div>
