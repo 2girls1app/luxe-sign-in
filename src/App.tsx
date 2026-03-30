@@ -37,6 +37,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/procedure/:procedureId/preferences" element={<ProcedurePreferences />} />
             <Route path="/shared/procedure/:procedureId" element={<SharedPreferenceCard />} />
+            <Route path="/facility/:facilityId" element={<FacilityDetail />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
