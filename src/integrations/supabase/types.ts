@@ -50,6 +50,62 @@ export type Database = {
         }
         Relationships: []
       }
+      facility_documents: {
+        Row: {
+          created_at: string
+          description: string | null
+          facility_id: string
+          file_name: string | null
+          file_path: string | null
+          file_size: number | null
+          id: string
+          is_favorite: boolean
+          mime_type: string | null
+          target_role: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          facility_id: string
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          is_favorite?: boolean
+          mime_type?: string | null
+          target_role?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          facility_id?: string
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          is_favorite?: boolean
+          mime_type?: string | null
+          target_role?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facility_documents_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_preferences: {
         Row: {
           created_at: string
