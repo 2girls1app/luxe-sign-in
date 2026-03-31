@@ -218,6 +218,14 @@ const Profile = () => {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
+                  <button onClick={() => navigate("/settings")} className="text-muted-foreground hover:text-foreground transition-colors p-1" aria-label="Settings">
+                    <Settings size={20} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">Settings</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <button onClick={handleSignOut} className="text-muted-foreground hover:text-foreground transition-colors p-1" aria-label="Sign Out">
                     <LogOut size={20} />
                   </button>
