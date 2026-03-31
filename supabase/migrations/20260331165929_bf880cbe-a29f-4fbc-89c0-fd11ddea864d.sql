@@ -1,0 +1,1 @@
+ALTER TABLE public.procedure_chats ALTER COLUMN expires_at SET DEFAULT (now() + interval '12 hours');
