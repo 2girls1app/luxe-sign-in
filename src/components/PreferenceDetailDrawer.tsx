@@ -118,7 +118,21 @@ const PreferenceDetailDrawer = ({
               </RadioGroup>
             </div>
           ) : multiSelectOptions ? (
-            <MultiSelectGrid options={multiSelectOptions} value={value} onChange={setValue} />
+            <MultiSelectGrid
+              options={multiSelectOptions}
+              value={value}
+              onChange={setValue}
+              addLabel={
+                category.key === "suture" ? "Add Suture" :
+                category.key === "supplies" ? "Add Supply" :
+                category.key === "trays" ? "Add Tray" :
+                category.key === "robotic_instruments" ? "Add Robotic Item" :
+                category.key === "instruments" ? "Add Instrument" :
+                category.key === "equipment" ? "Add Equipment" :
+                category.key === "skinprep" ? "Add Skin Prep" :
+                `Add ${category.label}`
+              }
+            />
           ) : (
             <Textarea
               value={value}
