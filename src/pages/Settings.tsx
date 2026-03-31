@@ -45,6 +45,8 @@ const Settings = () => {
 
   const displayName = profile?.display_name || user?.user_metadata?.full_name || "User";
   const email = user?.email || "";
+  const userRole = (profile?.role || "").toLowerCase();
+  const isAdminRole = ["administrative", "admin", "admin-staff", "admin staff"].includes(userRole);
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
