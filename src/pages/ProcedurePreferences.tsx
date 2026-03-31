@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ClipboardList, ListOrdered, Share2, User } from "lucide-react";
+import { ArrowLeft, ClipboardList, ListOrdered, Share2, User, MessageSquare } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +16,7 @@ import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
 import MedicationSelector from "@/components/MedicationSelector";
 import StepsDrawer from "@/components/StepsDrawer";
 import SharePreferenceCardDrawer from "@/components/SharePreferenceCardDrawer";
+import TeamChatDrawer from "@/components/TeamChatDrawer";
 
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
@@ -38,6 +39,7 @@ const ProcedurePreferences = () => {
   const [facilityName, setFacilityName] = useState("");
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
@@ -243,6 +245,13 @@ const ProcedurePreferences = () => {
               return null;
             })()}
           </button>
+          <button
+            onClick={() => setChatOpen(true)}
+            className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-xs font-medium text-foreground hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-[0.98]"
+          >
+            <MessageSquare size={16} className="text-primary" />
+            Team Chat
+          </button>
         </div>
 
         {/* Widget grid - 3 per row */}
@@ -308,6 +317,13 @@ const ProcedurePreferences = () => {
       <SharePreferenceCardDrawer
         open={shareOpen}
         onOpenChange={setShareOpen}
+        procedureId={procedureId || ""}
+        procedureName={procedureName}
+      />
+
+      <TeamChatDrawer
+        open={chatOpen}
+        onOpenChange={setChatOpen}
         procedureId={procedureId || ""}
         procedureName={procedureName}
       />
