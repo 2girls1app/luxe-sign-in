@@ -108,6 +108,14 @@ const AdminDoctorDetail = () => {
           </button>
         </div>
 
+        {/* Add Procedure */}
+        <AddProcedureDialog
+          facilities={facilities}
+          onAdded={fetchData}
+          forUserId={userId}
+          triggerVariant="prominent"
+        />
+
         {/* Procedures list */}
         <div>
           <h2 className="text-sm font-semibold text-foreground mb-3">Preference Cards</h2>
