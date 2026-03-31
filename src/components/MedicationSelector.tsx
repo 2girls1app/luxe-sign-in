@@ -5,7 +5,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Pill, Search, Plus, X, ChevronDown, ChevronUp, Pencil, Check, Minus } from "lucide-react";
+import { Pill, Search, Plus, X, ChevronDown, ChevronUp, Pencil, Check, Minus, Pause } from "lucide-react";
 import { MEDICATIONS_DATABASE, MEDICATION_CATEGORIES, type MedicationEntry } from "@/data/medications";
 
 export interface SelectedMedication {
@@ -15,6 +15,8 @@ export interface SelectedMedication {
   route?: string;
   notes?: string;
   isCustom?: boolean;
+  hold?: boolean;
+  holdQty?: number;
 }
 
 interface MedicationSelectorProps {
@@ -100,13 +102,13 @@ const MedicationSelector = ({
       name: med.name,
       category: med.category,
       isCustom: "isCustom" in med ? med.isCustom : false,
+      hold: false,
+      holdQty: 1,
     };
-    // Add to front (newest first)
     setMedications((prev) => [newMed, ...prev]);
     setSearch("");
     setCustomName("");
     setShowCustom(false);
-    // Open editor for the newly added medication (index 0 since prepended)
     setEditingIndex(0);
     setEditDosage("");
     setEditRoute("");
@@ -189,6 +191,11 @@ const MedicationSelector = ({
                           {med.isCustom && (
                             <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-primary/30 text-primary">
                               Custom
+                            </Badge>
+                          )}
+                          {med.hold && (
+                            <Badge className="text-[9px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                              <Pause size={8} className="mr-0.5" />Hold
                             </Badge>
                           )}
                         </div>
@@ -276,6 +283,50 @@ const MedicationSelector = ({
                         </Button>
                       </div>
                     )}
+
+                    {/* Hold controls */}
+                    <div className="border-t border-primary/10 px-3 py-2 flex items-center gap-3">
+                      <button
+                        onClick={() => {
+                          setMedications((prev) =>
+                            prev.map((m, i) => i === index ? { ...m, hold: !m.hold, holdQty: m.holdQty ?? 1 } : m)
+                          );
+                        }}
+                        className={`text-[10px] font-medium px-2.5 py-1 rounded-md border transition-colors ${
+                          med.hold
+                            ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
+                            : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                        }`}
+                      >
+                        {med.hold ? "On Hold" : "Mark Hold"}
+                      </button>
+                      {med.hold && (
+                        <div className="flex items-center gap-1.5 ml-auto">
+                          <span className="text-[10px] text-amber-400/80 uppercase tracking-wider">Hold Qty</span>
+                          <button
+                            onClick={() =>
+                              setMedications((prev) =>
+                                prev.map((m, i) => i === index ? { ...m, holdQty: Math.max(1, (m.holdQty ?? 1) - 1) } : m)
+                              )
+                            }
+                            className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors"
+                          >
+                            <ChevronDown size={12} className="text-amber-400" />
+                          </button>
+                          <span className="text-sm font-semibold text-amber-400 w-5 text-center">{med.holdQty ?? 1}</span>
+                          <button
+                            onClick={() =>
+                              setMedications((prev) =>
+                                prev.map((m, i) => i === index ? { ...m, holdQty: (m.holdQty ?? 1) + 1 } : m)
+                              )
+                            }
+                            className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors"
+                          >
+                            <ChevronUp size={12} className="text-amber-400" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
