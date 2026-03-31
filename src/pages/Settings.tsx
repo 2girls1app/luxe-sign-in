@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Lock, Mail, Phone, Camera, ShieldCheck, HeadphonesIcon, Check, X } from "lucide-react";
+import { ArrowLeft, User, Lock, Mail, Phone, ShieldCheck, HeadphonesIcon, Stethoscope } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import NavHeader from "@/components/NavHeader";
 import ProfileAvatarUpload from "@/components/ProfileAvatarUpload";
 import PasswordInput from "@/components/PasswordInput";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -20,6 +21,18 @@ const Settings = () => {
   const [firstName, setFirstName] = useState(profile?.display_name?.split(" ")[0] || "");
   const [lastName, setLastName] = useState(profile?.display_name?.split(" ").slice(1).join(" ") || "");
   const [phone, setPhone] = useState("");
+  const [specialty, setSpecialty] = useState(profile?.specialty || "");
+
+  const SPECIALTIES = [
+    "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
+    "Cosmetic Surgery", "Critical Care Surgery", "Endocrine Surgery", "General Surgery",
+    "Gynecologic Surgery", "Hand Surgery", "Head and Neck Surgery", "Hepatobiliary Surgery",
+    "Maxillofacial Surgery", "Minimally Invasive Surgery", "Neurosurgery", "Obstetric Surgery",
+    "Oncologic Surgery", "Ophthalmic Surgery", "Oral Surgery", "Orthopedic Surgery",
+    "Otolaryngology Surgery", "Pediatric Surgery", "Plastic Surgery", "Podiatric Surgery",
+    "Reconstructive Surgery", "Spine Surgery", "Surgical Oncology", "Thoracic Surgery",
+    "Transplant Surgery", "Trauma Surgery", "Urologic Surgery", "Vascular Surgery",
+  ];
 
   // Change Password state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -41,7 +54,9 @@ const Settings = () => {
     if (!user) return;
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
     if (!fullName) return;
-    const { error } = await supabase.from("profiles").update({ display_name: fullName } as any).eq("user_id", user.id);
+    const updateData: any = { display_name: fullName };
+    if (specialty) updateData.specialty = specialty;
+    const { error } = await supabase.from("profiles").update(updateData).eq("user_id", user.id);
     if (error) {
       toast({ title: "Error", description: "Failed to update profile", variant: "destructive" });
     } else {
@@ -185,6 +200,21 @@ const Settings = () => {
                           disabled
                           className="w-full rounded-lg border border-border bg-secondary/50 px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed"
                         />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 flex items-center gap-1.5">
+                          <Stethoscope size={12} className="text-primary" /> Specialty
+                        </label>
+                        <Select value={specialty} onValueChange={setSpecialty}>
+                          <SelectTrigger className="w-full rounded-lg border-border bg-secondary text-foreground h-10">
+                            <SelectValue placeholder="Select your specialty" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-60">
+                            {SPECIALTIES.map((s) => (
+                              <SelectItem key={s} value={s}>{s}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                     <button
