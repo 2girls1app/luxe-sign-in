@@ -73,9 +73,6 @@ const Profile = () => {
     if (data) setProcedures(data as Procedure[]);
   }, [user]);
 
-  useEffect(() => {
-    if (profile?.specialty) setSpecialty(profile.specialty);
-  }, [profile]);
 
   const fetchMusicPrefsCount = useCallback(async () => {
     if (!user) return;
