@@ -57,8 +57,29 @@ const AdminUsers = () => {
   const [statusFilter, setStatusFilter] = useState("all");
 
   const fetchUsers = async () => {
-    const { data } = await supabase.from("profiles").select("*");
-    if (data) setUsers(data as UserProfile[]);
+    const { data: profiles } = await supabase.from("profiles").select("*");
+    if (!profiles) return;
+
+    // Fetch last login from audit_logs for all users
+    const { data: logins } = await supabase
+      .from("audit_logs")
+      .select("user_id, created_at")
+      .eq("action", "signed_in")
+      .order("created_at", { ascending: false });
+
+    const lastLoginMap = new Map<string, string>();
+    if (logins) {
+      for (const log of logins) {
+        if (log.user_id && !lastLoginMap.has(log.user_id)) {
+          lastLoginMap.set(log.user_id, log.created_at);
+        }
+      }
+    }
+
+    setUsers(profiles.map((p: any) => ({
+      ...p,
+      last_login: lastLoginMap.get(p.user_id) || null,
+    })));
   };
 
   useEffect(() => {
