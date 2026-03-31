@@ -19,14 +19,12 @@ import NavHeader from "@/components/NavHeader";
 interface AdminNotification { id: string; title: string; message: string; priority: string; created_at: string; target_professions?: string | null; }
 
 const PROFESSIONS = [
+  "Admin",
   "Surgeon",
+  "Physician Assist",
+  "First Assist",
   "Nurse",
-  "Physician Assistant",
   "Anesthesia",
-  "Admin Staff",
-  "Administrative",
-  "Surgical Technologist",
-  "CRNA",
 ];
 
 const AdminNotifications = () => {
