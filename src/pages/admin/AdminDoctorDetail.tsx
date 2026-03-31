@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { supabase } from "@/integrations/supabase/client";
 import NavHeader from "@/components/NavHeader";
+import AddProcedureDialog from "@/components/AddProcedureDialog";
 
 interface DoctorProfile {
   user_id: string; display_name: string | null; avatar_url: string | null;
