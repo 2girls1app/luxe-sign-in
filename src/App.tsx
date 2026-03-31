@@ -16,6 +16,12 @@ import NotFound from "./pages/NotFound.tsx";
 import ProcedurePreferences from "./pages/ProcedurePreferences.tsx";
 import SharedPreferenceCard from "./pages/SharedPreferenceCard.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
+import AdminUsers from "./pages/admin/AdminUsers.tsx";
+import AdminDoctors from "./pages/admin/AdminDoctors.tsx";
+import AdminPrefCards from "./pages/admin/AdminPrefCards.tsx";
+import AdminNotifications from "./pages/admin/AdminNotifications.tsx";
+import AdminSupplyLibrary from "./pages/admin/AdminSupplyLibrary.tsx";
+import AdminActivityLogs from "./pages/admin/AdminActivityLogs.tsx";
 import Settings from "./pages/Settings.tsx";
 
 const queryClient = new QueryClient();
@@ -40,6 +46,12 @@ const App = () => (
             <Route path="/shared/procedure/:procedureId" element={<SharedPreferenceCard />} />
             
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/doctors" element={<AdminDoctors />} />
+            <Route path="/admin/preference-cards" element={<AdminPrefCards />} />
+            <Route path="/admin/notifications" element={<AdminNotifications />} />
+            <Route path="/admin/supply-library" element={<AdminSupplyLibrary />} />
+            <Route path="/admin/activity-logs" element={<AdminActivityLogs />} />
             <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
