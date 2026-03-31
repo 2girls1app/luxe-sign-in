@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Pencil, Check, X, Music, Bell } from "lucide-react";
+import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Pencil, Check, X, Music, Bell, Settings } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import NotificationsDrawer from "@/components/NotificationsDrawer";
@@ -215,6 +215,14 @@ const Profile = () => {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Notifications</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button onClick={() => navigate("/settings")} className="text-muted-foreground hover:text-foreground transition-colors p-1" aria-label="Settings">
+                    <Settings size={20} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">Settings</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>

@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound.tsx";
 import ProcedurePreferences from "./pages/ProcedurePreferences.tsx";
 import SharedPreferenceCard from "./pages/SharedPreferenceCard.tsx";
 import FacilityDetail from "./pages/FacilityDetail.tsx";
+import Settings from "./pages/Settings.tsx";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/procedure/:procedureId/preferences" element={<ProcedurePreferences />} />
             <Route path="/shared/procedure/:procedureId" element={<SharedPreferenceCard />} />
             <Route path="/facility/:facilityId" element={<FacilityDetail />} />
+            <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
