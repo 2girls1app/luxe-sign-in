@@ -84,7 +84,6 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
         </DialogHeader>
         <div className="flex flex-col gap-3 mt-2">
           <Input placeholder="Procedure name *" value={name} onChange={(e) => setName(e.target.value)} className="bg-secondary border-border text-foreground placeholder:text-muted-foreground" />
-          <Input placeholder="Category / Specialty" value={category} onChange={(e) => setCategory(e.target.value)} className="bg-secondary border-border text-foreground placeholder:text-muted-foreground" />
           <div>
             <Select value={facilityId} onValueChange={(v) => { setFacilityId(v); setFacilityError(false); }}>
               <SelectTrigger className={`bg-secondary border-border text-foreground ${facilityError ? "border-destructive ring-1 ring-destructive" : ""}`}>
