@@ -193,6 +193,11 @@ const MedicationSelector = ({
                               Custom
                             </Badge>
                           )}
+                          {med.hold && (
+                            <Badge className="text-[9px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                              <Pause size={8} className="mr-0.5" />Hold
+                            </Badge>
+                          )}
                         </div>
                         {/* Detail pills */}
                         <div className="flex flex-wrap gap-1.5 mt-1.5">
