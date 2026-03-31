@@ -175,14 +175,16 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
     <div className="max-h-[50vh] overflow-y-auto">
       <div className="grid grid-cols-1 gap-3">
         {/* Selected items first */}
+        {/* Selected items first: custom then predefined */}
         {customItems.map((item) => renderSelectedItem(item, true))}
+        {options
+          .filter((opt) => items.some((i) => i.name === opt.name))
+          .map((opt) => renderSelectedItem(items.find((i) => i.name === opt.name)!, false))}
 
-        {/* Predefined options */}
-        {options.map((opt) => {
-          const item = items.find((i) => i.name === opt.name);
-          if (item) return renderSelectedItem(item, false);
-
-          return (
+        {/* Unselected options */}
+        {options
+          .filter((opt) => !items.some((i) => i.name === opt.name))
+          .map((opt) => (
             <button
               key={opt.name}
               type="button"
@@ -195,8 +197,7 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
                 <span className="text-[10px] text-muted-foreground leading-tight">{opt.desc}</span>
               </div>
             </button>
-          );
-        })}
+          ))}
       </div>
 
       {/* Add custom item */}
