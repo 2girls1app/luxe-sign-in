@@ -5,7 +5,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Pill, Search, Plus, X, ChevronDown, ChevronUp, Pencil } from "lucide-react";
+import { Pill, Search, Plus, X, ChevronDown, ChevronUp, Pencil, Check, Minus } from "lucide-react";
 import { MEDICATIONS_DATABASE, MEDICATION_CATEGORIES, type MedicationEntry } from "@/data/medications";
 
 export interface SelectedMedication {
@@ -33,7 +33,6 @@ const parseMedications = (value: string): SelectedMedication[] => {
     const parsed = JSON.parse(value);
     if (Array.isArray(parsed)) return parsed;
   } catch {
-    // Legacy free-text: convert to single medication
     if (value.trim()) {
       return [{ name: value.trim(), category: "Other", isCustom: true }];
     }
@@ -46,7 +45,7 @@ const MedicationSelector = ({
 }: MedicationSelectorProps) => {
   const [medications, setMedications] = useState<SelectedMedication[]>([]);
   const [search, setSearch] = useState("");
-  const [showResults, setShowResults] = useState(false);
+  const [showBrowser, setShowBrowser] = useState(false);
   const [customName, setCustomName] = useState("");
   const [showCustom, setShowCustom] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -60,7 +59,7 @@ const MedicationSelector = ({
     if (open) {
       setMedications(parseMedications(currentValue));
       setSearch("");
-      setShowResults(false);
+      setShowBrowser(false);
       setShowCustom(false);
       setEditingIndex(null);
     }
@@ -102,13 +101,13 @@ const MedicationSelector = ({
       category: med.category,
       isCustom: "isCustom" in med ? med.isCustom : false,
     };
-    setMedications((prev) => [...prev, newMed]);
+    // Add to front (newest first)
+    setMedications((prev) => [newMed, ...prev]);
     setSearch("");
-    setShowResults(false);
     setCustomName("");
     setShowCustom(false);
-    // Open detail editor for the newly added medication
-    setEditingIndex(medications.length);
+    // Open editor for the newly added medication (index 0 since prepended)
+    setEditingIndex(0);
     setEditDosage("");
     setEditRoute("");
     setEditNotes("");
@@ -151,6 +150,8 @@ const MedicationSelector = ({
     addMedication({ name: customName.trim(), category: "Other", isCustom: true });
   };
 
+  const hasAvailableMeds = Object.values(browsableGroups).some((g) => g.length > 0);
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="bg-card border-border max-h-[92vh]">
@@ -165,178 +166,75 @@ const MedicationSelector = ({
         </DrawerHeader>
 
         <div className="flex-1 overflow-y-auto px-4 pb-2 space-y-3 max-h-[60vh]">
-          {/* Search bar */}
-          <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              ref={searchRef}
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setShowResults(true);
-                setExpandedCategory(null);
-              }}
-              onFocus={() => setShowResults(true)}
-              placeholder="Search medications..."
-              className="pl-9 bg-secondary border-border text-foreground placeholder:text-muted-foreground"
-            />
-          </div>
-
-          {/* Search Results */}
-          {showResults && search.trim() && (
-            <div className="rounded-xl border border-border bg-secondary/50 max-h-[200px] overflow-y-auto">
-              {filteredMeds.length === 0 ? (
-                <div className="p-3 text-center text-sm text-muted-foreground">
-                  No medications found.{" "}
-                  <button
-                    onClick={() => {
-                      setCustomName(search);
-                      setShowCustom(true);
-                      setShowResults(false);
-                    }}
-                    className="text-primary hover:underline"
-                  >
-                    Add custom
-                  </button>
-                </div>
-              ) : (
-                Object.entries(groupedResults).map(([cat, meds]) => (
-                  <div key={cat}>
-                    <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground bg-secondary/80 sticky top-0">
-                      {cat}
-                    </div>
-                    {meds.map((med) => (
-                      <button
-                        key={med.name}
-                        onClick={() => addMedication(med)}
-                        className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-primary/10 transition-colors"
-                      >
-                        {med.name}
-                      </button>
-                    ))}
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-
-          {/* Browse by category (when not searching) */}
-          {!search.trim() && (
-            <div className="space-y-1">
-              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider px-1">Browse by Category</p>
-              <div className="rounded-xl border border-border bg-secondary/30 overflow-hidden">
-                {MEDICATION_CATEGORIES.map((cat) => {
-                  const meds = browsableGroups[cat];
-                  if (!meds || meds.length === 0) return null;
-                  const isExpanded = expandedCategory === cat;
-                  return (
-                    <div key={cat} className="border-b border-border last:border-b-0">
-                      <button
-                        onClick={() => setExpandedCategory(isExpanded ? null : cat)}
-                        className="w-full flex items-center justify-between px-3 py-2.5 text-sm text-foreground hover:bg-primary/5 transition-colors"
-                      >
-                        <span>{cat} <span className="text-muted-foreground text-xs">({meds.length})</span></span>
-                        {isExpanded ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
-                      </button>
-                      {isExpanded && (
-                        <div className="bg-secondary/50">
-                          {meds.map((med) => (
-                            <button
-                              key={med.name}
-                              onClick={() => addMedication(med)}
-                              className="w-full text-left px-6 py-2 text-sm text-foreground hover:bg-primary/10 transition-colors flex items-center gap-2"
-                            >
-                              <Plus size={12} className="text-primary" />
-                              {med.name}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Add custom medication */}
-          <button
-            onClick={() => setShowCustom(!showCustom)}
-            className="flex items-center gap-2 text-sm text-primary hover:underline px-1"
-          >
-            <Plus size={14} />
-            Add custom medication
-          </button>
-
-          {showCustom && (
-            <div className="flex gap-2">
-              <Input
-                value={customName}
-                onChange={(e) => setCustomName(e.target.value)}
-                placeholder="Enter medication name..."
-                className="flex-1 bg-secondary border-border text-foreground placeholder:text-muted-foreground text-sm"
-                onKeyDown={(e) => e.key === "Enter" && addCustom()}
-              />
-              <Button size="sm" onClick={addCustom} disabled={!customName.trim()}>
-                Add
-              </Button>
-            </div>
-          )}
-
-          {/* Selected medications */}
+          {/* ── Selected Medications (top preview section) ── */}
           {medications.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider px-1">
-                Selected ({medications.length})
+              <p className="text-[11px] font-semibold text-primary uppercase tracking-wider px-1 flex items-center gap-1.5">
+                <Check size={12} />
+                Selected Medications ({medications.length})
               </p>
               <div className="space-y-2">
                 {medications.map((med, index) => (
                   <div
                     key={`${med.name}-${index}`}
-                    className="rounded-xl border border-border bg-secondary/50 overflow-hidden"
+                    className="rounded-xl border-2 border-primary/30 bg-primary/5 overflow-hidden"
                   >
-                    <div className="flex items-center gap-2 px-3 py-2.5">
+                    <div className="flex items-start gap-2 px-3 py-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
+                        <Pill size={14} className="text-primary" />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-foreground truncate">{med.name}</span>
+                          <span className="text-sm font-semibold text-foreground truncate">{med.name}</span>
                           {med.isCustom && (
                             <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-primary/30 text-primary">
                               Custom
                             </Badge>
                           )}
                         </div>
-                        <div className="flex flex-wrap gap-1 mt-0.5">
+                        {/* Detail pills */}
+                        <div className="flex flex-wrap gap-1.5 mt-1.5">
                           {med.dosage && (
-                            <span className="text-[10px] text-muted-foreground bg-secondary rounded px-1.5 py-0.5">{med.dosage}</span>
+                            <span className="text-[10px] font-medium text-foreground bg-secondary rounded-md px-2 py-0.5 border border-border">
+                              💊 {med.dosage}
+                            </span>
                           )}
                           {med.route && (
-                            <span className="text-[10px] text-muted-foreground bg-secondary rounded px-1.5 py-0.5">{med.route}</span>
+                            <span className="text-[10px] font-medium text-foreground bg-secondary rounded-md px-2 py-0.5 border border-border">
+                              🔄 {med.route}
+                            </span>
                           )}
                           {med.notes && (
-                            <span className="text-[10px] text-muted-foreground bg-secondary rounded px-1.5 py-0.5">{med.notes}</span>
+                            <span className="text-[10px] text-muted-foreground bg-secondary rounded-md px-2 py-0.5 border border-border">
+                              📝 {med.notes}
+                            </span>
                           )}
                           {!med.dosage && !med.route && !med.notes && (
-                            <span className="text-[10px] text-muted-foreground/50 italic">No details added</span>
+                            <span className="text-[10px] text-muted-foreground/50 italic">Tap edit to add details</span>
                           )}
                         </div>
                       </div>
-                      <button
-                        onClick={() => openEditor(index)}
-                        className="p-1.5 rounded-full hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        onClick={() => removeMedication(index)}
-                        className="p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                      >
-                        <X size={14} />
-                      </button>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => openEditor(index)}
+                          className="p-1.5 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                          title="Edit details"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          onClick={() => removeMedication(index)}
+                          className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                          title="Remove"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Inline detail editor */}
                     {editingIndex === index && (
-                      <div className="border-t border-border bg-secondary/30 px-3 py-3 space-y-2.5">
+                      <div className="border-t border-primary/20 bg-secondary/30 px-3 py-3 space-y-2.5">
                         <div>
                           <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Dosage</label>
                           <Input
@@ -383,11 +281,155 @@ const MedicationSelector = ({
               </div>
             </div>
           )}
+
+          {/* ── Divider ── */}
+          {medications.length > 0 && (showBrowser || search.trim()) && (
+            <div className="flex items-center gap-2 py-1">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Available</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+          )}
+
+          {/* ── Search & Browse Section ── */}
+          {(showBrowser || medications.length === 0) && (
+            <>
+              {/* Search bar */}
+              <div className="relative">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  ref={searchRef}
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setExpandedCategory(null);
+                  }}
+                  placeholder="Search medications..."
+                  className="pl-9 bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+
+              {/* Search Results */}
+              {search.trim() && (
+                <div className="rounded-xl border border-border bg-secondary/50 max-h-[200px] overflow-y-auto">
+                  {filteredMeds.length === 0 ? (
+                    <div className="p-3 text-center text-sm text-muted-foreground">
+                      No medications found.{" "}
+                      <button
+                        onClick={() => {
+                          setCustomName(search);
+                          setShowCustom(true);
+                        }}
+                        className="text-primary hover:underline"
+                      >
+                        Add custom
+                      </button>
+                    </div>
+                  ) : (
+                    Object.entries(groupedResults).map(([cat, meds]) => (
+                      <div key={cat}>
+                        <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground bg-secondary/80 sticky top-0">
+                          {cat}
+                        </div>
+                        {meds.map((med) => (
+                          <button
+                            key={med.name}
+                            onClick={() => addMedication(med)}
+                            className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-primary/10 transition-colors flex items-center gap-2"
+                          >
+                            <Plus size={12} className="text-primary shrink-0" />
+                            {med.name}
+                          </button>
+                        ))}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* Browse by category (when not searching) */}
+              {!search.trim() && (
+                <div className="space-y-1">
+                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider px-1">Browse by Category</p>
+                  <div className="rounded-xl border border-border bg-secondary/30 overflow-hidden">
+                    {MEDICATION_CATEGORIES.map((cat) => {
+                      const meds = browsableGroups[cat];
+                      if (!meds || meds.length === 0) return null;
+                      const isExpanded = expandedCategory === cat;
+                      return (
+                        <div key={cat} className="border-b border-border last:border-b-0">
+                          <button
+                            onClick={() => setExpandedCategory(isExpanded ? null : cat)}
+                            className="w-full flex items-center justify-between px-3 py-2.5 text-sm text-foreground hover:bg-primary/5 transition-colors"
+                          >
+                            <span>{cat} <span className="text-muted-foreground text-xs">({meds.length})</span></span>
+                            {isExpanded ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
+                          </button>
+                          {isExpanded && (
+                            <div className="bg-secondary/50">
+                              {meds.map((med) => (
+                                <button
+                                  key={med.name}
+                                  onClick={() => addMedication(med)}
+                                  className="w-full text-left px-6 py-2 text-sm text-foreground hover:bg-primary/10 transition-colors flex items-center gap-2"
+                                >
+                                  <Plus size={12} className="text-primary" />
+                                  {med.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Add custom medication */}
+              <button
+                onClick={() => setShowCustom(!showCustom)}
+                className="flex items-center gap-2 text-sm text-primary hover:underline px-1"
+              >
+                <Plus size={14} />
+                Add custom medication
+              </button>
+
+              {showCustom && (
+                <div className="flex gap-2">
+                  <Input
+                    value={customName}
+                    onChange={(e) => setCustomName(e.target.value)}
+                    placeholder="Enter medication name..."
+                    className="flex-1 bg-secondary border-border text-foreground placeholder:text-muted-foreground text-sm"
+                    onKeyDown={(e) => e.key === "Enter" && addCustom()}
+                  />
+                  <Button size="sm" onClick={addCustom} disabled={!customName.trim()}>
+                    Add
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ── "+ Select more medications" button ── */}
+          {medications.length > 0 && !showBrowser && (
+            <button
+              onClick={() => {
+                setShowBrowser(true);
+                setTimeout(() => searchRef.current?.focus(), 100);
+              }}
+              className="flex items-center justify-center gap-2 w-full rounded-xl border border-dashed border-primary/40 bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 hover:border-primary/60 transition-all active:scale-[0.98]"
+            >
+              <Plus size={16} />
+              Select more medications
+            </button>
+          )}
         </div>
 
         <DrawerFooter className="pt-2">
           <Button onClick={handleSave} disabled={saving} className="w-full">
-            {saving ? "Saving..." : "Save Medications"}
+            {saving ? "Saving..." : `Save Medications${medications.length > 0 ? ` (${medications.length})` : ""}`}
           </Button>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
             Cancel
