@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Music, Bell, Settings } from "lucide-react";
+import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Music, Bell, Settings, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import NotificationsDrawer from "@/components/NotificationsDrawer";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
 import AddFacilityDialog from "@/components/AddFacilityDialog";
 import AddProcedureDialog from "@/components/AddProcedureDialog";
@@ -31,6 +31,8 @@ interface Procedure {
 
 const Profile = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const facilityFilter = searchParams.get("facility");
   const { user, profile, signOut, refreshProfile } = useAuth();
   const { toast } = useToast();
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -128,15 +130,18 @@ const Profile = () => {
   };
 
   const filteredProcedures = procedures
-    .filter((p) =>
-      p.name.toLowerCase().includes(searchProcedures.toLowerCase()) ||
-      (p.category && p.category.toLowerCase().includes(searchProcedures.toLowerCase()))
-    )
+    .filter((p) => {
+      if (facilityFilter && p.facility_id !== facilityFilter) return false;
+      return p.name.toLowerCase().includes(searchProcedures.toLowerCase()) ||
+        (p.category && p.category.toLowerCase().includes(searchProcedures.toLowerCase()));
+    })
     .sort((a, b) => {
       if (a.is_favorite && !b.is_favorite) return -1;
       if (!a.is_favorite && b.is_favorite) return 1;
       return 0;
     });
+
+  const activeFacility = facilityFilter ? facilities.find(f => f.id === facilityFilter) : null;
 
   const getFacilityName = (facilityId: string | null) => {
     if (!facilityId) return null;
@@ -201,79 +206,104 @@ const Profile = () => {
           </TooltipProvider>
         </div>
 
-        {/* Profile Card */}
-        <div className="relative flex items-center gap-4 rounded-xl bg-card border border-border p-4">
-          {/* Music icon - top right */}
-          {!isAdmin && (
+        {/* Facility filter banner */}
+        {activeFacility && (
+          <div className="flex items-center gap-3 rounded-xl bg-card border border-primary/30 p-4">
             <button
-              onClick={() => setMusicDrawerOpen(true)}
-              className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-primary/10 transition-colors group"
-              aria-label="Music preferences"
+              onClick={() => navigate("/profile")}
+              className="text-muted-foreground hover:text-primary transition-colors"
+              aria-label="Back to all"
             >
-              <Music size={16} className={hasMusicPrefs ? "text-primary" : "text-muted-foreground group-hover:text-primary"} />
-              {hasMusicPrefs && (
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
-              )}
+              <ArrowLeft size={18} />
             </button>
-          )}
-          <Avatar className="h-14 w-14 border-2 border-primary/30">
-            {avatarUrl ? (
-              <AvatarImage src={avatarUrl} alt={displayName} />
-            ) : null}
-            <AvatarFallback className="bg-secondary text-foreground text-lg font-medium">
-              {displayName.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-foreground font-medium">{displayName}</p>
-            <p className="text-sm text-muted-foreground">{roleLabel || username}</p>
-          </div>
-        </div>
-
-        {/* Specialty - read-only, hidden for admin */}
-        {!isAdmin && specialty && (
-          <div>
-            <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-1 block">
-              Specialty
-            </label>
-            <p className="text-sm text-foreground font-medium">{specialty}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-foreground font-medium">{activeFacility.name}</p>
+              {activeFacility.location && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                  <MapPin size={12} className="text-primary" /> {activeFacility.location}
+                </p>
+              )}
+            </div>
           </div>
         )}
 
-        {/* Facilities Section */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
-              <Building2 size={16} className="text-primary" /> Facilities
-            </h2>
-            <AddFacilityDialog onAdded={fetchFacilities} />
-          </div>
-          {facilities.length === 0 ? (
-            <div className="rounded-xl bg-card border border-border p-6 text-center">
-              <Building2 size={32} className="mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">No facilities added yet</p>
+        {!facilityFilter && (
+          <>
+            {/* Profile Card */}
+            <div className="relative flex items-center gap-4 rounded-xl bg-card border border-border p-4">
+              {!isAdmin && (
+                <button
+                  onClick={() => setMusicDrawerOpen(true)}
+                  className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-primary/10 transition-colors group"
+                  aria-label="Music preferences"
+                >
+                  <Music size={16} className={hasMusicPrefs ? "text-primary" : "text-muted-foreground group-hover:text-primary"} />
+                  {hasMusicPrefs && (
+                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
+                  )}
+                </button>
+              )}
+              <Avatar className="h-14 w-14 border-2 border-primary/30">
+                {avatarUrl ? (
+                  <AvatarImage src={avatarUrl} alt={displayName} />
+                ) : null}
+                <AvatarFallback className="bg-secondary text-foreground text-lg font-medium">
+                  {displayName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-foreground font-medium">{displayName}</p>
+                <p className="text-sm text-muted-foreground">{roleLabel || username}</p>
+              </div>
             </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {facilities.map((f) => (
-                <motion.div key={f.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start justify-between rounded-xl bg-card border border-border p-4 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => navigate(`/facility/${f.id}`)}>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-foreground font-medium text-sm">{f.name}</p>
-                    {f.location && (
-                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                        <MapPin size={12} /> {f.location}
-                      </p>
-                    )}
-                    {f.notes && <p className="text-xs text-muted-foreground mt-1 truncate">{f.notes}</p>}
-                  </div>
-                  <button onClick={(e) => { e.stopPropagation(); deleteFacility(f.id); }} className="text-muted-foreground hover:text-destructive transition-colors ml-2 mt-0.5">
-                    <Trash2 size={14} />
-                  </button>
-                </motion.div>
-              ))}
+
+            {/* Specialty */}
+            {!isAdmin && specialty && (
+              <div>
+                <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-1 block">
+                  Specialty
+                </label>
+                <p className="text-sm text-foreground font-medium">{specialty}</p>
+              </div>
+            )}
+
+            {/* Facilities Section */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
+                  <Building2 size={16} className="text-primary" /> Facilities
+                </h2>
+                <AddFacilityDialog onAdded={fetchFacilities} />
+              </div>
+              {facilities.length === 0 ? (
+                <div className="rounded-xl bg-card border border-border p-6 text-center">
+                  <Building2 size={32} className="mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">No facilities added yet</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {facilities.map((f) => (
+                    <motion.div key={f.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start justify-between rounded-xl bg-card border border-border p-4 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => navigate(`/profile?facility=${f.id}`)}>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-foreground font-medium text-sm">{f.name}</p>
+                        {f.location && (
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                            <MapPin size={12} /> {f.location}
+                          </p>
+                        )}
+                        {f.notes && <p className="text-xs text-muted-foreground mt-1 truncate">{f.notes}</p>}
+                      </div>
+                      <button onClick={(e) => { e.stopPropagation(); deleteFacility(f.id); }} className="text-muted-foreground hover:text-destructive transition-colors ml-2 mt-0.5">
+                        <Trash2 size={14} />
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
+
 
         {/* Procedures Section */}
         <div>
