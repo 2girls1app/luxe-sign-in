@@ -1,0 +1,166 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { UserPlus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+const SPECIALTIES = [
+  "Cosmetic Surgery",
+  "Bariatric Surgery",
+  "Orthopedic Surgery",
+  "Neurosurgery",
+  "Cardiothoracic Surgery",
+  "Vascular Surgery",
+  "General Surgery",
+  "Plastic Surgery",
+  "Urologic Surgery",
+  "ENT Surgery",
+  "Gynecologic Surgery",
+];
+
+interface CreateSurgeonDialogProps {
+  onCreated: () => void;
+}
+
+const CreateSurgeonDialog = ({ onCreated }: CreateSurgeonDialogProps) => {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const [form, setForm] = useState({
+    first_name: "",
+    last_name: "",
+    credentials: "",
+    specialty: "",
+    email: "",
+    phone: "",
+  });
+
+  const update = (field: string, value: string) =>
+    setForm(f => ({ ...f, [field]: value }));
+
+  const handleSubmit = async () => {
+    if (!form.first_name.trim() || !form.last_name.trim() || !form.email.trim()) {
+      toast({ title: "First name, last name, and email are required", variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const res = await supabase.functions.invoke("create-surgeon", {
+        body: {
+          first_name: form.first_name.trim(),
+          last_name: form.last_name.trim(),
+          credentials: form.credentials.trim(),
+          specialty: form.specialty,
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+        },
+      });
+
+      if (res.error || res.data?.error) {
+        throw new Error(res.data?.error || res.error?.message || "Failed to create surgeon");
+      }
+
+      toast({ title: "Surgeon profile created" });
+      setForm({ first_name: "", last_name: "", credentials: "", specialty: "", email: "", phone: "" });
+      setOpen(false);
+      onCreated();
+    } catch (err: any) {
+      toast({ title: "Error creating surgeon", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="w-full gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 py-3">
+          <UserPlus size={18} /> Add Surgeon
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="bg-card border-border text-foreground max-w-sm max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Create Surgeon Profile</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-3 mt-2">
+          <div>
+            <Label className="text-xs text-muted-foreground">First Name *</Label>
+            <Input
+              placeholder="First name"
+              value={form.first_name}
+              onChange={e => update("first_name", e.target.value)}
+              className="bg-secondary border-border mt-1"
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Last Name *</Label>
+            <Input
+              placeholder="Last name"
+              value={form.last_name}
+              onChange={e => update("last_name", e.target.value)}
+              className="bg-secondary border-border mt-1"
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Credentials</Label>
+            <Input
+              placeholder="e.g. MD, DO, FACS"
+              value={form.credentials}
+              onChange={e => update("credentials", e.target.value)}
+              className="bg-secondary border-border mt-1"
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Specialty</Label>
+            <Select value={form.specialty} onValueChange={v => update("specialty", v)}>
+              <SelectTrigger className="bg-secondary border-border mt-1">
+                <SelectValue placeholder="Select specialty" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border">
+                {SPECIALTIES.map(s => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Email *</Label>
+            <Input
+              type="email"
+              placeholder="surgeon@example.com"
+              value={form.email}
+              onChange={e => update("email", e.target.value)}
+              className="bg-secondary border-border mt-1"
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Phone Number</Label>
+            <Input
+              type="tel"
+              placeholder="(555) 123-4567"
+              value={form.phone}
+              onChange={e => update("phone", e.target.value)}
+              className="bg-secondary border-border mt-1"
+            />
+          </div>
+        </div>
+        <DialogFooter className="mt-2">
+          <Button onClick={handleSubmit} disabled={loading} className="w-full gap-2">
+            <UserPlus size={14} />
+            {loading ? "Creating..." : "Create Surgeon"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default CreateSurgeonDialog;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Stethoscope, Search, ChevronRight, Filter } from "lucide-react";
@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { supabase } from "@/integrations/supabase/client";
 import NavHeader from "@/components/NavHeader";
+import CreateSurgeonDialog from "@/components/CreateSurgeonDialog";
 
 interface UserProfile {
   id: string; user_id: string; display_name: string | null; avatar_url: string | null;
@@ -39,18 +40,19 @@ const AdminDoctors = () => {
   const [search, setSearch] = useState("");
   const [specialtyFilter, setSpecialtyFilter] = useState("All Specialties");
 
+  const fetchData = useCallback(async () => {
+    const [u, p] = await Promise.all([
+      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
+      supabase.from("procedures").select("id, name, user_id, category"),
+    ]);
+    if (u.data) setUsers(u.data as UserProfile[]);
+    if (p.data) setProcedures(p.data as Procedure[]);
+  }, []);
+
   useEffect(() => {
     if (!loading && !isAdmin) { navigate("/profile"); return; }
-    if (isAdmin) {
-      Promise.all([
-        supabase.from("profiles").select("*").order("created_at", { ascending: false }),
-        supabase.from("procedures").select("id, name, user_id, category"),
-      ]).then(([u, p]) => {
-        if (u.data) setUsers(u.data as UserProfile[]);
-        if (p.data) setProcedures(p.data as Procedure[]);
-      });
-    }
-  }, [isAdmin, loading]);
+    if (isAdmin) fetchData();
+  }, [isAdmin, loading, fetchData]);
 
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-background"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
   if (!isAdmin) return null;
@@ -82,6 +84,8 @@ const AdminDoctors = () => {
           <h1 className="text-lg font-semibold text-foreground">Doctors</h1>
           <Badge variant="secondary" className="ml-auto text-xs">{doctors.length} doctors</Badge>
         </div>
+
+        <CreateSurgeonDialog onCreated={fetchData} />
 
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
