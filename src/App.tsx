@@ -54,6 +54,8 @@ const App = () => (
             <Route path="/admin/notifications" element={<AdminNotifications />} />
             <Route path="/admin/supply-library" element={<AdminSupplyLibrary />} />
             <Route path="/admin/activity-logs" element={<AdminActivityLogs />} />
+            <Route path="/admin/doctors/:userId" element={<AdminDoctorDetail />} />
+            <Route path="/admin/doctors/:userId/procedure/:procedureId" element={<AdminEditPrefCard />} />
             <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
