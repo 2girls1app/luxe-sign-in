@@ -15,6 +15,8 @@ export interface SelectedMedication {
   route?: string;
   notes?: string;
   isCustom?: boolean;
+  hold?: boolean;
+  holdQty?: number;
 }
 
 interface MedicationSelectorProps {

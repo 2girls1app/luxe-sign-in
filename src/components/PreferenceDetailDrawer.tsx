@@ -122,6 +122,7 @@ const PreferenceDetailDrawer = ({
               options={multiSelectOptions}
               value={value}
               onChange={setValue}
+              supportsHold={["suture", "supplies", "equipment", "instruments", "robotic_instruments"].includes(category.key)}
               addLabel={
                 category.key === "suture" ? "Add Suture" :
                 category.key === "supplies" ? "Add Supply" :
