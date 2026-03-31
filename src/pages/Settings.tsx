@@ -21,6 +21,18 @@ const Settings = () => {
   const [firstName, setFirstName] = useState(profile?.display_name?.split(" ")[0] || "");
   const [lastName, setLastName] = useState(profile?.display_name?.split(" ").slice(1).join(" ") || "");
   const [phone, setPhone] = useState("");
+  const [specialty, setSpecialty] = useState(profile?.specialty || "");
+
+  const SPECIALTIES = [
+    "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
+    "Cosmetic Surgery", "Critical Care Surgery", "Endocrine Surgery", "General Surgery",
+    "Gynecologic Surgery", "Hand Surgery", "Head and Neck Surgery", "Hepatobiliary Surgery",
+    "Maxillofacial Surgery", "Minimally Invasive Surgery", "Neurosurgery", "Obstetric Surgery",
+    "Oncologic Surgery", "Ophthalmic Surgery", "Oral Surgery", "Orthopedic Surgery",
+    "Otolaryngology Surgery", "Pediatric Surgery", "Plastic Surgery", "Podiatric Surgery",
+    "Reconstructive Surgery", "Spine Surgery", "Surgical Oncology", "Thoracic Surgery",
+    "Transplant Surgery", "Trauma Surgery", "Urologic Surgery", "Vascular Surgery",
+  ];
 
   // Change Password state
   const [currentPassword, setCurrentPassword] = useState("");
