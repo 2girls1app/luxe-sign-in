@@ -1,8 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Download, Printer } from "lucide-react";
+import { Download, Printer, Image, CheckSquare, Square, X } from "lucide-react";
 import { PREFERENCE_CATEGORIES } from "@/components/PreferenceCategoryWidget";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface PhotoFile {
+  id: string;
+  file_name: string;
+  file_path: string;
+  mime_type: string | null;
+  category: string;
+}
 
 interface PreferenceSummaryDrawerProps {
   open: boolean;
@@ -12,6 +22,7 @@ interface PreferenceSummaryDrawerProps {
   facilityName: string;
   preferences: Record<string, string>;
   fileCounts: Record<string, number>;
+  procedureId: string;
 }
 
 const PreferenceSummaryDrawer = ({
@@ -22,8 +33,111 @@ const PreferenceSummaryDrawer = ({
   facilityName,
   preferences,
   fileCounts,
+  procedureId,
 }: PreferenceSummaryDrawerProps) => {
+  const { user } = useAuth();
   const [generating, setGenerating] = useState(false);
+  const [photos, setPhotos] = useState<PhotoFile[]>([]);
+  const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
+  const [showPhotoPrint, setShowPhotoPrint] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
+
+  const fetchPhotos = useCallback(async () => {
+    if (!procedureId || !user) return;
+    const { data } = await supabase
+      .from("procedure_files")
+      .select("id, file_name, file_path, mime_type, category")
+      .eq("procedure_id", procedureId)
+      .eq("user_id", user.id);
+
+    if (data) {
+      const imageFiles = data.filter(
+        (f) => f.mime_type && f.mime_type.startsWith("image/")
+      );
+      setPhotos(imageFiles);
+      // Pre-select all
+      setSelectedPhotos(new Set(imageFiles.map((f) => f.id)));
+
+      // Get public URLs
+      const urls: Record<string, string> = {};
+      for (const file of imageFiles) {
+        const { data: urlData } = supabase.storage
+          .from("procedure-files")
+          .getPublicUrl(file.file_path);
+        if (urlData?.publicUrl) urls[file.id] = urlData.publicUrl;
+      }
+      setPhotoUrls(urls);
+    }
+  }, [procedureId, user]);
+
+  useEffect(() => {
+    if (open) fetchPhotos();
+  }, [open, fetchPhotos]);
+
+  const togglePhoto = (id: string) => {
+    setSelectedPhotos((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (selectedPhotos.size === photos.length) {
+      setSelectedPhotos(new Set());
+    } else {
+      setSelectedPhotos(new Set(photos.map((f) => f.id)));
+    }
+  };
+
+  const handlePrintPhotos = () => {
+    const selected = photos.filter((p) => selectedPhotos.has(p.id));
+    if (selected.length === 0) return;
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    const imageHtml = selected
+      .map(
+        (p) => `
+        <div style="page-break-inside: avoid; margin-bottom: 24px; text-align: center;">
+          <img src="${photoUrls[p.id]}" style="max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 4px;" />
+          <p style="margin-top: 8px; font-size: 12px; color: #666; font-family: sans-serif;">${p.file_name} — ${p.category}</p>
+        </div>`
+      )
+      .join("");
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${procedureName} — Photos</title>
+        <style>
+          @page { margin: 16mm; }
+          body { margin: 0; padding: 16px; font-family: sans-serif; }
+          .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #000; padding-bottom: 12px; }
+          .header h1 { font-size: 18px; margin: 0 0 4px; }
+          .header p { font-size: 12px; color: #555; margin: 2px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>PREFERENCE CARD — PHOTOS</h1>
+          <p><strong>Surgeon:</strong> ${providerName || "N/A"} &nbsp;|&nbsp; <strong>Procedure:</strong> ${procedureName}</p>
+          <p><strong>Facility:</strong> ${facilityName || "N/A"} &nbsp;|&nbsp; <strong>Date:</strong> ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
+        </div>
+        ${imageHtml}
+        <script>
+          window.onload = function() {
+            setTimeout(function() { window.print(); window.close(); }, 500);
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
 
   const formatMedValue = (val: string): string => {
     try {
@@ -57,7 +171,6 @@ const PreferenceSummaryDrawer = ({
 
   const fileCategories = PREFERENCE_CATEGORIES.filter((c) => c.type === "file");
 
-  // Ordered sections for the preference card
   const sectionOrder = [
     { key: "position", label: "Position" },
     { key: "gloves", label: "Glove Size / Style" },
@@ -78,8 +191,8 @@ const PreferenceSummaryDrawer = ({
       const doc = new jsPDF({ unit: "mm", format: "letter" });
       const pw = doc.internal.pageSize.getWidth();
       const ph = doc.internal.pageSize.getHeight();
-      const ml = 18; // left margin
-      const mr = 18; // right margin
+      const ml = 18;
+      const mr = 18;
       const cw = pw - ml - mr;
       let y = 18;
 
@@ -96,7 +209,6 @@ const PreferenceSummaryDrawer = ({
         }
       };
 
-      // === TITLE ===
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
       doc.setTextColor(0, 0, 0);
@@ -105,7 +217,6 @@ const PreferenceSummaryDrawer = ({
       drawLine(y, 0.6);
       y += 6;
 
-      // === Surgeon & Procedure ===
       doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
       doc.text("Surgeon:", ml, y);
@@ -133,19 +244,16 @@ const PreferenceSummaryDrawer = ({
       drawLine(y, 0.6);
       y += 6;
 
-      // === Sections ===
       sectionOrder.forEach((section) => {
         const val = preferences[section.key];
         checkPage(18);
 
-        // Label
         doc.setFont("helvetica", "bold");
         doc.setFontSize(10);
         doc.setTextColor(0, 0, 0);
         doc.text(section.label.toUpperCase(), ml, y);
         y += 5;
 
-        // Value
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
         if (val && val.trim()) {
@@ -168,7 +276,6 @@ const PreferenceSummaryDrawer = ({
         y += 5;
       });
 
-      // === Attached Files Section ===
       checkPage(14);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
@@ -190,7 +297,6 @@ const PreferenceSummaryDrawer = ({
       y += 2;
       drawLine(y, 0.2);
 
-      // === Footer on all pages ===
       const totalPages = doc.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
@@ -212,6 +318,86 @@ const PreferenceSummaryDrawer = ({
     window.print();
   };
 
+  // Photo print selector view
+  if (showPhotoPrint) {
+    return (
+      <Drawer open={open} onOpenChange={onOpenChange}>
+        <DrawerContent className="max-h-[90vh] bg-background">
+          <DrawerHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowPhotoPrint(false)}
+                className="p-1.5 rounded-full hover:bg-card transition-colors text-muted-foreground"
+              >
+                <X size={16} />
+              </button>
+              <DrawerTitle className="text-base font-semibold text-foreground">
+                Print Photos
+              </DrawerTitle>
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={toggleAll}>
+                {selectedPhotos.size === photos.length ? (
+                  <><CheckSquare size={14} /> Deselect All</>
+                ) : (
+                  <><Square size={14} /> Select All</>
+                )}
+              </Button>
+              <Button
+                size="sm"
+                className="gap-1.5 text-xs"
+                onClick={handlePrintPhotos}
+                disabled={selectedPhotos.size === 0}
+              >
+                <Printer size={14} />
+                Print {selectedPhotos.size > 0 ? `(${selectedPhotos.size})` : ""}
+              </Button>
+            </div>
+          </DrawerHeader>
+
+          <div className="overflow-y-auto px-4 pb-6 max-h-[70vh]">
+            {photos.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                <Image size={32} className="mb-2 opacity-40" />
+                <p className="text-sm">No photos attached to this preference card</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {photos.map((photo) => (
+                  <button
+                    key={photo.id}
+                    onClick={() => togglePhoto(photo.id)}
+                    className={`relative rounded-xl overflow-hidden border-2 transition-all ${
+                      selectedPhotos.has(photo.id)
+                        ? "border-primary shadow-lg shadow-primary/10"
+                        : "border-border opacity-60"
+                    }`}
+                  >
+                    <img
+                      src={photoUrls[photo.id]}
+                      alt={photo.file_name}
+                      className="w-full h-32 object-cover"
+                    />
+                    <div className="absolute top-2 right-2">
+                      {selectedPhotos.has(photo.id) ? (
+                        <CheckSquare size={18} className="text-primary drop-shadow" />
+                      ) : (
+                        <Square size={18} className="text-muted-foreground drop-shadow" />
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground truncate px-2 py-1.5 bg-card">
+                      {photo.file_name}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-h-[90vh] bg-background">
@@ -220,6 +406,17 @@ const PreferenceSummaryDrawer = ({
             Full Preference Card
           </DrawerTitle>
           <div className="flex gap-2">
+            {photos.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 text-xs"
+                onClick={() => setShowPhotoPrint(true)}
+              >
+                <Image size={14} />
+                Photos ({photos.length})
+              </Button>
+            )}
             <Button
               size="sm"
               variant="outline"
@@ -243,7 +440,6 @@ const PreferenceSummaryDrawer = ({
 
         <div className="overflow-y-auto px-4 pb-6 max-h-[70vh]">
           <div className="bg-white text-black rounded-lg border border-gray-200 p-6 space-y-0">
-            {/* PDF-style header */}
             <div className="text-center border-b border-black pb-3 mb-4">
               <h2 className="text-lg font-bold tracking-wide text-black">PREFERENCE CARD</h2>
             </div>
@@ -255,7 +451,6 @@ const PreferenceSummaryDrawer = ({
               <p><span className="font-bold">Date:</span> {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
             </div>
 
-            {/* Sections */}
             {[
               { key: "position", label: "Position" },
               { key: "gloves", label: "Glove Size / Style" },
@@ -281,7 +476,6 @@ const PreferenceSummaryDrawer = ({
               );
             })}
 
-            {/* Files */}
             <div className="pt-3">
               <p className="text-[11px] font-bold uppercase tracking-wide text-black mb-2">Attached Files</p>
               {fileCategories.map((cat) => {
