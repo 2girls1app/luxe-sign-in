@@ -128,9 +128,9 @@ const AdminDashboard = () => {
     if (usersRes.data) setUsers(usersRes.data as UserProfile[]);
     if (procsRes.data) setProcedures(procsRes.data as Procedure[]);
     if (prefsRes.data) setPrefCards(prefsRes.data as PrefCard[]);
-    if (logsRes.data) setAuditLogs(logsRes.data as AuditLog[]);
-    if (suppliesRes.data) setSupplies(suppliesRes.data as SupplyItem[]);
-    if (notifsRes.data) setNotifications(notifsRes.data as AdminNotification[]);
+    if (logsRes.data) setAuditLogs(logsRes.data as unknown as AuditLog[]);
+    if (suppliesRes.data) setSupplies(suppliesRes.data as unknown as SupplyItem[]);
+    if (notifsRes.data) setNotifications(notifsRes.data as unknown as AdminNotification[]);
   };
 
   const getUserName = (userId: string) => {
