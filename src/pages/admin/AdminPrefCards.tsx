@@ -31,10 +31,12 @@ const AdminPrefCards = () => {
         supabase.from("profiles").select("user_id, display_name"),
         supabase.from("procedures").select("*").order("created_at", { ascending: false }),
         supabase.from("procedure_preferences").select("*").order("updated_at", { ascending: false }),
-      ]).then(([u, p, pc]) => {
+        supabase.from("facilities").select("id, name").order("name"),
+      ]).then(([u, p, pc, f]) => {
         if (u.data) setUsers(u.data as UserProfile[]);
         if (p.data) setProcedures(p.data as Procedure[]);
         if (pc.data) setPrefCards(pc.data as PrefCard[]);
+        if (f.data) setFacilities(f.data);
       });
     }
   }, [isAdmin, loading]);
