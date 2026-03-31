@@ -59,6 +59,7 @@ const Profile = () => {
   const roleLabel = userRole ? userRole.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) : "";
   const isAdmin = ["administrative", "admin", "admin-staff"].includes(userRole);
   const username = emailUsername || displayName.toLowerCase().replace(/\s+/g, "");
+  const specialty = profile?.specialty || "";
 
   const fetchFacilities = useCallback(async () => {
     if (!user) return;
