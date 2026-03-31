@@ -36,9 +36,6 @@ const Profile = () => {
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [searchProcedures, setSearchProcedures] = useState("");
-  const [specialty, setSpecialty] = useState<string>(profile?.specialty || "");
-  const [editingName, setEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState("");
   const [musicDrawerOpen, setMusicDrawerOpen] = useState(false);
   const [hasMusicPrefs, setHasMusicPrefs] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
