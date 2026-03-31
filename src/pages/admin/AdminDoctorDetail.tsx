@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { supabase } from "@/integrations/supabase/client";
 import NavHeader from "@/components/NavHeader";
+import AddProcedureDialog from "@/components/AddProcedureDialog";
 
 interface DoctorProfile {
   user_id: string; display_name: string | null; avatar_url: string | null;
@@ -27,16 +28,19 @@ const AdminDoctorDetail = () => {
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [pendingChanges, setPendingChanges] = useState<PendingChange[]>([]);
   const [prefCounts, setPrefCounts] = useState<Record<string, number>>({});
+  const [facilities, setFacilities] = useState<{ id: string; name: string }[]>([]);
 
   const fetchData = useCallback(async () => {
     if (!userId || !isAdmin) return;
 
-    const [profileRes, procsRes] = await Promise.all([
+    const [profileRes, procsRes, facilRes] = await Promise.all([
       supabase.from("profiles").select("user_id, display_name, avatar_url, role, specialty").eq("user_id", userId).single(),
       supabase.from("procedures").select("id, name, category, created_at, facility_id").eq("user_id", userId).order("name"),
+      supabase.from("facilities").select("id, name").eq("user_id", userId).order("name"),
     ]);
 
     if (profileRes.data) setDoctor(profileRes.data as DoctorProfile);
+    if (facilRes.data) setFacilities(facilRes.data);
     if (procsRes.data) {
       setProcedures(procsRes.data as Procedure[]);
       const procIds = (procsRes.data as Procedure[]).map(p => p.id);
@@ -103,6 +107,14 @@ const AdminDoctorDetail = () => {
             {pendingChanges.length > 0 && <p className="text-[9px] text-amber-400 mt-1">Tap to review →</p>}
           </button>
         </div>
+
+        {/* Add Procedure */}
+        <AddProcedureDialog
+          facilities={facilities}
+          onAdded={fetchData}
+          forUserId={userId}
+          triggerVariant="prominent"
+        />
 
         {/* Procedures list */}
         <div>

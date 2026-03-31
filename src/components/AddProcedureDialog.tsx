@@ -19,9 +19,10 @@ interface AddProcedureDialogProps {
   onAdded: () => void;
   preselectedFacilityId?: string;
   triggerVariant?: "default" | "prominent";
+  forUserId?: string;
 }
 
-const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, triggerVariant = "default" }: AddProcedureDialogProps) => {
+const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, triggerVariant = "default", forUserId }: AddProcedureDialogProps) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [facilityId, setFacilityId] = useState<string>("");
@@ -46,7 +47,7 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
     setFacilityError(false);
     setLoading(true);
     const { error } = await supabase.from("procedures").insert({
-      user_id: user.id,
+      user_id: forUserId || user.id,
       name: name.trim(),
       category: null,
       facility_id: facilityId,
