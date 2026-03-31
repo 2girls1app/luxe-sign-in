@@ -19,17 +19,15 @@ const AdminDashboardSection = () => {
   const [counts, setCounts] = useState<Record<string, number>>({});
 
   const fetchCounts = useCallback(async () => {
-    const [usersRes, procsRes, suppliesRes, notifsRes] = await Promise.all([
+    const [usersRes, procsRes, notifsRes] = await Promise.all([
       supabase.from("profiles").select("id", { count: "exact", head: true }),
       supabase.from("procedures").select("id", { count: "exact", head: true }),
-      supabase.from("supply_library" as any).select("id", { count: "exact", head: true }),
       supabase.from("admin_notifications" as any).select("id", { count: "exact", head: true }),
     ]);
     setCounts({
       users: usersRes.count || 0,
       doctors: 0,
       prefcards: procsRes.count || 0,
-      supplies: suppliesRes.count || 0,
       notifications: notifsRes.count || 0,
     });
   }, []);
