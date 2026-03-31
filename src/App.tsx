@@ -24,6 +24,7 @@ import AdminSupplyLibrary from "./pages/admin/AdminSupplyLibrary.tsx";
 import AdminActivityLogs from "./pages/admin/AdminActivityLogs.tsx";
 import AdminDoctorDetail from "./pages/admin/AdminDoctorDetail.tsx";
 import AdminEditPrefCard from "./pages/admin/AdminEditPrefCard.tsx";
+import AdminPendingChanges from "./pages/admin/AdminPendingChanges.tsx";
 import Settings from "./pages/Settings.tsx";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/admin/activity-logs" element={<AdminActivityLogs />} />
             <Route path="/admin/doctors/:userId" element={<AdminDoctorDetail />} />
             <Route path="/admin/doctors/:userId/procedure/:procedureId" element={<AdminEditPrefCard />} />
+            <Route path="/admin/doctors/:userId/pending" element={<AdminPendingChanges />} />
             <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

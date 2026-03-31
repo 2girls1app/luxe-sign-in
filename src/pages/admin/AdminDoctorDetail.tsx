@@ -93,11 +93,15 @@ const AdminDoctorDetail = () => {
             <p className="text-lg font-bold text-foreground">{procedures.length}</p>
             <p className="text-[10px] text-muted-foreground">Preference Cards</p>
           </div>
-          <div className="rounded-xl bg-card border border-border p-4 text-center">
+          <button
+            onClick={() => pendingChanges.length > 0 && navigate(`/admin/doctors/${userId}/pending`)}
+            className={`rounded-xl bg-card border border-border p-4 text-center transition-all ${pendingChanges.length > 0 ? "hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/5 cursor-pointer" : "cursor-default"}`}
+          >
             <Clock size={18} className="text-amber-500 mx-auto mb-1" />
             <p className="text-lg font-bold text-foreground">{pendingChanges.length}</p>
             <p className="text-[10px] text-muted-foreground">Pending Changes</p>
-          </div>
+            {pendingChanges.length > 0 && <p className="text-[9px] text-amber-400 mt-1">Tap to review →</p>}
+          </button>
         </div>
 
         {/* Procedures list */}
