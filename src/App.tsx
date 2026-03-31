@@ -25,6 +25,7 @@ import AdminActivityLogs from "./pages/admin/AdminActivityLogs.tsx";
 import AdminDoctorDetail from "./pages/admin/AdminDoctorDetail.tsx";
 import AdminEditPrefCard from "./pages/admin/AdminEditPrefCard.tsx";
 import AdminPendingChanges from "./pages/admin/AdminPendingChanges.tsx";
+import AdminUserDetail from "./pages/admin/AdminUserDetail.tsx";
 import Settings from "./pages/Settings.tsx";
 
 const queryClient = new QueryClient();
