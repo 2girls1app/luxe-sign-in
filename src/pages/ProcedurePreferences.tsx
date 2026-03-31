@@ -245,6 +245,13 @@ const ProcedurePreferences = () => {
               return null;
             })()}
           </button>
+          <button
+            onClick={() => setChatOpen(true)}
+            className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-xs font-medium text-foreground hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-[0.98]"
+          >
+            <MessageSquare size={16} className="text-primary" />
+            Team Chat
+          </button>
         </div>
 
         {/* Widget grid - 3 per row */}
