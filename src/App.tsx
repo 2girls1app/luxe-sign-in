@@ -46,6 +46,12 @@ const App = () => (
             <Route path="/shared/procedure/:procedureId" element={<SharedPreferenceCard />} />
             
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/doctors" element={<AdminDoctors />} />
+            <Route path="/admin/preference-cards" element={<AdminPrefCards />} />
+            <Route path="/admin/notifications" element={<AdminNotifications />} />
+            <Route path="/admin/supply-library" element={<AdminSupplyLibrary />} />
+            <Route path="/admin/activity-logs" element={<AdminActivityLogs />} />
             <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
