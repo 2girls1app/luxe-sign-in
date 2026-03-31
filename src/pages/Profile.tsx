@@ -304,50 +304,6 @@ const Profile = () => {
           </>
         )}
 
-        {/* Specialty - read-only, hidden for admin */}
-        {!isAdmin && specialty && (
-          <div>
-            <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-1 block">
-              Specialty
-            </label>
-            <p className="text-sm text-foreground font-medium">{specialty}</p>
-          </div>
-        )}
-
-        {/* Facilities Section */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
-              <Building2 size={16} className="text-primary" /> Facilities
-            </h2>
-            <AddFacilityDialog onAdded={fetchFacilities} />
-          </div>
-          {facilities.length === 0 ? (
-            <div className="rounded-xl bg-card border border-border p-6 text-center">
-              <Building2 size={32} className="mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">No facilities added yet</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {facilities.map((f) => (
-                <motion.div key={f.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start justify-between rounded-xl bg-card border border-border p-4 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => navigate(`/profile?facility=${f.id}`)}>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-foreground font-medium text-sm">{f.name}</p>
-                    {f.location && (
-                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                        <MapPin size={12} /> {f.location}
-                      </p>
-                    )}
-                    {f.notes && <p className="text-xs text-muted-foreground mt-1 truncate">{f.notes}</p>}
-                  </div>
-                  <button onClick={(e) => { e.stopPropagation(); deleteFacility(f.id); }} className="text-muted-foreground hover:text-destructive transition-colors ml-2 mt-0.5">
-                    <Trash2 size={14} />
-                  </button>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </div>
 
         {/* Procedures Section */}
         <div>
