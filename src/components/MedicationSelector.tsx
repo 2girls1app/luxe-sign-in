@@ -102,13 +102,13 @@ const MedicationSelector = ({
       name: med.name,
       category: med.category,
       isCustom: "isCustom" in med ? med.isCustom : false,
+      hold: false,
+      holdQty: 1,
     };
-    // Add to front (newest first)
     setMedications((prev) => [newMed, ...prev]);
     setSearch("");
     setCustomName("");
     setShowCustom(false);
-    // Open editor for the newly added medication (index 0 since prepended)
     setEditingIndex(0);
     setEditDosage("");
     setEditRoute("");
