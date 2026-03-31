@@ -191,6 +191,9 @@ const AdminUsers = () => {
                   {u.specialty && <span className="text-[10px] text-primary">{u.specialty}</span>}
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Joined {new Date(u.created_at).toLocaleDateString()}</p>
+                <p className="text-[10px] text-muted-foreground">
+                  Last login: {u.last_login ? new Date(u.last_login).toLocaleDateString() : "No login yet"}
+                </p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 {/* Status badge */}
