@@ -31,6 +31,8 @@ interface Procedure {
 
 const Profile = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const facilityFilter = searchParams.get("facility");
   const { user, profile, signOut, refreshProfile } = useAuth();
   const { toast } = useToast();
   const [facilities, setFacilities] = useState<Facility[]>([]);
