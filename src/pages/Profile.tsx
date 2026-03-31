@@ -59,7 +59,7 @@ const Profile = () => {
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
   const userRole = profile?.role || user?.user_metadata?.profession || "";
   const roleLabel = userRole ? userRole.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) : "";
-  const isAdmin = ["administrative", "admin", "admin-staff"].includes(userRole);
+  const isAdmin = ["administrative", "admin", "admin-staff", "admin staff"].includes(userRole.toLowerCase());
   const username = emailUsername || displayName.toLowerCase().replace(/\s+/g, "");
   const specialty = profile?.specialty || "";
 
