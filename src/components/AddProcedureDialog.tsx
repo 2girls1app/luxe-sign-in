@@ -17,26 +17,40 @@ interface Facility {
 interface AddProcedureDialogProps {
   facilities: Facility[];
   onAdded: () => void;
+  preselectedFacilityId?: string;
+  triggerVariant?: "default" | "prominent";
 }
 
-const AddProcedureDialog = ({ facilities, onAdded }: AddProcedureDialogProps) => {
+const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, triggerVariant = "default" }: AddProcedureDialogProps) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [facilityId, setFacilityId] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+  const [facilityError, setFacilityError] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (open && preselectedFacilityId) {
+      setFacilityId(preselectedFacilityId);
+    }
+  }, [open, preselectedFacilityId]);
+
   const handleSubmit = async () => {
     if (!name.trim() || !user) return;
+    if (!facilityId) {
+      setFacilityError(true);
+      return;
+    }
+    setFacilityError(false);
     setLoading(true);
     const { error } = await supabase.from("procedures").insert({
       user_id: user.id,
       name: name.trim(),
       category: category.trim() || null,
-      facility_id: facilityId || null,
+      facility_id: facilityId,
       notes: notes.trim() || null,
     });
     setLoading(false);
@@ -44,18 +58,26 @@ const AddProcedureDialog = ({ facilities, onAdded }: AddProcedureDialogProps) =>
       toast({ title: "Error adding procedure", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Procedure added" });
-      setName(""); setCategory(""); setFacilityId(""); setNotes("");
+      setName(""); setCategory(""); setFacilityId(""); setNotes(""); setFacilityError(false);
       setOpen(false);
       onAdded();
     }
   };
 
+  const triggerButton = triggerVariant === "prominent" ? (
+    <Button className="w-full gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 py-3">
+      <Plus size={18} /> Add Procedure
+    </Button>
+  ) : (
+    <Button size="sm" className="gap-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
+      <Plus size={16} /> Add Procedure
+    </Button>
+  );
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setFacilityError(false); } }}>
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
-          <Plus size={16} /> Add Procedure
-        </Button>
+        {triggerButton}
       </DialogTrigger>
       <DialogContent className="bg-card border-border text-foreground max-w-sm">
         <DialogHeader>
@@ -64,10 +86,10 @@ const AddProcedureDialog = ({ facilities, onAdded }: AddProcedureDialogProps) =>
         <div className="flex flex-col gap-3 mt-2">
           <Input placeholder="Procedure name *" value={name} onChange={(e) => setName(e.target.value)} className="bg-secondary border-border text-foreground placeholder:text-muted-foreground" />
           <Input placeholder="Category / Specialty" value={category} onChange={(e) => setCategory(e.target.value)} className="bg-secondary border-border text-foreground placeholder:text-muted-foreground" />
-          {facilities.length > 0 && (
-            <Select value={facilityId} onValueChange={setFacilityId}>
-              <SelectTrigger className="bg-secondary border-border text-foreground">
-                <SelectValue placeholder="Associate with facility" />
+          <div>
+            <Select value={facilityId} onValueChange={(v) => { setFacilityId(v); setFacilityError(false); }}>
+              <SelectTrigger className={`bg-secondary border-border text-foreground ${facilityError ? "border-destructive ring-1 ring-destructive" : ""}`}>
+                <SelectValue placeholder="Associate with facility *" />
               </SelectTrigger>
               <SelectContent className="bg-card border-border">
                 {facilities.map((f) => (
@@ -75,9 +97,15 @@ const AddProcedureDialog = ({ facilities, onAdded }: AddProcedureDialogProps) =>
                 ))}
               </SelectContent>
             </Select>
-          )}
+            {facilityError && (
+              <p className="text-xs text-destructive mt-1">Please select a facility</p>
+            )}
+            {facilities.length === 0 && (
+              <p className="text-xs text-muted-foreground mt-1">Add a facility first to create a procedure</p>
+            )}
+          </div>
           <Textarea placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} className="bg-secondary border-border text-foreground placeholder:text-muted-foreground resize-none" rows={3} />
-          <Button onClick={handleSubmit} disabled={!name.trim() || loading} className="rounded-full">
+          <Button onClick={handleSubmit} disabled={!name.trim() || facilities.length === 0 || loading} className="rounded-full">
             {loading ? "Adding..." : "Save Procedure"}
           </Button>
         </div>

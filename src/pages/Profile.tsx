@@ -301,6 +301,9 @@ const Profile = () => {
                 </div>
               )}
             </div>
+
+            {/* Quick Add Procedure */}
+            <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" />
           </>
         )}
 
@@ -311,7 +314,7 @@ const Profile = () => {
               <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
                 <Stethoscope size={16} className="text-primary" /> Procedures
               </h2>
-              <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} />
+              <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} preselectedFacilityId={facilityFilter} />
             </div>
 
             {filteredProcedures.length > 0 && (
