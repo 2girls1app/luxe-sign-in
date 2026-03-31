@@ -302,6 +302,7 @@ const ProcedurePreferences = () => {
         facilityName={facilityName}
         preferences={preferences}
         fileCounts={fileCounts}
+        procedureId={procedureId || ""}
       />
 
       <SharePreferenceCardDrawer
