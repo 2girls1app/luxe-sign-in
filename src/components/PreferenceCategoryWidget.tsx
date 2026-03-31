@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import {
   Pill, Hand, RotateCcw, Droplets, Wrench, Scissors, LayoutGrid, Package, Ribbon,
-  Image, Video, FileText, ListOrdered,
+  Image, Video, FileText, ListOrdered, Bot,
 } from "lucide-react";
 
 export interface PreferenceCategory {
