@@ -304,54 +304,53 @@ const Profile = () => {
           </>
         )}
 
-
-        {/* Procedures Section */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
-              <Stethoscope size={16} className="text-primary" /> Procedures
-            </h2>
-            <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} />
-          </div>
-
-          {procedures.length > 0 && (
-            <div className="relative mb-3">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search procedures..."
-                value={searchProcedures}
-                onChange={(e) => setSearchProcedures(e.target.value)}
-                className="w-full rounded-lg border border-border bg-secondary pl-9 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
+        {/* Procedures Section - only when viewing a specific facility */}
+        {facilityFilter && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
+                <Stethoscope size={16} className="text-primary" /> Procedures
+              </h2>
+              <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} />
             </div>
-          )}
 
-          {procedures.length === 0 ? (
-            <div className="rounded-xl bg-card border border-border p-6 text-center">
-              <Stethoscope size={32} className="mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">No procedures added yet</p>
-            </div>
-          ) : filteredProcedures.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No matching procedures</p>
-          ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {filteredProcedures.map((p) => (
-                <ProcedureCard
-                  key={p.id}
-                  id={p.id}
-                  name={p.name}
-                  category={p.category}
-                  facilityName={getFacilityName(p.facility_id)}
-                  notes={p.notes}
-                  isFavorite={p.is_favorite}
-                  onDelete={deleteProcedure}
-                  onToggleFavorite={toggleFavorite}
+            {filteredProcedures.length > 0 && (
+              <div className="relative mb-3">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search procedures..."
+                  value={searchProcedures}
+                  onChange={(e) => setSearchProcedures(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-secondary pl-9 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+
+            {filteredProcedures.length === 0 ? (
+              <div className="rounded-xl bg-card border border-border p-6 text-center">
+                <Stethoscope size={32} className="mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">No procedures added yet</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {filteredProcedures.map((p) => (
+                  <ProcedureCard
+                    key={p.id}
+                    id={p.id}
+                    name={p.name}
+                    category={p.category}
+                    facilityName={getFacilityName(p.facility_id)}
+                    notes={p.notes}
+                    isFavorite={p.is_favorite}
+                    onDelete={deleteProcedure}
+                    onToggleFavorite={toggleFavorite}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </motion.div>
       {!isAdmin && (
         <MusicPreferencesDrawer
