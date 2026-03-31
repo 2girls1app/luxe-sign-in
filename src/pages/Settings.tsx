@@ -54,7 +54,9 @@ const Settings = () => {
     if (!user) return;
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
     if (!fullName) return;
-    const { error } = await supabase.from("profiles").update({ display_name: fullName } as any).eq("user_id", user.id);
+    const updateData: any = { display_name: fullName };
+    if (specialty) updateData.specialty = specialty;
+    const { error } = await supabase.from("profiles").update(updateData).eq("user_id", user.id);
     if (error) {
       toast({ title: "Error", description: "Failed to update profile", variant: "destructive" });
     } else {
