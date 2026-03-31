@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Music, Bell, Settings, ArrowLeft } from "lucide-react";
+import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Music, Bell, Settings, ArrowLeft, Shield } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import NotificationsDrawer from "@/components/NotificationsDrawer";
@@ -59,7 +59,7 @@ const Profile = () => {
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
   const userRole = profile?.role || user?.user_metadata?.profession || "";
   const roleLabel = userRole ? userRole.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) : "";
-  const isAdmin = ["administrative", "admin", "admin-staff"].includes(userRole);
+  const isAdmin = ["administrative", "admin", "admin-staff", "admin staff"].includes(userRole.toLowerCase());
   const username = emailUsername || displayName.toLowerCase().replace(/\s+/g, "");
   const specialty = profile?.specialty || "";
 
@@ -264,6 +264,17 @@ const Profile = () => {
                 )}
               </div>
             </div>
+
+            {/* Admin Dashboard Link */}
+            {isAdmin && (
+              <button
+                onClick={() => navigate("/admin")}
+                className="w-full flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-card px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 transition-all"
+              >
+                <Shield size={16} />
+                Admin Dashboard
+              </button>
+            )}
 
             {/* Quick Add Procedure */}
             <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" />
