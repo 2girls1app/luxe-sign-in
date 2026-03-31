@@ -232,16 +232,21 @@ const Profile = () => {
             {/* Profile Card */}
             <div className="relative flex items-center gap-4 rounded-xl bg-card border border-border p-4">
               {!isAdmin && (
-                <button
-                  onClick={() => setMusicDrawerOpen(true)}
-                  className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-primary/10 transition-colors group"
-                  aria-label="Music preferences"
-                >
-                  <Music size={16} className={hasMusicPrefs ? "text-primary" : "text-muted-foreground group-hover:text-primary"} />
-                  {hasMusicPrefs && (
-                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
-                  )}
-                </button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setMusicDrawerOpen(true)}
+                      className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-primary/10 transition-colors group"
+                      aria-label="Music Prefrence"
+                    >
+                      <Music size={16} className={hasMusicPrefs ? "text-primary" : "text-muted-foreground group-hover:text-primary"} />
+                      {hasMusicPrefs && (
+                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">Music Prefrence</TooltipContent>
+                </Tooltip>
               )}
               <Avatar className="h-14 w-14 border-2 border-primary/30">
                 {avatarUrl ? (
