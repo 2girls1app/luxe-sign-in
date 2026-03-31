@@ -52,10 +52,17 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { first_name, last_name, credentials, specialty, email, phone, avatar_url } = body;
+    const { first_name, last_name, credentials, specialty, email, phone, avatar_url, password } = body;
 
-    if (!first_name || !last_name || !email) {
-      return new Response(JSON.stringify({ error: "First name, last name, and email are required" }), {
+    if (!first_name || !last_name || !email || !password) {
+      return new Response(JSON.stringify({ error: "First name, last name, email, and password are required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (password.length < 8) {
+      return new Response(JSON.stringify({ error: "Password must be at least 8 characters" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -65,11 +72,9 @@ Deno.serve(async (req) => {
       ? `${first_name} ${last_name}, ${credentials}`
       : `${first_name} ${last_name}`;
 
-    // Create the auth user with a random password (surgeon will reset on first login)
-    const tempPassword = crypto.randomUUID() + "Aa1!";
     const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
       email,
-      password: tempPassword,
+      password,
       email_confirm: true,
       user_metadata: {
         full_name: displayName,
