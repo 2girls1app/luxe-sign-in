@@ -256,7 +256,7 @@ const Profile = () => {
           ) : (
             <div className="flex flex-col gap-2">
               {facilities.map((f) => (
-                <motion.div key={f.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start justify-between rounded-xl bg-card border border-border p-4 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => navigate(`/facility/${f.id}`)}>
+                <motion.div key={f.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start justify-between rounded-xl bg-card border border-border p-4 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => navigate(`/profile?facility=${f.id}`)}>
                   <div className="flex-1 min-w-0">
                     <p className="text-foreground font-medium text-sm">{f.name}</p>
                     {f.location && (
