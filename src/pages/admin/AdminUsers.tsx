@@ -179,7 +179,8 @@ const AdminUsers = () => {
         <div className="space-y-2">
           {filtered.map(u => (
             <motion.div key={u.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="flex items-center gap-3 rounded-xl bg-card border border-border p-4">
+              className="flex items-center gap-3 rounded-xl bg-card border border-border p-4 cursor-pointer hover:border-primary/40 transition-colors"
+              onClick={() => navigate(`/admin/users/${u.user_id}`)}>
               <Avatar className="h-10 w-10 border border-border shrink-0">
                 {u.avatar_url ? <AvatarImage src={u.avatar_url} /> : null}
                 <AvatarFallback className="bg-secondary text-foreground text-sm">{(u.display_name || "U").charAt(0).toUpperCase()}</AvatarFallback>
@@ -195,12 +196,10 @@ const AdminUsers = () => {
                   Last login: {u.last_login ? new Date(u.last_login).toLocaleDateString() : "No login yet"}
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                {/* Status badge */}
+              <div className="flex items-center gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
                 <Badge variant={u.onboarding_completed ? "default" : "secondary"} className="text-[10px]">
                   {u.onboarding_completed ? "Active" : "Pending"}
                 </Badge>
-                {/* Approve button - only for pending */}
                 {!u.onboarding_completed && (
                   <button
                     onClick={() => approveUser(u)}
@@ -210,7 +209,6 @@ const AdminUsers = () => {
                     <CheckCircle size={16} />
                   </button>
                 )}
-                {/* Remove button */}
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <button className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors" title="Remove user">

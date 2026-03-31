@@ -25,6 +25,7 @@ import AdminActivityLogs from "./pages/admin/AdminActivityLogs.tsx";
 import AdminDoctorDetail from "./pages/admin/AdminDoctorDetail.tsx";
 import AdminEditPrefCard from "./pages/admin/AdminEditPrefCard.tsx";
 import AdminPendingChanges from "./pages/admin/AdminPendingChanges.tsx";
+import AdminUserDetail from "./pages/admin/AdminUserDetail.tsx";
 import Settings from "./pages/Settings.tsx";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
             
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/users/:userId" element={<AdminUserDetail />} />
             <Route path="/admin/doctors" element={<AdminDoctors />} />
             <Route path="/admin/preference-cards" element={<AdminPrefCards />} />
             <Route path="/admin/notifications" element={<AdminNotifications />} />
