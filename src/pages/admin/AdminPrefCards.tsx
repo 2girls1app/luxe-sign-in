@@ -62,6 +62,16 @@ const AdminPrefCards = () => {
           <Badge variant="secondary" className="ml-auto text-xs">{procedures.length} procedures</Badge>
         </div>
 
+        <AddProcedureDialog
+          facilities={facilities}
+          onAdded={() => {
+            supabase.from("procedures").select("*").order("created_at", { ascending: false }).then(({ data }) => {
+              if (data) setProcedures(data as Procedure[]);
+            });
+          }}
+          triggerVariant="prominent"
+        />
+
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input type="text" placeholder="Search procedures..." value={search} onChange={e => setSearch(e.target.value)}
