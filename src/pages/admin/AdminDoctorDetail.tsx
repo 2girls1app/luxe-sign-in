@@ -28,6 +28,7 @@ const AdminDoctorDetail = () => {
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [pendingChanges, setPendingChanges] = useState<PendingChange[]>([]);
   const [prefCounts, setPrefCounts] = useState<Record<string, number>>({});
+  const [facilities, setFacilities] = useState<{ id: string; name: string }[]>([]);
 
   const fetchData = useCallback(async () => {
     if (!userId || !isAdmin) return;
