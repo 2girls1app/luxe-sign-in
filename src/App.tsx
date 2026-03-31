@@ -16,6 +16,12 @@ import NotFound from "./pages/NotFound.tsx";
 import ProcedurePreferences from "./pages/ProcedurePreferences.tsx";
 import SharedPreferenceCard from "./pages/SharedPreferenceCard.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
+import AdminUsers from "./pages/admin/AdminUsers.tsx";
+import AdminDoctors from "./pages/admin/AdminDoctors.tsx";
+import AdminPrefCards from "./pages/admin/AdminPrefCards.tsx";
+import AdminNotifications from "./pages/admin/AdminNotifications.tsx";
+import AdminSupplyLibrary from "./pages/admin/AdminSupplyLibrary.tsx";
+import AdminActivityLogs from "./pages/admin/AdminActivityLogs.tsx";
 import Settings from "./pages/Settings.tsx";
 
 const queryClient = new QueryClient();
