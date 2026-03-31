@@ -320,6 +320,13 @@ const ProcedurePreferences = () => {
         procedureId={procedureId || ""}
         procedureName={procedureName}
       />
+
+      <TeamChatDrawer
+        open={chatOpen}
+        onOpenChange={setChatOpen}
+        procedureId={procedureId || ""}
+        procedureName={procedureName}
+      />
     </div>
   );
 };
