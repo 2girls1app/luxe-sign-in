@@ -237,7 +237,7 @@ const Profile = () => {
                     <button
                       onClick={() => setMusicDrawerOpen(true)}
                       className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-primary/10 transition-colors group"
-                      aria-label="Music Prefrence"
+                      aria-label="Music Preference"
                     >
                       <Music size={16} className={hasMusicPrefs ? "text-primary" : "text-muted-foreground group-hover:text-primary"} />
                       {hasMusicPrefs && (
@@ -245,7 +245,7 @@ const Profile = () => {
                       )}
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom">Music Prefrence</TooltipContent>
+                  <TooltipContent side="bottom">Music Preference</TooltipContent>
                 </Tooltip>
               )}
               <Avatar className="h-14 w-14 border-2 border-primary/30">
