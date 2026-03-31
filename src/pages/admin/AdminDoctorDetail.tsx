@@ -33,12 +33,14 @@ const AdminDoctorDetail = () => {
   const fetchData = useCallback(async () => {
     if (!userId || !isAdmin) return;
 
-    const [profileRes, procsRes] = await Promise.all([
+    const [profileRes, procsRes, facilRes] = await Promise.all([
       supabase.from("profiles").select("user_id, display_name, avatar_url, role, specialty").eq("user_id", userId).single(),
       supabase.from("procedures").select("id, name, category, created_at, facility_id").eq("user_id", userId).order("name"),
+      supabase.from("facilities").select("id, name").eq("user_id", userId).order("name"),
     ]);
 
     if (profileRes.data) setDoctor(profileRes.data as DoctorProfile);
+    if (facilRes.data) setFacilities(facilRes.data);
     if (procsRes.data) {
       setProcedures(procsRes.data as Procedure[]);
       const procIds = (procsRes.data as Procedure[]).map(p => p.id);
