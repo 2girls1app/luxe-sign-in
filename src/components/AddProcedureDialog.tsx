@@ -24,7 +24,6 @@ interface AddProcedureDialogProps {
 const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, triggerVariant = "default" }: AddProcedureDialogProps) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
   const [facilityId, setFacilityId] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
