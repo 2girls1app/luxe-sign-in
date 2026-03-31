@@ -27,6 +27,7 @@ interface UserProfile {
   specialty: string | null;
   onboarding_completed: boolean;
   created_at: string;
+  last_login?: string | null;
 }
 
 const ROLE_FILTERS = [
@@ -56,8 +57,29 @@ const AdminUsers = () => {
   const [statusFilter, setStatusFilter] = useState("all");
 
   const fetchUsers = async () => {
-    const { data } = await supabase.from("profiles").select("*");
-    if (data) setUsers(data as UserProfile[]);
+    const { data: profiles } = await supabase.from("profiles").select("*");
+    if (!profiles) return;
+
+    // Fetch last login from audit_logs for all users
+    const { data: logins } = await supabase
+      .from("audit_logs")
+      .select("user_id, created_at")
+      .eq("action", "signed_in")
+      .order("created_at", { ascending: false });
+
+    const lastLoginMap = new Map<string, string>();
+    if (logins) {
+      for (const log of logins) {
+        if (log.user_id && !lastLoginMap.has(log.user_id)) {
+          lastLoginMap.set(log.user_id, log.created_at);
+        }
+      }
+    }
+
+    setUsers(profiles.map((p: any) => ({
+      ...p,
+      last_login: lastLoginMap.get(p.user_id) || null,
+    })));
   };
 
   useEffect(() => {
@@ -169,6 +191,9 @@ const AdminUsers = () => {
                   {u.specialty && <span className="text-[10px] text-primary">{u.specialty}</span>}
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Joined {new Date(u.created_at).toLocaleDateString()}</p>
+                <p className="text-[10px] text-muted-foreground">
+                  Last login: {u.last_login ? new Date(u.last_login).toLocaleDateString() : "No login yet"}
+                </p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 {/* Status badge */}
