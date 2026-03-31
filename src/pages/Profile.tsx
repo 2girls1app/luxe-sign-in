@@ -266,16 +266,8 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Admin Dashboard Link */}
-            {isAdmin && (
-              <button
-                onClick={() => navigate("/admin")}
-                className="w-full flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-card px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 transition-all"
-              >
-                <Shield size={16} />
-                Admin Dashboard
-              </button>
-            )}
+            {/* Admin Dashboard - embedded */}
+            {isAdmin && <AdminDashboardSection />}
 
             {/* Quick Add Procedure */}
             <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" />
