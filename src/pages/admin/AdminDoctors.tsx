@@ -85,6 +85,8 @@ const AdminDoctors = () => {
           <Badge variant="secondary" className="ml-auto text-xs">{doctors.length} doctors</Badge>
         </div>
 
+        <CreateSurgeonDialog onCreated={fetchData} />
+
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input type="text" placeholder="Search doctors..." value={search} onChange={e => setSearch(e.target.value)}
