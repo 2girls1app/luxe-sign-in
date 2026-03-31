@@ -19,6 +19,7 @@ interface AddProcedureDialogProps {
   onAdded: () => void;
   preselectedFacilityId?: string;
   triggerVariant?: "default" | "prominent";
+  forUserId?: string;
 }
 
 const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, triggerVariant = "default" }: AddProcedureDialogProps) => {
