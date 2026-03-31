@@ -15,7 +15,7 @@ import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ProcedurePreferences from "./pages/ProcedurePreferences.tsx";
 import SharedPreferenceCard from "./pages/SharedPreferenceCard.tsx";
-
+import AdminDashboard from "./pages/AdminDashboard.tsx";
 import Settings from "./pages/Settings.tsx";
 
 const queryClient = new QueryClient();
