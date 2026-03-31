@@ -125,6 +125,7 @@ export const MULTI_SELECT_CATEGORIES: Record<string, { name: string; desc: strin
   skinprep: SKIN_PREPS,
   equipment: EQUIPMENT,
   instruments: INSTRUMENTS,
+  robotic_instruments: ROBOTIC_INSTRUMENTS,
   trays: TRAYS,
   supplies: SUPPLIES,
   suture: SUTURES,
