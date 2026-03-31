@@ -57,6 +57,7 @@ const App = () => (
             <Route path="/admin/activity-logs" element={<AdminActivityLogs />} />
             <Route path="/admin/doctors/:userId" element={<AdminDoctorDetail />} />
             <Route path="/admin/doctors/:userId/procedure/:procedureId" element={<AdminEditPrefCard />} />
+            <Route path="/admin/doctors/:userId/pending" element={<AdminPendingChanges />} />
             <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
