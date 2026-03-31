@@ -66,7 +66,7 @@ const Profile = () => {
   const fetchFacilities = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from("facilities").select("id, name, location, notes").eq("user_id", user.id).order("created_at", { ascending: false });
-    if (data) setFacilities(data);
+    if (data) setFacilities(data.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })));
   }, [user]);
 
   const fetchProcedures = useCallback(async () => {

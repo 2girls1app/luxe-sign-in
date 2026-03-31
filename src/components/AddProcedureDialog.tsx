@@ -90,7 +90,7 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
                 <SelectValue placeholder="Associate with facility *" />
               </SelectTrigger>
               <SelectContent className="bg-card border-border">
-                {facilities.map((f) => (
+                {[...facilities].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })).map((f) => (
                   <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
                 ))}
               </SelectContent>
