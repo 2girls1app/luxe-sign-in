@@ -24,7 +24,6 @@ interface AddProcedureDialogProps {
 const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, triggerVariant = "default" }: AddProcedureDialogProps) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
   const [facilityId, setFacilityId] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
@@ -49,7 +48,7 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
     const { error } = await supabase.from("procedures").insert({
       user_id: user.id,
       name: name.trim(),
-      category: category.trim() || null,
+      category: null,
       facility_id: facilityId,
       notes: notes.trim() || null,
     });
@@ -58,7 +57,7 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
       toast({ title: "Error adding procedure", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Procedure added" });
-      setName(""); setCategory(""); setFacilityId(""); setNotes(""); setFacilityError(false);
+      setName(""); setFacilityId(""); setNotes(""); setFacilityError(false);
       setOpen(false);
       onAdded();
     }
@@ -85,7 +84,6 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
         </DialogHeader>
         <div className="flex flex-col gap-3 mt-2">
           <Input placeholder="Procedure name *" value={name} onChange={(e) => setName(e.target.value)} className="bg-secondary border-border text-foreground placeholder:text-muted-foreground" />
-          <Input placeholder="Category / Specialty" value={category} onChange={(e) => setCategory(e.target.value)} className="bg-secondary border-border text-foreground placeholder:text-muted-foreground" />
           <div>
             <Select value={facilityId} onValueChange={(v) => { setFacilityId(v); setFacilityError(false); }}>
               <SelectTrigger className={`bg-secondary border-border text-foreground ${facilityError ? "border-destructive ring-1 ring-destructive" : ""}`}>
