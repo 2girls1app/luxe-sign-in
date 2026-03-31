@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ClipboardList, Search } from "lucide-react";
+import { ArrowLeft, ClipboardList, Search, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useAdminRole } from "@/hooks/useAdminRole";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import NavHeader from "@/components/NavHeader";
+import AddProcedureDialog from "@/components/AddProcedureDialog";
 
 interface UserProfile { user_id: string; display_name: string | null; }
 interface Procedure { id: string; name: string; category: string | null; user_id: string; created_at: string; }
@@ -14,9 +17,11 @@ interface PrefCard { id: string; procedure_id: string; category: string; value: 
 const AdminPrefCards = () => {
   const navigate = useNavigate();
   const { isAdmin, loading } = useAdminRole();
+  const { user } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [prefCards, setPrefCards] = useState<PrefCard[]>([]);
+  const [facilities, setFacilities] = useState<{ id: string; name: string }[]>([]);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -26,10 +31,12 @@ const AdminPrefCards = () => {
         supabase.from("profiles").select("user_id, display_name"),
         supabase.from("procedures").select("*").order("created_at", { ascending: false }),
         supabase.from("procedure_preferences").select("*").order("updated_at", { ascending: false }),
-      ]).then(([u, p, pc]) => {
+        supabase.from("facilities").select("id, name").order("name"),
+      ]).then(([u, p, pc, f]) => {
         if (u.data) setUsers(u.data as UserProfile[]);
         if (p.data) setProcedures(p.data as Procedure[]);
         if (pc.data) setPrefCards(pc.data as PrefCard[]);
+        if (f.data) setFacilities(f.data);
       });
     }
   }, [isAdmin, loading]);
@@ -54,6 +61,16 @@ const AdminPrefCards = () => {
           <h1 className="text-lg font-semibold text-foreground">Preference Cards</h1>
           <Badge variant="secondary" className="ml-auto text-xs">{procedures.length} procedures</Badge>
         </div>
+
+        <AddProcedureDialog
+          facilities={facilities}
+          onAdded={() => {
+            supabase.from("procedures").select("*").order("created_at", { ascending: false }).then(({ data }) => {
+              if (data) setProcedures(data as Procedure[]);
+            });
+          }}
+          triggerVariant="prominent"
+        />
 
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
