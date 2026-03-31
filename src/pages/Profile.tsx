@@ -297,6 +297,8 @@ const Profile = () => {
                 </div>
               )}
             </div>
+          </>
+        )}
 
         {/* Procedures Section - only when viewing a specific facility */}
         {facilityFilter && (
