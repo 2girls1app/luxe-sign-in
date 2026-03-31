@@ -62,6 +62,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(newSession?.user ?? null);
         if (newSession?.user) {
           setTimeout(() => fetchProfile(newSession.user.id), 0);
+          // Log sign-in events
+          if (_event === "SIGNED_IN") {
+            supabase.from("audit_logs" as any).insert({
+              user_id: newSession.user.id,
+              user_email: newSession.user.email || "",
+              user_name: newSession.user.user_metadata?.full_name || "",
+              action: "signed_in",
+              entity_type: "auth",
+              details: {},
+            } as any).then(() => {});
+          }
         } else {
           setProfile(null);
         }
