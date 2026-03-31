@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Stethoscope, Search, ChevronRight, Filter } from "lucide-react";
@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { supabase } from "@/integrations/supabase/client";
 import NavHeader from "@/components/NavHeader";
+import CreateSurgeonDialog from "@/components/CreateSurgeonDialog";
 
 interface UserProfile {
   id: string; user_id: string; display_name: string | null; avatar_url: string | null;
