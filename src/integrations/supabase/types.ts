@@ -14,6 +14,76 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_message_views: {
+        Row: {
+          id: string
+          message_id: string
+          viewed_at: string
+          viewer_id: string
+          viewer_name: string
+        }
+        Insert: {
+          id?: string
+          message_id: string
+          viewed_at?: string
+          viewer_id: string
+          viewer_name?: string
+        }
+        Update: {
+          id?: string
+          message_id?: string
+          viewed_at?: string
+          viewer_id?: string
+          viewer_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_message_views_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          chat_id: string
+          created_at: string
+          id: string
+          message: string
+          sender_id: string
+          sender_name: string
+          sender_role: string | null
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string
+          id?: string
+          message: string
+          sender_id: string
+          sender_name?: string
+          sender_role?: string | null
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          sender_id?: string
+          sender_name?: string
+          sender_role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "procedure_chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       facilities: {
         Row: {
           created_at: string
@@ -176,6 +246,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "pending_preference_changes_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      procedure_chats: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          procedure_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          procedure_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          procedure_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "procedure_chats_procedure_id_fkey"
             columns: ["procedure_id"]
             isOneToOne: false
             referencedRelation: "procedures"
