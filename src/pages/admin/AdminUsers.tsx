@@ -27,6 +27,7 @@ interface UserProfile {
   specialty: string | null;
   onboarding_completed: boolean;
   created_at: string;
+  last_login?: string | null;
 }
 
 const ROLE_FILTERS = [
