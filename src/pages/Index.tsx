@@ -7,6 +7,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import logoImg from "@/assets/logo.png";
+import PasswordInput from "@/components/PasswordInput";
 
 
 const Index = () => {
@@ -100,13 +101,7 @@ const Index = () => {
             onChange={(e) => setUsername(e.target.value)}
             className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold"
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold"
-          />
+          <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
 
         <div className="w-full flex items-center justify-between">
