@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Pencil, Check, X, Music, Bell, Settings } from "lucide-react";
+import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Music, Bell, Settings } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import NotificationsDrawer from "@/components/NotificationsDrawer";
@@ -9,12 +9,10 @@ import NavHeader from "@/components/NavHeader";
 import AddFacilityDialog from "@/components/AddFacilityDialog";
 import AddProcedureDialog from "@/components/AddProcedureDialog";
 import ProcedureCard from "@/components/ProcedureCard";
-import ProfileAvatarUpload from "@/components/ProfileAvatarUpload";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
 interface Facility {
   id: string;
   name: string;
