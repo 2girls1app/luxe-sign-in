@@ -7,6 +7,7 @@ import NavHeader from "@/components/NavHeader";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import PasswordInput from "@/components/PasswordInput";
 
 const SignUp = () => {
   const [firstName, setFirstName] = useState("");
