@@ -16,6 +16,7 @@ import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
 import MedicationSelector from "@/components/MedicationSelector";
 import StepsDrawer from "@/components/StepsDrawer";
 import SharePreferenceCardDrawer from "@/components/SharePreferenceCardDrawer";
+import TeamChatDrawer from "@/components/TeamChatDrawer";
 
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
