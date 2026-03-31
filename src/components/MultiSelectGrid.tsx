@@ -1,10 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, X, ChevronUp, ChevronDown, Pause } from "lucide-react";
 
 interface MultiSelectOption {
   name: string;
   desc: string;
+}
+
+interface ItemData {
+  name: string;
+  qty: number;
+  hold?: boolean;
+  holdQty?: number;
 }
 
 interface MultiSelectGridProps {
@@ -12,93 +20,178 @@ interface MultiSelectGridProps {
   value: string;
   onChange: (value: string) => void;
   addLabel?: string;
+  supportsHold?: boolean;
 }
 
-const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item" }: MultiSelectGridProps) => {
-  const selected = value.split(", ").filter(Boolean);
+const parseItems = (value: string): ItemData[] => {
+  if (!value || !value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed.map((item: any) => ({
+      name: typeof item === "string" ? item : item.name,
+      qty: item.qty ?? 1,
+      hold: item.hold ?? false,
+      holdQty: item.holdQty ?? 1,
+    }));
+  } catch {}
+  return value.split(", ").filter(Boolean).map((name) => ({ name, qty: 1, hold: false, holdQty: 1 }));
+};
+
+const serializeItems = (items: ItemData[]): string => {
+  if (items.length === 0) return "";
+  return JSON.stringify(items);
+};
+
+const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false }: MultiSelectGridProps) => {
+  const items = parseItems(value);
+  const selectedNames = items.map((i) => i.name);
   const [showInput, setShowInput] = useState(false);
   const [customName, setCustomName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Custom items = selected items not in the predefined options
   const predefinedNames = options.map((o) => o.name);
-  const customItems = selected.filter((s) => !predefinedNames.includes(s));
+  const customItems = items.filter((i) => !predefinedNames.includes(i.name));
 
   useEffect(() => {
-    if (showInput && inputRef.current) {
-      inputRef.current.focus();
-    }
+    if (showInput && inputRef.current) inputRef.current.focus();
   }, [showInput]);
 
+  const updateItems = (newItems: ItemData[]) => {
+    onChange(serializeItems(newItems));
+  };
+
   const toggle = (name: string) => {
-    const isChecked = selected.includes(name);
-    const next = isChecked
-      ? selected.filter((s) => s !== name)
-      : [...selected, name];
-    onChange(next.join(", "));
+    const existing = items.find((i) => i.name === name);
+    if (existing) {
+      updateItems(items.filter((i) => i.name !== name));
+    } else {
+      updateItems([...items, { name, qty: 1, hold: false, holdQty: 1 }]);
+    }
+  };
+
+  const updateQty = (name: string, delta: number) => {
+    updateItems(items.map((i) => i.name === name ? { ...i, qty: Math.max(1, i.qty + delta) } : i));
+  };
+
+  const toggleHold = (name: string) => {
+    updateItems(items.map((i) => i.name === name ? { ...i, hold: !i.hold } : i));
+  };
+
+  const updateHoldQty = (name: string, delta: number) => {
+    updateItems(items.map((i) => i.name === name ? { ...i, holdQty: Math.max(1, (i.holdQty ?? 1) + delta) } : i));
   };
 
   const addCustomItem = () => {
     const trimmed = customName.trim();
-    if (!trimmed || selected.includes(trimmed)) {
+    if (!trimmed || selectedNames.includes(trimmed)) {
       setCustomName("");
       setShowInput(false);
       return;
     }
-    const next = [...selected, trimmed];
-    onChange(next.join(", "));
+    updateItems([...items, { name: trimmed, qty: 1, hold: false, holdQty: 1 }]);
     setCustomName("");
     setShowInput(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addCustomItem();
-    } else if (e.key === "Escape") {
-      setShowInput(false);
-      setCustomName("");
-    }
+    if (e.key === "Enter") { e.preventDefault(); addCustomItem(); }
+    else if (e.key === "Escape") { setShowInput(false); setCustomName(""); }
   };
+
+  const renderSelectedItem = (item: ItemData, isCustom: boolean) => (
+    <div
+      key={item.name}
+      className="rounded-xl border border-primary bg-primary/15 shadow-sm shadow-primary/10 p-3 space-y-2"
+    >
+      <div className="flex items-start gap-2">
+        <button type="button" onClick={() => toggle(item.name)} className="mt-0.5">
+          <Checkbox checked={true} className="pointer-events-none" />
+        </button>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-medium text-primary truncate">{item.name}</span>
+            {isCustom && (
+              <Badge variant="outline" className="text-[8px] px-1 py-0 border-primary/30 text-primary shrink-0">Custom</Badge>
+            )}
+            {item.hold && (
+              <Badge className="text-[8px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+                <Pause size={8} className="mr-0.5" />Hold
+              </Badge>
+            )}
+          </div>
+          {isCustom && <span className="text-[10px] text-muted-foreground leading-tight">Custom item</span>}
+        </div>
+      </div>
+
+      {/* Qty controls */}
+      <div className="flex items-center gap-3 pl-7">
+        <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-8">Qty</span>
+        <div className="flex items-center gap-1.5">
+          <button type="button" onClick={() => updateQty(item.name, -1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
+            <ChevronDown size={12} className="text-muted-foreground" />
+          </button>
+          <span className="text-sm font-semibold text-foreground w-6 text-center">{item.qty}</span>
+          <button type="button" onClick={() => updateQty(item.name, 1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
+            <ChevronUp size={12} className="text-muted-foreground" />
+          </button>
+        </div>
+
+        {supportsHold && (
+          <div className="flex items-center gap-2 ml-auto">
+            <button
+              type="button"
+              onClick={() => toggleHold(item.name)}
+              className={`text-[10px] font-medium px-2 py-1 rounded-md border transition-colors ${
+                item.hold
+                  ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
+                  : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+              }`}
+            >
+              {item.hold ? "On Hold" : "Hold"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Hold qty row */}
+      {supportsHold && item.hold && (
+        <div className="flex items-center gap-3 pl-7">
+          <span className="text-[10px] text-amber-400/80 uppercase tracking-wider w-8">Hold</span>
+          <div className="flex items-center gap-1.5">
+            <button type="button" onClick={() => updateHoldQty(item.name, -1)} className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors">
+              <ChevronDown size={12} className="text-amber-400" />
+            </button>
+            <span className="text-sm font-semibold text-amber-400 w-6 text-center">{item.holdQty ?? 1}</span>
+            <button type="button" onClick={() => updateHoldQty(item.name, 1)} className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors">
+              <ChevronUp size={12} className="text-amber-400" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="max-h-[50vh] overflow-y-auto">
-      <div className="grid grid-cols-2 gap-3">
-        {/* Custom items first */}
-        {customItems.map((name) => (
-          <button
-            key={name}
-            type="button"
-            onClick={() => toggle(name)}
-            className="flex items-start gap-2 rounded-xl border border-primary bg-primary/15 shadow-sm shadow-primary/10 p-3 cursor-pointer transition-all text-left"
-          >
-            <Checkbox checked={true} className="mt-0.5 pointer-events-none" />
-            <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium text-primary">{name}</span>
-              <span className="text-[10px] text-muted-foreground leading-tight">Custom item</span>
-            </div>
-          </button>
-        ))}
+      <div className="grid grid-cols-1 gap-3">
+        {/* Selected items first */}
+        {customItems.map((item) => renderSelectedItem(item, true))}
 
         {/* Predefined options */}
         {options.map((opt) => {
-          const isChecked = selected.includes(opt.name);
+          const item = items.find((i) => i.name === opt.name);
+          if (item) return renderSelectedItem(item, false);
+
           return (
             <button
               key={opt.name}
               type="button"
               onClick={() => toggle(opt.name)}
-              className={`flex items-start gap-2 rounded-xl border p-3 cursor-pointer transition-all text-left ${
-                isChecked
-                  ? "border-primary bg-primary/15 shadow-sm shadow-primary/10"
-                  : "border-border bg-secondary hover:border-primary/40"
-              }`}
+              className="flex items-start gap-2 rounded-xl border border-border bg-secondary hover:border-primary/40 p-3 cursor-pointer transition-all text-left"
             >
-              <Checkbox checked={isChecked} className="mt-0.5 pointer-events-none" />
+              <Checkbox checked={false} className="mt-0.5 pointer-events-none" />
               <div className="flex flex-col gap-0.5">
-                <span className={`text-sm font-medium ${isChecked ? "text-primary" : "text-foreground"}`}>
-                  {opt.name}
-                </span>
+                <span className="text-sm font-medium text-foreground">{opt.name}</span>
                 <span className="text-[10px] text-muted-foreground leading-tight">{opt.desc}</span>
               </div>
             </button>
@@ -119,19 +212,10 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item" }: Mu
               placeholder="Type custom item name..."
               className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
             />
-            <button
-              type="button"
-              onClick={addCustomItem}
-              disabled={!customName.trim()}
-              className="p-1.5 rounded-lg bg-primary text-primary-foreground disabled:opacity-40 transition-opacity"
-            >
+            <button type="button" onClick={addCustomItem} disabled={!customName.trim()} className="p-1.5 rounded-lg bg-primary text-primary-foreground disabled:opacity-40 transition-opacity">
               <Plus size={14} />
             </button>
-            <button
-              type="button"
-              onClick={() => { setShowInput(false); setCustomName(""); }}
-              className="p-1.5 rounded-lg hover:bg-card text-muted-foreground transition-colors"
-            >
+            <button type="button" onClick={() => { setShowInput(false); setCustomName(""); }} className="p-1.5 rounded-lg hover:bg-card text-muted-foreground transition-colors">
               <X size={14} />
             </button>
           </div>
