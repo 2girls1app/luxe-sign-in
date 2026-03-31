@@ -270,7 +270,7 @@ const TeamChatDrawer = ({ open, onOpenChange, procedureId, procedureName }: Team
           {!chatId && !isExpired ? (
             <div className="flex flex-col items-center justify-center py-10 gap-3">
               <p className="text-sm text-muted-foreground text-center">
-                Start a 24-hour team chat for this case
+                Start a 12-hour team chat for this case
               </p>
               <Button onClick={startChat} className="gap-2">
                 <MessageSquare size={16} /> Start Team Chat
