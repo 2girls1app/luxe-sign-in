@@ -216,54 +216,27 @@ const Profile = () => {
               )}
             </button>
           )}
-          <ProfileAvatarUpload />
+          <Avatar className="h-14 w-14 border-2 border-primary/30">
+            {avatarUrl ? (
+              <AvatarImage src={avatarUrl} alt={displayName} />
+            ) : null}
+            <AvatarFallback className="bg-secondary text-foreground text-lg font-medium">
+              {displayName.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
-            {editingName ? (
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && saveName()}
-                  autoFocus
-                  className="bg-secondary border border-border rounded-lg px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full"
-                  placeholder="Enter your name"
-                />
-                <button onClick={saveName} className="text-primary hover:text-primary/80 transition-colors">
-                  <Check size={16} />
-                </button>
-                <button onClick={() => setEditingName(false)} className="text-muted-foreground hover:text-foreground transition-colors">
-                  <X size={16} />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <p className="text-foreground font-medium">{displayName}</p>
-                <button onClick={startEditingName} className="text-muted-foreground hover:text-primary transition-colors">
-                  <Pencil size={12} />
-                </button>
-              </div>
-            )}
+            <p className="text-foreground font-medium">{displayName}</p>
             <p className="text-sm text-muted-foreground">{roleLabel || username}</p>
           </div>
         </div>
 
-        {/* Surgery Specialty - hidden for admin */}
-        {!isAdmin && (
+        {/* Specialty - read-only, hidden for admin */}
+        {!isAdmin && specialty && (
           <div>
-            <label className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-2 block">
-              Surgery Specialty
+            <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-1 block">
+              Specialty
             </label>
-            <Select value={specialty} onValueChange={updateSpecialty}>
-              <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-12">
-                <SelectValue placeholder="Select your surgery specialty" />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                {SPECIALTIES.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <p className="text-sm text-foreground font-medium">{specialty}</p>
           </div>
         )}
 
