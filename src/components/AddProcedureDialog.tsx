@@ -47,7 +47,7 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
     setFacilityError(false);
     setLoading(true);
     const { error } = await supabase.from("procedures").insert({
-      user_id: user.id,
+      user_id: forUserId || user.id,
       name: name.trim(),
       category: null,
       facility_id: facilityId,
