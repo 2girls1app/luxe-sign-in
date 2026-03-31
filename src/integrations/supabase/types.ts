@@ -263,6 +263,38 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_views: {
+        Row: {
+          id: string
+          notification_id: string
+          viewed_at: string
+          viewer_id: string
+          viewer_name: string
+        }
+        Insert: {
+          id?: string
+          notification_id: string
+          viewed_at?: string
+          viewer_id: string
+          viewer_name?: string
+        }
+        Update: {
+          id?: string
+          notification_id?: string
+          viewed_at?: string
+          viewer_id?: string
+          viewer_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_views_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "admin_notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pending_preference_changes: {
         Row: {
           category: string
