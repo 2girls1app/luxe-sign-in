@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ClipboardList, Search } from "lucide-react";
+import { ArrowLeft, ClipboardList, Search, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useAdminRole } from "@/hooks/useAdminRole";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import NavHeader from "@/components/NavHeader";
+import AddProcedureDialog from "@/components/AddProcedureDialog";
 
 interface UserProfile { user_id: string; display_name: string | null; }
 interface Procedure { id: string; name: string; category: string | null; user_id: string; created_at: string; }
