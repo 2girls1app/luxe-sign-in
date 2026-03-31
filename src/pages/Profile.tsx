@@ -254,18 +254,14 @@ const Profile = () => {
               <div className="flex-1 min-w-0">
                 <p className="text-foreground font-medium">{displayName}</p>
                 <p className="text-sm text-muted-foreground">{roleLabel || username}</p>
+                {!isAdmin && specialty && (
+                  <p className="text-xs text-primary/80 mt-0.5">{specialty}</p>
+                )}
               </div>
             </div>
 
-            {/* Specialty */}
-            {!isAdmin && specialty && (
-              <div>
-                <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-1 block">
-                  Specialty
-                </label>
-                <p className="text-sm text-foreground font-medium">{specialty}</p>
-              </div>
-            )}
+            {/* Quick Add Procedure */}
+            <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" />
 
             {/* Facilities Section */}
             <div>
@@ -301,11 +297,6 @@ const Profile = () => {
                 </div>
               )}
             </div>
-
-            {/* Quick Add Procedure */}
-            <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" />
-          </>
-        )}
 
         {/* Procedures Section - only when viewing a specific facility */}
         {facilityFilter && (
