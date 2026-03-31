@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Users, Stethoscope, ClipboardList, Bell, Package, Shield, ChevronRight
+  Users, Stethoscope, ClipboardList, Bell, Shield, ChevronRight
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +12,6 @@ const WIDGETS = [
   { id: "doctors", icon: Stethoscope, label: "Doctors", desc: "Doctor profiles & procedures", route: "/admin/doctors" },
   { id: "prefcards", icon: ClipboardList, label: "Preference Cards", desc: "View & manage pref cards", route: "/admin/preference-cards" },
   { id: "notifications", icon: Bell, label: "Notifications", desc: "Send team announcements", route: "/admin/notifications" },
-  { id: "supplies", icon: Package, label: "Supply Library", desc: "Manage supply items", route: "/admin/supply-library" },
 ];
 
 const AdminDashboardSection = () => {
