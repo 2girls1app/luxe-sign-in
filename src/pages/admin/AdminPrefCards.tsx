@@ -17,9 +17,11 @@ interface PrefCard { id: string; procedure_id: string; category: string; value: 
 const AdminPrefCards = () => {
   const navigate = useNavigate();
   const { isAdmin, loading } = useAdminRole();
+  const { user } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [prefCards, setPrefCards] = useState<PrefCard[]>([]);
+  const [facilities, setFacilities] = useState<{ id: string; name: string }[]>([]);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
