@@ -48,6 +48,25 @@ export const INSTRUMENTS = [
   { name: "Bovie Tip Cleaner", desc: "Scratch pad for cautery tip" },
 ];
 
+export const ROBOTIC_INSTRUMENTS = [
+  { name: "Cadiere Forceps", desc: "Robotic grasping forceps" },
+  { name: "ProGrasp Forceps", desc: "Robotic atraumatic grasper" },
+  { name: "Maryland Bipolar", desc: "Robotic bipolar dissector" },
+  { name: "Monopolar Curved Scissors", desc: "Robotic cutting/cautery" },
+  { name: "Large Needle Driver", desc: "Robotic suturing instrument" },
+  { name: "Mega Needle Driver", desc: "Heavy robotic needle holder" },
+  { name: "Hot Shears", desc: "Monopolar curved scissors" },
+  { name: "Fenestrated Bipolar", desc: "Robotic bipolar grasper" },
+  { name: "Tip-Up Fenestrated Grasper", desc: "Robotic tissue grasper" },
+  { name: "Vessel Sealer Extend", desc: "Robotic vessel sealing" },
+  { name: "Harmonic ACE", desc: "Robotic ultrasonic shears" },
+  { name: "Force Bipolar", desc: "Robotic bipolar energy" },
+  { name: "Black Diamond Micro Forceps", desc: "Robotic fine-tip forceps" },
+  { name: "Cobra Grasper", desc: "Robotic retraction grasper" },
+  { name: "Stapler 45", desc: "Robotic endoscopic stapler" },
+  { name: "Clip Applier", desc: "Robotic clip applier" },
+];
+
 export const TRAYS = [
   { name: "Basic/Minor Tray", desc: "General minor procedures" },
   { name: "Major Tray", desc: "Open major procedures" },
