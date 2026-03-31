@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import {
   Pill, Hand, RotateCcw, Droplets, Wrench, Scissors, LayoutGrid, Package, Ribbon,
-  Image, Video, FileText, ListOrdered,
+  Image, Video, FileText, ListOrdered, Bot,
 } from "lucide-react";
 
 export interface PreferenceCategory {
@@ -20,6 +20,7 @@ export const PREFERENCE_CATEGORIES: PreferenceCategory[] = [
   
   { key: "equipment", label: "Equipment", icon: Wrench },
   { key: "instruments", label: "Instruments", icon: Scissors },
+  { key: "robotic_instruments", label: "Robotic", icon: Bot },
   { key: "trays", label: "Trays", icon: LayoutGrid },
   { key: "supplies", label: "Supplies", icon: Package },
   { key: "suture", label: "Suture", icon: Ribbon },
