@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowLeft, Bell, Send, Search } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Bell, Send, ChevronDown, ChevronUp, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import NavHeader from "@/components/NavHeader";
 
-interface AdminNotification { id: string; title: string; message: string; priority: string; created_at: string; target_professions?: string | null; }
+interface NotificationView {
+  viewer_id: string;
+  viewer_name: string;
+  viewed_at: string;
+}
+
+interface AdminNotification {
+  id: string;
+  title: string;
+  message: string;
+  priority: string;
+  created_at: string;
+  views?: NotificationView[];
+}
 
 const PROFESSIONS = [
   "Admin",
@@ -33,15 +46,41 @@ const AdminNotifications = () => {
   const { isAdmin, loading } = useAdminRole();
   const { toast } = useToast();
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
-  const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState({ title: "", message: "", priority: "normal" });
   const [recipientType, setRecipientType] = useState<"all" | "profession">("all");
   const [selectedProfessions, setSelectedProfessions] = useState<string[]>([]);
+  const [expandedViews, setExpandedViews] = useState<Set<string>>(new Set());
 
   const fetchNotifications = async () => {
-    const { data } = await supabase.from("admin_notifications").select("*").order("created_at", { ascending: false });
-    if (data) setNotifications(data as unknown as AdminNotification[]);
+    const { data } = await supabase
+      .from("admin_notifications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!data) return;
+
+    // Fetch views for all notifications
+    const notifIds = data.map((n: any) => n.id);
+    const { data: views } = await supabase
+      .from("notification_views" as any)
+      .select("notification_id, viewer_id, viewer_name, viewed_at")
+      .in("notification_id", notifIds);
+
+    const viewsByNotif: Record<string, NotificationView[]> = {};
+    if (views) {
+      (views as any[]).forEach((v: any) => {
+        if (!viewsByNotif[v.notification_id]) viewsByNotif[v.notification_id] = [];
+        viewsByNotif[v.notification_id].push(v);
+      });
+    }
+
+    setNotifications(
+      (data as any[]).map((n: any) => ({
+        ...n,
+        views: viewsByNotif[n.id] || [],
+      }))
+    );
   };
 
   useEffect(() => {
@@ -53,6 +92,14 @@ const AdminNotifications = () => {
     setSelectedProfessions(prev =>
       prev.includes(prof) ? prev.filter(p => p !== prof) : [...prev, prof]
     );
+  };
+
+  const toggleViewExpand = (id: string) => {
+    setExpandedViews(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   };
 
   const send = async () => {
@@ -69,7 +116,6 @@ const AdminNotifications = () => {
       sent_by: user?.id,
     };
 
-    // Store target professions in the message metadata if targeting by profession
     if (recipientType === "profession") {
       payload.message = `[To: ${selectedProfessions.join(", ")}] ${form.message}`;
     }
@@ -85,8 +131,6 @@ const AdminNotifications = () => {
 
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-background"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
   if (!isAdmin) return null;
-
-  const filtered = notifications.filter(n => n.title.toLowerCase().includes(search.toLowerCase()) || n.message.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pt-16 pb-8">
@@ -118,28 +162,11 @@ const AdminNotifications = () => {
                   </SelectContent>
                 </Select>
 
-                {/* Recipient Selection */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-foreground">Recipients</Label>
                   <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={recipientType === "all" ? "default" : "outline"}
-                      onClick={() => { setRecipientType("all"); setSelectedProfessions([]); }}
-                      className="text-xs"
-                    >
-                      Send to All
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={recipientType === "profession" ? "default" : "outline"}
-                      onClick={() => setRecipientType("profession")}
-                      className="text-xs"
-                    >
-                      By Medical Profession
-                    </Button>
+                    <Button type="button" size="sm" variant={recipientType === "all" ? "default" : "outline"} onClick={() => { setRecipientType("all"); setSelectedProfessions([]); }} className="text-xs">Send to All</Button>
+                    <Button type="button" size="sm" variant={recipientType === "profession" ? "default" : "outline"} onClick={() => setRecipientType("profession")} className="text-xs">By Medical Profession</Button>
                   </div>
                 </div>
 
@@ -148,14 +175,8 @@ const AdminNotifications = () => {
                     <Label className="text-xs font-medium text-muted-foreground">Select professions</Label>
                     <div className="grid grid-cols-2 gap-2">
                       {PROFESSIONS.map(prof => (
-                        <label
-                          key={prof}
-                          className="flex items-center gap-2 cursor-pointer rounded-md px-2 py-1.5 hover:bg-muted/50 transition-colors"
-                        >
-                          <Checkbox
-                            checked={selectedProfessions.includes(prof)}
-                            onCheckedChange={() => toggleProfession(prof)}
-                          />
+                        <label key={prof} className="flex items-center gap-2 cursor-pointer rounded-md px-2 py-1.5 hover:bg-muted/50 transition-colors">
+                          <Checkbox checked={selectedProfessions.includes(prof)} onCheckedChange={() => toggleProfession(prof)} />
                           <span className="text-xs text-foreground">{prof}</span>
                         </label>
                       ))}
@@ -171,26 +192,57 @@ const AdminNotifications = () => {
           </Dialog>
         </div>
 
-        <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input type="text" placeholder="Search notifications..." value={search} onChange={e => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-border bg-secondary pl-9 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-        </div>
-
         <div className="space-y-2">
-          {filtered.map(n => (
-            <div key={n.id} className="rounded-xl bg-card border border-border p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">{n.title}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{n.message}</p>
+          {notifications.map(n => {
+            const isExpanded = expandedViews.has(n.id);
+            const viewCount = n.views?.length || 0;
+            return (
+              <div key={n.id} className="rounded-xl bg-card border border-border p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{n.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{n.message}</p>
+                  </div>
+                  <Badge variant={n.priority === "urgent" ? "destructive" : n.priority === "high" ? "default" : "secondary"} className="text-[10px] shrink-0">{n.priority}</Badge>
                 </div>
-                <Badge variant={n.priority === "urgent" ? "destructive" : n.priority === "high" ? "default" : "secondary"} className="text-[10px] shrink-0">{n.priority}</Badge>
+                <div className="flex items-center justify-between mt-2">
+                  <p className="text-[10px] text-muted-foreground">{new Date(n.created_at).toLocaleString()}</p>
+                  <button
+                    onClick={() => toggleViewExpand(n.id)}
+                    className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Eye size={12} />
+                    <span>Viewed by {viewCount}</span>
+                    {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                  </button>
+                </div>
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="mt-2 pt-2 border-t border-border space-y-1">
+                        {viewCount === 0 ? (
+                          <p className="text-[10px] text-muted-foreground">No views yet</p>
+                        ) : (
+                          n.views!.map(v => (
+                            <div key={v.viewer_id} className="flex items-center justify-between text-[10px]">
+                              <span className="text-foreground">{v.viewer_name || "Unknown"}</span>
+                              <span className="text-muted-foreground">{new Date(v.viewed_at).toLocaleString()}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-2">{new Date(n.created_at).toLocaleString()}</p>
-            </div>
-          ))}
-          {filtered.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No notifications yet</p>}
+            );
+          })}
+          {notifications.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No notifications yet</p>}
         </div>
       </motion.div>
     </div>
