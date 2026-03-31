@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Lock, Mail, Phone, Camera, ShieldCheck, HeadphonesIcon, Check, X } from "lucide-react";
+import { ArrowLeft, User, Lock, Mail, Phone, ShieldCheck, HeadphonesIcon, Stethoscope } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import NavHeader from "@/components/NavHeader";
 import ProfileAvatarUpload from "@/components/ProfileAvatarUpload";
 import PasswordInput from "@/components/PasswordInput";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Settings = () => {
   const navigate = useNavigate();
