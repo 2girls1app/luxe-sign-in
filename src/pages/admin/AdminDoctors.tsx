@@ -40,18 +40,19 @@ const AdminDoctors = () => {
   const [search, setSearch] = useState("");
   const [specialtyFilter, setSpecialtyFilter] = useState("All Specialties");
 
+  const fetchData = useCallback(async () => {
+    const [u, p] = await Promise.all([
+      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
+      supabase.from("procedures").select("id, name, user_id, category"),
+    ]);
+    if (u.data) setUsers(u.data as UserProfile[]);
+    if (p.data) setProcedures(p.data as Procedure[]);
+  }, []);
+
   useEffect(() => {
     if (!loading && !isAdmin) { navigate("/profile"); return; }
-    if (isAdmin) {
-      Promise.all([
-        supabase.from("profiles").select("*").order("created_at", { ascending: false }),
-        supabase.from("procedures").select("id, name, user_id, category"),
-      ]).then(([u, p]) => {
-        if (u.data) setUsers(u.data as UserProfile[]);
-        if (p.data) setProcedures(p.data as Procedure[]);
-      });
-    }
-  }, [isAdmin, loading]);
+    if (isAdmin) fetchData();
+  }, [isAdmin, loading, fetchData]);
 
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-background"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
   if (!isAdmin) return null;
