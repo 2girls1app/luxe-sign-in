@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Music, Bell, Settings, ArrowLeft, Shield } from "lucide-react";
+import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Music, Bell, Settings, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import NotificationsDrawer from "@/components/NotificationsDrawer";
@@ -13,6 +13,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import AdminDashboardSection from "@/components/AdminDashboardSection";
 interface Facility {
   id: string;
   name: string;
@@ -265,16 +266,8 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Admin Dashboard Link */}
-            {isAdmin && (
-              <button
-                onClick={() => navigate("/admin")}
-                className="w-full flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-card px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 transition-all"
-              >
-                <Shield size={16} />
-                Admin Dashboard
-              </button>
-            )}
+            {/* Admin Dashboard - embedded */}
+            {isAdmin && <AdminDashboardSection />}
 
             {/* Quick Add Procedure */}
             <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" />
