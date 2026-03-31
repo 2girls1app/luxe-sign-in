@@ -57,7 +57,7 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
       toast({ title: "Error adding procedure", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Procedure added" });
-      setName(""); setCategory(""); setFacilityId(""); setNotes(""); setFacilityError(false);
+      setName(""); setFacilityId(""); setNotes(""); setFacilityError(false);
       setOpen(false);
       onAdded();
     }
