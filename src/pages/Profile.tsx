@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Pencil, Check, X, Music, Bell, Settings } from "lucide-react";
+import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Music, Bell, Settings } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import NotificationsDrawer from "@/components/NotificationsDrawer";
@@ -9,12 +9,10 @@ import NavHeader from "@/components/NavHeader";
 import AddFacilityDialog from "@/components/AddFacilityDialog";
 import AddProcedureDialog from "@/components/AddProcedureDialog";
 import ProcedureCard from "@/components/ProcedureCard";
-import ProfileAvatarUpload from "@/components/ProfileAvatarUpload";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
 interface Facility {
   id: string;
   name: string;
@@ -38,9 +36,6 @@ const Profile = () => {
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [searchProcedures, setSearchProcedures] = useState("");
-  const [specialty, setSpecialty] = useState<string>(profile?.specialty || "");
-  const [editingName, setEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState("");
   const [musicDrawerOpen, setMusicDrawerOpen] = useState(false);
   const [hasMusicPrefs, setHasMusicPrefs] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -64,6 +59,7 @@ const Profile = () => {
   const roleLabel = userRole ? userRole.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) : "";
   const isAdmin = ["administrative", "admin", "admin-staff"].includes(userRole);
   const username = emailUsername || displayName.toLowerCase().replace(/\s+/g, "");
+  const specialty = profile?.specialty || "";
 
   const fetchFacilities = useCallback(async () => {
     if (!user) return;
@@ -77,9 +73,6 @@ const Profile = () => {
     if (data) setProcedures(data as Procedure[]);
   }, [user]);
 
-  useEffect(() => {
-    if (profile?.specialty) setSpecialty(profile.specialty);
-  }, [profile]);
 
   const fetchMusicPrefsCount = useCallback(async () => {
     if (!user) return;
@@ -107,34 +100,6 @@ const Profile = () => {
     fetchPendingCount();
   }, [fetchFacilities, fetchProcedures, fetchMusicPrefsCount, fetchPendingCount]);
 
-  const updateSpecialty = async (value: string) => {
-    setSpecialty(value);
-    if (!user) return;
-    const { error } = await supabase.from("profiles").update({ specialty: value } as any).eq("user_id", user.id);
-    if (error) {
-      toast({ title: "Error", description: "Failed to save specialty", variant: "destructive" });
-    } else {
-      toast({ title: "Specialty updated" });
-      refreshProfile();
-    }
-  };
-
-  const startEditingName = () => {
-    setNameInput(displayName === "User" ? "" : displayName);
-    setEditingName(true);
-  };
-
-  const saveName = async () => {
-    if (!user || !nameInput.trim()) return;
-    const { error } = await supabase.from("profiles").update({ display_name: nameInput.trim() } as any).eq("user_id", user.id);
-    if (error) {
-      toast({ title: "Error", description: "Failed to update name", variant: "destructive" });
-    } else {
-      toast({ title: "Name updated" });
-      refreshProfile();
-    }
-    setEditingName(false);
-  };
 
   const deleteFacility = async (id: string) => {
     const { error } = await supabase.from("facilities").delete().eq("id", id);
@@ -251,54 +216,27 @@ const Profile = () => {
               )}
             </button>
           )}
-          <ProfileAvatarUpload />
+          <Avatar className="h-14 w-14 border-2 border-primary/30">
+            {avatarUrl ? (
+              <AvatarImage src={avatarUrl} alt={displayName} />
+            ) : null}
+            <AvatarFallback className="bg-secondary text-foreground text-lg font-medium">
+              {displayName.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
-            {editingName ? (
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && saveName()}
-                  autoFocus
-                  className="bg-secondary border border-border rounded-lg px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full"
-                  placeholder="Enter your name"
-                />
-                <button onClick={saveName} className="text-primary hover:text-primary/80 transition-colors">
-                  <Check size={16} />
-                </button>
-                <button onClick={() => setEditingName(false)} className="text-muted-foreground hover:text-foreground transition-colors">
-                  <X size={16} />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <p className="text-foreground font-medium">{displayName}</p>
-                <button onClick={startEditingName} className="text-muted-foreground hover:text-primary transition-colors">
-                  <Pencil size={12} />
-                </button>
-              </div>
-            )}
+            <p className="text-foreground font-medium">{displayName}</p>
             <p className="text-sm text-muted-foreground">{roleLabel || username}</p>
           </div>
         </div>
 
-        {/* Surgery Specialty - hidden for admin */}
-        {!isAdmin && (
+        {/* Specialty - read-only, hidden for admin */}
+        {!isAdmin && specialty && (
           <div>
-            <label className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-2 block">
-              Surgery Specialty
+            <label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-1 block">
+              Specialty
             </label>
-            <Select value={specialty} onValueChange={updateSpecialty}>
-              <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-12">
-                <SelectValue placeholder="Select your surgery specialty" />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                {SPECIALTIES.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <p className="text-sm text-foreground font-medium">{specialty}</p>
           </div>
         )}
 
