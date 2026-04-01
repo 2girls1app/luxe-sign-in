@@ -45,7 +45,6 @@ const Profile = () => {
     }
   }, [profile?.role, navigate]);
   const { toast } = useToast();
-  const { toast } = useToast();
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [searchProcedures, setSearchProcedures] = useState("");
