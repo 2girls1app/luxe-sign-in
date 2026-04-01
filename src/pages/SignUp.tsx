@@ -11,13 +11,6 @@ import PasswordInput from "@/components/PasswordInput";
 import { useAuth } from "@/contexts/AuthContext";
 
 const SignUp = () => {
-  const { user: authUser, profile, loading: authLoading } = useAuth();
-
-  useEffect(() => {
-    if (!authLoading && authUser && profile?.onboarding_completed) {
-      navigate("/profile", { replace: true });
-    }
-  }, [authLoading, authUser, profile]);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -31,6 +24,13 @@ const SignUp = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const profession = (location.state as any)?.profession || "";
+  const { user: authUser, profile, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && authUser && profile?.onboarding_completed) {
+      navigate("/profile", { replace: true });
+    }
+  }, [authLoading, authUser, profile, navigate]);
 
   const handleSubmit = async () => {
     if (!firstName || !lastName || !email || !password || password !== confirmPassword || !captcha) return;
