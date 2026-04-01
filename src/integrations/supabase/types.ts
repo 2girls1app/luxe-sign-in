@@ -662,6 +662,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_facility_id: { Args: { _user_id: string }; Returns: string }
       has_edit_access: {
         Args: { _procedure_id: string; _user_id: string }
         Returns: boolean
