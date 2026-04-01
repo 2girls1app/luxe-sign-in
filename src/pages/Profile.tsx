@@ -76,20 +76,22 @@ const Profile = () => {
 
   const fetchFacilities = useCallback(async () => {
     if (!user) return;
-    // Fetch facilities the user owns
-    const { data: ownedData } = await supabase.from("facilities").select("id, name, location, notes").eq("user_id", user.id);
+    // Fetch facilities via doctor_facilities join table
+    const { data: links } = await supabase.from("doctor_facilities" as any).select("facility_id").eq("user_id", user.id);
+    const facilityIds = (links as any[] || []).map((l: any) => l.facility_id);
     
-    // Also fetch the facility the user is assigned to (via profile.facility_id)
-    let assignedData: Facility[] = [];
-    if (profile?.facility_id) {
-      const { data } = await supabase.from("facilities").select("id, name, location, notes").eq("id", profile.facility_id);
-      if (data) assignedData = data as Facility[];
+    // Also include profile.facility_id for backwards compat
+    if (profile?.facility_id && !facilityIds.includes(profile.facility_id)) {
+      facilityIds.push(profile.facility_id);
     }
-    
-    // Merge and deduplicate
-    const allFacilities = [...(ownedData || []), ...assignedData];
-    const unique = Array.from(new Map(allFacilities.map(f => [f.id, f])).values());
-    setFacilities(unique.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })));
+
+    if (facilityIds.length === 0) {
+      setFacilities([]);
+      return;
+    }
+
+    const { data } = await supabase.from("facilities").select("id, name, location, notes").in("id", facilityIds);
+    setFacilities((data || []).sort((a: any, b: any) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })) as Facility[]);
   }, [user, profile?.facility_id]);
 
   const fetchProcedures = useCallback(async () => {
