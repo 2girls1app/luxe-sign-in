@@ -82,7 +82,7 @@ function getIconForProcedure(name: string, category: string | null): React.Eleme
   return Stethoscope;
 }
 
-const ProcedureCard = ({ id, name, category, facilityName, notes, isFavorite, onDelete, onToggleFavorite }: ProcedureCardProps) => {
+const ProcedureCard = ({ id, name, category, facilityName, notes, isFavorite, hasRoboticItems, onDelete, onToggleFavorite }: ProcedureCardProps) => {
   const Icon = getIconForProcedure(name, category);
   const navigate = useNavigate();
 
