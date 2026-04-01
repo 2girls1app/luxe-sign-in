@@ -89,20 +89,27 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
   }, [open, fetchChanges]);
 
   const handleApprove = async (change: PendingChange) => {
-    if (!user) return;
+    if (!user || processing || bulkProcessing) return false;
     setProcessing(change.id);
 
     try {
-      // Get the procedure owner's user_id
-      const { data: proc } = await supabase
+      const { data: proc, error: procError } = await supabase
         .from("procedures")
         .select("user_id")
         .eq("id", change.procedure_id)
         .single();
 
-      const ownerId = proc?.user_id || user.id;
+      if (procError || !proc?.user_id) {
+        toast({
+          title: "Error applying change",
+          description: procError?.message || "Procedure owner not found",
+          variant: "destructive",
+        });
+        return false;
+      }
 
-      // Apply the change to the live preference card
+      const ownerId = proc.user_id;
+
       const { error: upsertError } = await supabase
         .from("procedure_preferences")
         .upsert(
@@ -118,11 +125,9 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
 
       if (upsertError) {
         toast({ title: "Error applying change", description: upsertError.message, variant: "destructive" });
-        setProcessing(null);
-        return;
+        return false;
       }
 
-      // Mark as approved
       const { error: updateError } = await supabase
         .from("pending_preference_changes")
         .update({
@@ -135,58 +140,83 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
 
       if (updateError) {
         toast({ title: "Error updating status", description: updateError.message, variant: "destructive" });
-        setProcessing(null);
-        return;
+        return false;
       }
 
+      setChanges((prev) => prev.filter((item) => item.id !== change.id));
+      onCountChange?.(Math.max(0, pendingCount - 1));
       toast({ title: "Change approved and applied" });
+      return true;
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
+      return false;
+    } finally {
+      setProcessing(null);
     }
-    setProcessing(null);
-    fetchChanges();
   };
 
   const handleDeny = async (change: PendingChange, reason?: string) => {
-    if (!user) return;
+    if (!user || processing || bulkProcessing) return false;
     setProcessing(change.id);
 
-    const { error } = await supabase
-      .from("pending_preference_changes")
-      .update({
-        status: "denied",
-        reviewed_by: user.id,
-        reviewed_at: new Date().toISOString(),
-        denial_reason: reason || null,
-        is_read: true,
-      })
-      .eq("id", change.id);
+    try {
+      const { error } = await supabase
+        .from("pending_preference_changes")
+        .update({
+          status: "denied",
+          reviewed_by: user.id,
+          reviewed_at: new Date().toISOString(),
+          denial_reason: reason || null,
+          is_read: true,
+        })
+        .eq("id", change.id);
 
-    if (error) {
-      toast({ title: "Error denying change", description: error.message, variant: "destructive" });
-    } else {
+      if (error) {
+        toast({ title: "Error denying change", description: error.message, variant: "destructive" });
+        return false;
+      }
+
+      setChanges((prev) => prev.filter((item) => item.id !== change.id));
+      onCountChange?.(Math.max(0, pendingCount - 1));
       toast({ title: "Change denied" });
+      return true;
+    } finally {
+      setProcessing(null);
     }
-    setProcessing(null);
-    fetchChanges();
   };
 
-
   const handleApproveAll = async () => {
+    if (processing || bulkProcessing) return;
     setBulkProcessing(true);
+
     const pendingChanges = filtered.filter((c) => c.status === "pending");
+    let successCount = 0;
+
     for (const change of pendingChanges) {
-      await handleApprove(change);
+      const success = await handleApprove(change);
+      if (success) successCount += 1;
+      else break;
     }
+
+    if (successCount > 1) {
+      toast({ title: `${successCount} changes approved` });
+    }
+
+    await fetchChanges();
     setBulkProcessing(false);
   };
 
   const markAsRead = async (id: string) => {
-    await supabase
+    const { error } = await supabase
       .from("pending_preference_changes")
       .update({ is_read: true })
       .eq("id", id);
-    fetchChanges();
+
+    if (error) return;
+
+    setChanges((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, is_read: true } : item))
+    );
   };
 
   const formatTimeAgo = (dateStr: string) => {
