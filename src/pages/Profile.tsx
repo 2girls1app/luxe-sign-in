@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import AdminDashboardSection from "@/components/AdminDashboardSection";
+import ClinicalDashboardSection from "@/components/ClinicalDashboardSection";
 interface Facility {
   id: string;
   name: string;
@@ -61,6 +62,7 @@ const Profile = () => {
   const userRole = profile?.role || user?.user_metadata?.profession || "";
   const roleLabel = userRole ? userRole.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) : "";
   const isAdmin = ["administrative", "admin", "admin-staff", "admin staff"].includes(userRole.toLowerCase());
+  const isClinical = ["first-assist", "first assist", "nurse", "anesthesia", "physician-assistant", "physician assistant", "physician assist"].includes(userRole.toLowerCase());
   const username = emailUsername || displayName.toLowerCase().replace(/\s+/g, "");
   const specialty = profile?.specialty || "";
 
@@ -269,13 +271,16 @@ const Profile = () => {
             {/* Admin Dashboard - embedded */}
             {isAdmin && <AdminDashboardSection />}
 
-            {/* Quick Add Procedure - non-admin only */}
-            {!isAdmin && (
+            {/* Clinical Dashboard - embedded */}
+            {isClinical && <ClinicalDashboardSection />}
+
+            {/* Quick Add Procedure - doctor role only */}
+            {!isAdmin && !isClinical && (
               <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" />
             )}
 
             {/* Facilities Section - non-admin only */}
-            {!isAdmin && (
+            {!isAdmin && !isClinical && (
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
@@ -314,7 +319,7 @@ const Profile = () => {
         )}
 
         {/* Procedures Section - only when viewing a specific facility */}
-        {facilityFilter && !isAdmin && (
+        {facilityFilter && !isAdmin && !isClinical && (
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">

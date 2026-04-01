@@ -27,6 +27,11 @@ import AdminEditPrefCard from "./pages/admin/AdminEditPrefCard.tsx";
 import AdminPendingChanges from "./pages/admin/AdminPendingChanges.tsx";
 import AdminUserDetail from "./pages/admin/AdminUserDetail.tsx";
 import Settings from "./pages/Settings.tsx";
+import ClinicalDoctors from "./pages/clinical/ClinicalDoctors.tsx";
+import ClinicalDoctorDetail from "./pages/clinical/ClinicalDoctorDetail.tsx";
+import ClinicalPrefCards from "./pages/clinical/ClinicalPrefCards.tsx";
+import ClinicalProcedureView from "./pages/clinical/ClinicalProcedureView.tsx";
+import ClinicalRequestedChanges from "./pages/clinical/ClinicalRequestedChanges.tsx";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +65,11 @@ const App = () => (
             <Route path="/admin/doctors/:userId" element={<AdminDoctorDetail />} />
             <Route path="/admin/doctors/:userId/procedure/:procedureId" element={<AdminEditPrefCard />} />
             <Route path="/admin/doctors/:userId/pending" element={<AdminPendingChanges />} />
+            <Route path="/clinical/doctors" element={<ClinicalDoctors />} />
+            <Route path="/clinical/doctors/:doctorId" element={<ClinicalDoctorDetail />} />
+            <Route path="/clinical/preference-cards" element={<ClinicalPrefCards />} />
+            <Route path="/clinical/procedure/:procedureId" element={<ClinicalProcedureView />} />
+            <Route path="/clinical/requested-changes" element={<ClinicalRequestedChanges />} />
             <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
