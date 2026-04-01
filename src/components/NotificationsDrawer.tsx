@@ -89,7 +89,7 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
   }, [open, fetchChanges]);
 
   const handleApprove = async (change: PendingChange) => {
-    if (!user || processing || bulkProcessing) return false;
+    if (!user || processing) return false;
     setProcessing(change.id);
 
     try {
@@ -144,7 +144,6 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
       }
 
       setChanges((prev) => prev.filter((item) => item.id !== change.id));
-      onCountChange?.(Math.max(0, pendingCount - 1));
       toast({ title: "Change approved and applied" });
       return true;
     } catch (err: any) {
@@ -177,9 +176,11 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
       }
 
       setChanges((prev) => prev.filter((item) => item.id !== change.id));
-      onCountChange?.(Math.max(0, pendingCount - 1));
       toast({ title: "Change denied" });
       return true;
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+      return false;
     } finally {
       setProcessing(null);
     }
