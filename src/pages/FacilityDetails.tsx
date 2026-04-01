@@ -142,44 +142,6 @@ const FacilityDetails = () => {
           )}
         </div>
 
-        {/* Preference Cards Section */}
-        <div>
-          <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2 mb-3">
-            <ClipboardList size={16} className="text-primary" /> Preference Cards
-          </h2>
-          {procedures.length === 0 ? (
-            <div className="rounded-xl bg-card border border-border p-6 text-center">
-              <ClipboardList size={32} className="mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">No preferences available for this facility</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {procedures.map((proc) => (
-                <motion.button
-                  key={proc.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  onClick={() => navigate(`/procedure/${proc.id}/preferences`)}
-                  className="w-full flex items-center gap-3 rounded-xl bg-card border border-border p-4 hover:border-primary/40 transition-all text-left cursor-pointer"
-                >
-                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <ClipboardList size={16} className="text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{proc.name}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      {proc.category && (
-                        <p className="text-[10px] text-muted-foreground">{proc.category}</p>
-                      )}
-                      <p className="text-[10px] text-primary/70">Dr. {getDoctorName(proc.user_id)}</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={16} className="text-muted-foreground shrink-0" />
-                </motion.button>
-              ))}
-            </div>
-          )}
-        </div>
       </motion.div>
     </div>
   );
