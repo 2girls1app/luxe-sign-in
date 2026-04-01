@@ -44,9 +44,7 @@ const Profile = () => {
       navigate("/clinical-dashboard", { replace: true });
     }
   }, [profile?.role, navigate]);
-  const [searchParams] = useSearchParams();
-  const facilityFilter = searchParams.get("facility");
-  const { user, profile, signOut, refreshProfile } = useAuth();
+  const { toast } = useToast();
   const { toast } = useToast();
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
