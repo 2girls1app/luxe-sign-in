@@ -135,9 +135,6 @@ const FacilityDetails = () => {
                       <p className="text-sm font-medium text-foreground">{doc.display_name}</p>
                       <p className="text-xs text-primary">{doc.specialty || "No specialty"}</p>
                     </div>
-                    <Badge variant="secondary" className="text-[10px] shrink-0">
-                      {procCount} {procCount === 1 ? "card" : "cards"}
-                    </Badge>
                   </motion.div>
                 );
               })}
