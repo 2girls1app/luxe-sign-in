@@ -150,7 +150,6 @@ export type Database = {
       facilities: {
         Row: {
           created_at: string
-          facility_code: string | null
           id: string
           latitude: number | null
           location: string | null
@@ -162,7 +161,6 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          facility_code?: string | null
           id?: string
           latitude?: number | null
           location?: string | null
@@ -174,7 +172,6 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          facility_code?: string | null
           id?: string
           latitude?: number | null
           location?: string | null
@@ -517,7 +514,6 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           display_name: string | null
-          facility_id: string | null
           id: string
           onboarding_completed: boolean
           pandora_connected: boolean
@@ -530,7 +526,6 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
-          facility_id?: string | null
           id?: string
           onboarding_completed?: boolean
           pandora_connected?: boolean
@@ -543,7 +538,6 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
-          facility_id?: string | null
           id?: string
           onboarding_completed?: boolean
           pandora_connected?: boolean
@@ -552,15 +546,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_facility_id_fkey"
-            columns: ["facility_id"]
-            isOneToOne: false
-            referencedRelation: "facilities"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       shared_procedure_cards: {
         Row: {
