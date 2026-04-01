@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
+import { useAuth } from "@/contexts/AuthContext";
 import physicianImg from "@/assets/physician.png";
 import firstAssistImg from "@/assets/first-assist.png";
 import nurseImg from "@/assets/nurse.png";
@@ -21,6 +22,13 @@ const professions = [
 const SelectProfession = () => {
   const [selected, setSelected] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { user, profile, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && user && profile?.onboarding_completed) {
+      navigate("/profile", { replace: true });
+    }
+  }, [loading, user, profile, navigate]);
 
   const handleSubmit = () => {
     if (selected) {

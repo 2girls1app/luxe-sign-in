@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -8,6 +8,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import PasswordInput from "@/components/PasswordInput";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SignUp = () => {
   const [firstName, setFirstName] = useState("");
@@ -23,6 +24,13 @@ const SignUp = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const profession = (location.state as any)?.profession || "";
+  const { user: authUser, profile, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && authUser && profile?.onboarding_completed) {
+      navigate("/profile", { replace: true });
+    }
+  }, [authLoading, authUser, profile, navigate]);
 
   const handleSubmit = async () => {
     if (!firstName || !lastName || !email || !password || password !== confirmPassword || !captcha) return;

@@ -33,6 +33,13 @@ const ProfilePicture = () => {
       if (preview) {
         localStorage.setItem("avatar_preview", preview);
       }
+      // Mark onboarding complete even if skipping photo
+      if (user) {
+        await supabase
+          .from("profiles")
+          .update({ onboarding_completed: true })
+          .eq("user_id", user.id);
+      }
       navigate("/profile");
       return;
     }
@@ -54,12 +61,10 @@ const ProfilePicture = () => {
 
       await supabase
         .from("profiles")
-        .update({ avatar_url: publicUrl })
+        .update({ avatar_url: publicUrl, onboarding_completed: true })
         .eq("user_id", user.id);
 
       localStorage.setItem("avatar_preview", publicUrl);
-      const role = user?.user_metadata?.profession;
-      const isAdmin = role === "administrative" || role === "admin" || role === "admin-staff";
       navigate("/profile");
     } catch (error: any) {
       toast({

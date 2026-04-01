@@ -22,7 +22,7 @@ const AuthCallback = () => {
         .eq("user_id", session.user.id)
         .single();
 
-      if (!profile?.role) {
+      if (!profile?.role || !profile?.onboarding_completed) {
         navigate("/select-profession", { replace: true });
       } else {
         navigate("/profile", { replace: true });
