@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
-const APPROVED_FACILITIES = [
+const APPROVED_FACILITIES: { name: string; code: string }[] = [
   { name: "Emory Medical Center", code: "EMC-4827" },
   { name: "Northside Hospital Duluth", code: "NSD-6154" },
   { name: "Northside Hospital Gwinnett", code: "NSG-7309" },
@@ -23,6 +23,8 @@ const AddFacilityDialog = ({ onAdded, existingFacilityNames = [] }: AddFacilityD
   const [open, setOpen] = useState(false);
   const [nameQuery, setNameQuery] = useState("");
   const [selectedFacility, setSelectedFacility] = useState<typeof APPROVED_FACILITIES[0] | null>(null);
+  const [facilityCode, setFacilityCode] = useState("");
+  const [codeError, setCodeError] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -41,6 +43,8 @@ const AddFacilityDialog = ({ onAdded, existingFacilityNames = [] }: AddFacilityD
   const resetForm = () => {
     setNameQuery("");
     setSelectedFacility(null);
+    setFacilityCode("");
+    setCodeError("");
     setNotes("");
     setShowDropdown(false);
   };
@@ -48,17 +52,37 @@ const AddFacilityDialog = ({ onAdded, existingFacilityNames = [] }: AddFacilityD
   const handleSelectFacility = (facility: typeof APPROVED_FACILITIES[0]) => {
     setSelectedFacility(facility);
     setNameQuery(facility.name);
+    setFacilityCode("");
+    setCodeError("");
     setShowDropdown(false);
   };
 
   const handleNameChange = (val: string) => {
     setNameQuery(val);
     setSelectedFacility(null);
+    setFacilityCode("");
+    setCodeError("");
     setShowDropdown(true);
   };
 
+  const handleCodeChange = (val: string) => {
+    setFacilityCode(val);
+    if (codeError) setCodeError("");
+  };
+
+  const codeMatches = selectedFacility && facilityCode.trim().toUpperCase() === selectedFacility.code.toUpperCase();
+  const isValid = selectedFacility && facilityCode.trim() && codeMatches;
+
   const handleSubmit = async () => {
     if (!user || !selectedFacility) return;
+    if (!facilityCode.trim()) {
+      setCodeError("Facility Code is required");
+      return;
+    }
+    if (!codeMatches) {
+      setCodeError("Facility code does not match selected facility");
+      return;
+    }
 
     setLoading(true);
     const { error } = await supabase.from("facilities").insert({
@@ -125,6 +149,18 @@ const AddFacilityDialog = ({ onAdded, existingFacilityNames = [] }: AddFacilityD
             )}
           </div>
 
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Facility Code *</label>
+            <Input
+              placeholder="Enter facility code"
+              value={facilityCode}
+              onChange={(e) => handleCodeChange(e.target.value)}
+              disabled={!selectedFacility}
+              className={`bg-secondary border-border text-foreground placeholder:text-muted-foreground ${codeError ? "border-destructive" : ""}`}
+            />
+            {codeError && <p className="text-xs text-destructive mt-1">{codeError}</p>}
+          </div>
+
           <Textarea
             placeholder="Notes (optional)"
             value={notes}
@@ -133,7 +169,7 @@ const AddFacilityDialog = ({ onAdded, existingFacilityNames = [] }: AddFacilityD
             rows={2}
           />
 
-          <Button onClick={handleSubmit} disabled={!selectedFacility || loading} className="rounded-full">
+          <Button onClick={handleSubmit} disabled={!isValid || loading} className="rounded-full">
             {loading ? "Adding..." : "Save Facility"}
           </Button>
         </div>
