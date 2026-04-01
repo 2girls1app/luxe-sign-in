@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,13 @@ import { Plus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useNPPESFacilitySearch, NPPESFacility } from "@/hooks/useNPPESFacilitySearch";
+
+interface FacilityOption {
+  id: string;
+  name: string;
+  location: string | null;
+  facility_code: string | null;
+}
 
 interface AddFacilityDialogProps {
   onAdded: () => void;
@@ -16,63 +22,80 @@ interface AddFacilityDialogProps {
 const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
   const [open, setOpen] = useState(false);
   const [nameQuery, setNameQuery] = useState("");
-  const [selectedFacility, setSelectedFacility] = useState<NPPESFacility | null>(null);
-  const [manualName, setManualName] = useState("");
+  const [selectedFacility, setSelectedFacility] = useState<FacilityOption | null>(null);
   const [facilityCode, setFacilityCode] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [codeError, setCodeError] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [allFacilities, setAllFacilities] = useState<FacilityOption[]>([]);
+  const [fetchingFacilities, setFetchingFacilities] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { results, loading: searching } = useNPPESFacilitySearch(nameQuery, showDropdown);
+  // Fetch all facilities with demo codes when dialog opens
+  useEffect(() => {
+    if (!open) return;
+    const fetchFacilities = async () => {
+      setFetchingFacilities(true);
+      const { data } = await supabase
+        .from("facilities")
+        .select("id, name, location, facility_code")
+        .not("facility_code", "is", null)
+        .neq("facility_code", "")
+        .order("name");
+      setAllFacilities((data as FacilityOption[]) || []);
+      setFetchingFacilities(false);
+    };
+    fetchFacilities();
+  }, [open]);
+
+  const filteredFacilities = nameQuery.trim().length > 0
+    ? allFacilities.filter((f) => {
+        const q = nameQuery.toLowerCase();
+        return (
+          f.name.toLowerCase().includes(q) ||
+          (f.location && f.location.toLowerCase().includes(q))
+        );
+      })
+    : allFacilities;
 
   const resetForm = () => {
     setNameQuery("");
     setSelectedFacility(null);
-    setManualName("");
     setFacilityCode("");
     setNotes("");
     setCodeError("");
     setShowDropdown(false);
   };
 
-  const facilityName = selectedFacility?.name || manualName.trim();
-  const isValid = facilityName && facilityCode.trim();
+  const isValid = selectedFacility && facilityCode.trim();
 
-  const handleSelectFacility = (facility: NPPESFacility) => {
+  const handleSelectFacility = (facility: FacilityOption) => {
     setSelectedFacility(facility);
     setNameQuery(facility.name);
-    setManualName("");
     setShowDropdown(false);
   };
 
   const handleNameChange = (val: string) => {
     setNameQuery(val);
     setSelectedFacility(null);
-    setManualName(val);
-    setShowDropdown(val.trim().length >= 3);
+    setShowDropdown(true);
   };
 
   const handleSubmit = async () => {
-    if (!user) return;
+    if (!user || !selectedFacility) return;
     if (!facilityCode.trim()) {
       setCodeError("Facility Code is required");
       return;
     }
-    if (!isValid) return;
-
-    const address = selectedFacility
-      ? [selectedFacility.address, selectedFacility.city, selectedFacility.state, selectedFacility.zip].filter(Boolean).join(", ")
-      : null;
 
     setLoading(true);
     const { error } = await supabase.from("facilities").insert({
       user_id: user.id,
-      name: facilityName,
-      location: address,
+      name: selectedFacility.name,
+      location: selectedFacility.location,
       facility_code: facilityCode.trim(),
       notes: notes.trim() || null,
     } as any);
@@ -105,29 +128,37 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
               placeholder="Search facility by name"
               value={nameQuery}
               onChange={(e) => handleNameChange(e.target.value)}
-              onFocus={() => { if (nameQuery.trim().length >= 3) setShowDropdown(true); }}
+              onFocus={() => setShowDropdown(true)}
               onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
               className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
             />
-            {showDropdown && (searching || results.length > 0) && (
+            {showDropdown && (
               <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
-                {searching && (
+                {fetchingFacilities ? (
                   <div className="flex items-center gap-2 p-3 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Searching...
+                    <Loader2 className="h-4 w-4 animate-spin" /> Loading facilities...
                   </div>
+                ) : filteredFacilities.length === 0 ? (
+                  <div className="p-3 text-sm text-muted-foreground text-center">
+                    No facilities with demo codes found
+                  </div>
+                ) : (
+                  filteredFacilities.slice(0, 10).map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      className="w-full text-left px-3 py-2 hover:bg-accent text-sm cursor-pointer"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => handleSelectFacility(f)}
+                    >
+                      <div className="font-medium text-foreground">{f.name}</div>
+                      <div className="text-xs text-muted-foreground flex justify-between">
+                        <span>{f.location || ""}</span>
+                        <span className="font-mono">{f.facility_code}</span>
+                      </div>
+                    </button>
+                  ))
                 )}
-                {results.map((f) => (
-                  <button
-                    key={f.npi}
-                    type="button"
-                    className="w-full text-left px-3 py-2 hover:bg-accent text-sm cursor-pointer"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => handleSelectFacility(f)}
-                  >
-                    <div className="font-medium text-foreground">{f.name}</div>
-                    <div className="text-xs text-muted-foreground">{[f.address, f.city, f.state, f.zip].filter(Boolean).join(", ")}</div>
-                  </button>
-                ))}
               </div>
             )}
           </div>
