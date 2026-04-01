@@ -30,11 +30,20 @@ interface Procedure {
   is_favorite: boolean;
 }
 
+const CLINICAL_ROLES = ["first-assist", "first assist", "nurse", "physician-assist", "physician assist", "physician assistant", "anesthesia"];
+
 const Profile = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const facilityFilter = searchParams.get("facility");
   const { user, profile, signOut, refreshProfile } = useAuth();
+
+  // Redirect clinical staff to their dedicated dashboard
+  useEffect(() => {
+    if (profile?.role && CLINICAL_ROLES.includes(profile.role.toLowerCase())) {
+      navigate("/clinical-dashboard", { replace: true });
+    }
+  }, [profile?.role, navigate]);
   const { toast } = useToast();
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
