@@ -60,16 +60,24 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onCli
   const isMedication = category.key === "medication";
   const isSteps = category.key === "steps";
 
-  const getJsonPreview = () => {
+  const getPreviewText = (): string | null => {
     if (!value) return null;
     try {
       const parsed = JSON.parse(value);
       if (Array.isArray(parsed)) {
+        if (parsed.length === 0) return null;
         if (isMedication) return `${parsed.length} med${parsed.length !== 1 ? "s" : ""}`;
         if (isSteps) return `${parsed.length} step${parsed.length !== 1 ? "s" : ""}`;
+        const names = parsed.map((item: any) => (typeof item === "object" && item !== null ? (item.name || item.label || "Item") : String(item)));
+        if (names.length === 1) return names[0];
+        if (names.length === 2) return names.join(", ");
+        return `${names[0]} + ${names.length - 1} more`;
+      }
+      if (typeof parsed === "object" && parsed !== null) {
+        return parsed.name || parsed.label || "1 item selected";
       }
     } catch {
-      return value;
+      // Not JSON, return as plain string
     }
     return value;
   };
@@ -100,7 +108,7 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onCli
       )}
       {!isFile && hasValue && (
         <span className="text-[10px] text-muted-foreground truncate max-w-full px-1">
-          {(isMedication || isSteps) ? getJsonPreview() : value}
+          {getPreviewText()}
         </span>
       )}
     </motion.button>
