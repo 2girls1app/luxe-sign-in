@@ -15,28 +15,10 @@ interface FacilityInfo {
   location: string | null;
 }
 
-interface DoctorProfile {
-  user_id: string;
-  display_name: string | null;
-  avatar_url: string | null;
-  specialty: string | null;
-}
-
-interface DoctorProcedure {
-  id: string;
-  name: string;
-  category: string | null;
-  user_id: string;
-}
-
 const ClinicalDashboard = () => {
   const navigate = useNavigate();
   const { user, profile, signOut, refreshProfile } = useAuth();
   const [facility, setFacility] = useState<FacilityInfo | null>(null);
-  const [doctors, setDoctors] = useState<DoctorProfile[]>([]);
-  const [procedures, setProcedures] = useState<DoctorProcedure[]>([]);
-  const [selectedDoctor, setSelectedDoctor] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
 
@@ -58,26 +40,6 @@ const ClinicalDashboard = () => {
     if (data) setFacility(data);
   }, [profile?.facility_id]);
 
-  const fetchDoctors = useCallback(async () => {
-    if (!profile?.facility_id) return;
-    const { data } = await supabase
-      .from("profiles")
-      .select("user_id, display_name, avatar_url, specialty")
-      .eq("facility_id", profile.facility_id)
-      .eq("role", "surgeon");
-    if (data) setDoctors(data.sort((a, b) => (a.display_name || "").localeCompare(b.display_name || "")));
-  }, [profile?.facility_id]);
-
-  const fetchProcedures = useCallback(async () => {
-    if (!profile?.facility_id) return;
-    const { data } = await supabase
-      .from("procedures")
-      .select("id, name, category, user_id")
-      .eq("facility_id", profile.facility_id)
-      .order("name");
-    if (data) setProcedures(data as DoctorProcedure[]);
-  }, [profile?.facility_id]);
-
   const fetchPendingCount = useCallback(async () => {
     if (!user) return;
     const { count } = await supabase
@@ -91,10 +53,8 @@ const ClinicalDashboard = () => {
   useEffect(() => {
     refreshProfile();
     fetchFacility();
-    fetchDoctors();
-    fetchProcedures();
     fetchPendingCount();
-  }, [fetchFacility, fetchDoctors, fetchProcedures, fetchPendingCount]);
+  }, [fetchFacility, fetchPendingCount]);
 
   const handleSignOut = async () => {
     await signOut();
