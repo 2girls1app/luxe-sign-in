@@ -23,10 +23,8 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
   const [open, setOpen] = useState(false);
   const [nameQuery, setNameQuery] = useState("");
   const [selectedFacility, setSelectedFacility] = useState<FacilityOption | null>(null);
-  const [facilityCode, setFacilityCode] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
-  const [codeError, setCodeError] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [allFacilities, setAllFacilities] = useState<FacilityOption[]>([]);
   const [fetchingFacilities, setFetchingFacilities] = useState(false);
@@ -34,7 +32,6 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
   const { toast } = useToast();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fetch all facilities with demo codes when dialog opens
   useEffect(() => {
     if (!open) return;
     const fetchFacilities = async () => {
@@ -64,13 +61,9 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
   const resetForm = () => {
     setNameQuery("");
     setSelectedFacility(null);
-    setFacilityCode("");
     setNotes("");
-    setCodeError("");
     setShowDropdown(false);
   };
-
-  const isValid = selectedFacility && facilityCode.trim();
 
   const handleSelectFacility = (facility: FacilityOption) => {
     setSelectedFacility(facility);
@@ -86,17 +79,13 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
 
   const handleSubmit = async () => {
     if (!user || !selectedFacility) return;
-    if (!facilityCode.trim()) {
-      setCodeError("Facility Code is required");
-      return;
-    }
 
     setLoading(true);
     const { error } = await supabase.from("facilities").insert({
       user_id: user.id,
       name: selectedFacility.name,
       location: selectedFacility.location,
-      facility_code: facilityCode.trim(),
+      facility_code: selectedFacility.facility_code,
       notes: notes.trim() || null,
     } as any);
     setLoading(false);
@@ -140,7 +129,7 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
                   </div>
                 ) : filteredFacilities.length === 0 ? (
                   <div className="p-3 text-sm text-muted-foreground text-center">
-                    No facilities with demo codes found
+                    No facilities found
                   </div>
                 ) : (
                   filteredFacilities.slice(0, 10).map((f) => (
@@ -152,26 +141,14 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
                       onClick={() => handleSelectFacility(f)}
                     >
                       <div className="font-medium text-foreground">{f.name}</div>
-                      <div className="text-xs text-muted-foreground flex justify-between">
-                        <span>{f.location || ""}</span>
-                        <span className="font-mono">{f.facility_code}</span>
-                      </div>
+                      {f.location && (
+                        <div className="text-xs text-muted-foreground">{f.location}</div>
+                      )}
                     </button>
                   ))
                 )}
               </div>
             )}
-          </div>
-
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Facility Code *</label>
-            <Input
-              placeholder="Enter facility code"
-              value={facilityCode}
-              onChange={(e) => { setFacilityCode(e.target.value); setCodeError(""); }}
-              className={`bg-secondary border-border text-foreground placeholder:text-muted-foreground ${codeError ? "border-destructive" : ""}`}
-            />
-            {codeError && <p className="text-xs text-destructive mt-1">{codeError}</p>}
           </div>
 
           <Textarea
@@ -182,7 +159,7 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
             rows={2}
           />
 
-          <Button onClick={handleSubmit} disabled={!isValid || loading} className="rounded-full">
+          <Button onClick={handleSubmit} disabled={!selectedFacility || loading} className="rounded-full">
             {loading ? "Adding..." : "Save Facility"}
           </Button>
         </div>
