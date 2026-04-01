@@ -394,6 +394,7 @@ const Profile = () => {
                     facilityName={getFacilityName(p.facility_id)}
                     notes={p.notes}
                     isFavorite={p.is_favorite}
+                    hasRoboticItems={roboticProcedureIds.has(p.id)}
                     onDelete={deleteProcedure}
                     onToggleFavorite={toggleFavorite}
                   />
