@@ -8,18 +8,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
-const APPROVED_FACILITIES: { name: string; code: string }[] = [
-  { name: "Emory Medical Center", code: "EMC-4827" },
-  { name: "Northside Hospital Duluth", code: "NSD-6154" },
-  { name: "Northside Hospital Gwinnett", code: "NSG-7309" },
+const APPROVED_FACILITIES: { name: string; code: string; facilityId: string }[] = [
+  { name: "Emory Medical Center", code: "EMC-4827", facilityId: "ee2a97d8-c191-4190-a9bc-749837f5de86" },
+  { name: "Northside Hospital Duluth", code: "NSD-6154", facilityId: "6e5219ec-9ab4-42d7-a98e-75181416f917" },
+  { name: "Northside Hospital Gwinnett", code: "NSG-7309", facilityId: "14cd4d26-d27b-4b02-8a28-11a8b57a6dbe" },
 ];
 
 interface AddFacilityDialogProps {
   onAdded: () => void;
-  existingFacilityNames?: string[];
+  existingFacilityIds?: string[];
 }
 
-const AddFacilityDialog = ({ onAdded, existingFacilityNames = [] }: AddFacilityDialogProps) => {
+const AddFacilityDialog = ({ onAdded, existingFacilityIds = [] }: AddFacilityDialogProps) => {
   const [open, setOpen] = useState(false);
   const [nameQuery, setNameQuery] = useState("");
   const [selectedFacility, setSelectedFacility] = useState<typeof APPROVED_FACILITIES[0] | null>(null);
@@ -33,7 +33,7 @@ const AddFacilityDialog = ({ onAdded, existingFacilityNames = [] }: AddFacilityD
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const availableFacilities = APPROVED_FACILITIES.filter(
-    (f) => !existingFacilityNames.some((n) => n.toLowerCase() === f.name.toLowerCase())
+    (f) => !existingFacilityIds.includes(f.facilityId)
   );
 
   const filteredFacilities = nameQuery.trim().length > 0
@@ -85,15 +85,17 @@ const AddFacilityDialog = ({ onAdded, existingFacilityNames = [] }: AddFacilityD
     }
 
     setLoading(true);
-    const { error } = await supabase.from("facilities").insert({
+    const { error } = await supabase.from("doctor_facilities" as any).insert({
       user_id: user.id,
-      name: selectedFacility.name,
-      facility_code: selectedFacility.code,
-      notes: notes.trim() || null,
+      facility_id: selectedFacility.facilityId,
     } as any);
     setLoading(false);
     if (error) {
-      toast({ title: "Error adding facility", description: error.message, variant: "destructive" });
+      if (error.code === "23505") {
+        toast({ title: "Already added", description: "This facility is already linked to your profile.", variant: "destructive" });
+      } else {
+        toast({ title: "Error adding facility", description: error.message, variant: "destructive" });
+      }
     } else {
       toast({ title: "Facility added" });
       resetForm();
@@ -135,7 +137,7 @@ const AddFacilityDialog = ({ onAdded, existingFacilityNames = [] }: AddFacilityD
                 ) : (
                   filteredFacilities.map((f) => (
                     <button
-                      key={f.code}
+                      key={f.facilityId}
                       type="button"
                       className="w-full text-left px-3 py-2 hover:bg-accent text-sm cursor-pointer"
                       onMouseDown={(e) => e.preventDefault()}
