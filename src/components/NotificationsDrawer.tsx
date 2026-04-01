@@ -39,6 +39,7 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
   const [filter, setFilter] = useState<FilterStatus>("pending");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
+  const [bulkProcessing, setBulkProcessing] = useState(false);
 
   const getCategoryLabel = (key: string) => {
     const cat = PREFERENCE_CATEGORIES.find((c) => c.key === key);
