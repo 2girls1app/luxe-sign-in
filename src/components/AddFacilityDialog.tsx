@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useNPPESFacilitySearch, NPPESFacility } from "@/hooks/useNPPESFacilitySearch";
 
 interface AddFacilityDialogProps {
   onAdded: () => void;
@@ -14,24 +15,46 @@ interface AddFacilityDialogProps {
 
 const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [location, setLocation] = useState("");
+  const [nameQuery, setNameQuery] = useState("");
+  const [selectedFacility, setSelectedFacility] = useState<NPPESFacility | null>(null);
+  const [manualName, setManualName] = useState("");
   const [facilityCode, setFacilityCode] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [codeError, setCodeError] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const { results, loading: searching } = useNPPESFacilitySearch(nameQuery, showDropdown);
 
   const resetForm = () => {
-    setName("");
-    setLocation("");
+    setNameQuery("");
+    setSelectedFacility(null);
+    setManualName("");
     setFacilityCode("");
     setNotes("");
     setCodeError("");
+    setShowDropdown(false);
   };
 
-  const isValid = name.trim() && location.trim() && facilityCode.trim();
+  const facilityName = selectedFacility?.name || manualName.trim();
+  const isValid = facilityName && facilityCode.trim();
+
+  const handleSelectFacility = (facility: NPPESFacility) => {
+    setSelectedFacility(facility);
+    setNameQuery(facility.name);
+    setManualName("");
+    setShowDropdown(false);
+  };
+
+  const handleNameChange = (val: string) => {
+    setNameQuery(val);
+    setSelectedFacility(null);
+    setManualName(val);
+    setShowDropdown(val.trim().length >= 3);
+  };
 
   const handleSubmit = async () => {
     if (!user) return;
@@ -41,11 +64,15 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
     }
     if (!isValid) return;
 
+    const address = selectedFacility
+      ? [selectedFacility.address, selectedFacility.city, selectedFacility.state, selectedFacility.zip].filter(Boolean).join(", ")
+      : null;
+
     setLoading(true);
     const { error } = await supabase.from("facilities").insert({
       user_id: user.id,
-      name: name.trim(),
-      location: location.trim(),
+      name: facilityName,
+      location: address,
       facility_code: facilityCode.trim(),
       notes: notes.trim() || null,
     } as any);
@@ -72,24 +99,37 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
           <DialogTitle className="text-foreground">Add Facility</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-3 mt-2">
-          <div>
+          <div className="relative" ref={dropdownRef}>
             <label className="text-xs text-muted-foreground mb-1 block">Facility Name *</label>
             <Input
-              placeholder="Facility name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="Search facility by name"
+              value={nameQuery}
+              onChange={(e) => handleNameChange(e.target.value)}
+              onFocus={() => { if (nameQuery.trim().length >= 3) setShowDropdown(true); }}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
               className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
             />
-          </div>
-
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Address *</label>
-            <Input
-              placeholder="Facility address"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
-            />
+            {showDropdown && (searching || results.length > 0) && (
+              <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                {searching && (
+                  <div className="flex items-center gap-2 p-3 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Searching...
+                  </div>
+                )}
+                {results.map((f) => (
+                  <button
+                    key={f.npi}
+                    type="button"
+                    className="w-full text-left px-3 py-2 hover:bg-accent text-sm cursor-pointer"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleSelectFacility(f)}
+                  >
+                    <div className="font-medium text-foreground">{f.name}</div>
+                    <div className="text-xs text-muted-foreground">{[f.address, f.city, f.state, f.zip].filter(Boolean).join(", ")}</div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
