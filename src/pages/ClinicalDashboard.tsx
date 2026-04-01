@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 interface FacilityInfo {
