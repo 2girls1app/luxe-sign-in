@@ -275,9 +275,10 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
               size="sm"
               className="text-xs h-8"
               onClick={handleApproveAll}
+              disabled={bulkProcessing}
             >
               <Check size={14} className="mr-1" />
-              Approve All ({pendingCount})
+              {bulkProcessing ? "Processing..." : `Approve All (${pendingCount})`}
             </Button>
           )}
 
