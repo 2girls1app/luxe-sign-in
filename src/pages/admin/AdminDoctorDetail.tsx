@@ -114,6 +114,7 @@ const AdminDoctorDetail = () => {
           onAdded={fetchData}
           forUserId={userId}
           triggerVariant="prominent"
+          defaultSpecialty={doctor?.specialty || undefined}
         />
 
         {/* Procedures list */}
