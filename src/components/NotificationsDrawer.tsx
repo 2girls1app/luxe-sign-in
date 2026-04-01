@@ -91,38 +91,57 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
     if (!user) return;
     setProcessing(change.id);
 
-    // Apply the change to the live preference card
-    const { error: upsertError } = await supabase
-      .from("procedure_preferences")
-      .upsert(
-        {
-          procedure_id: change.procedure_id,
-          user_id: user.id,
-          category: change.category,
-          value: change.new_value,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "procedure_id,category" }
-      );
+    try {
+      // Get the procedure owner's user_id
+      const { data: proc } = await supabase
+        .from("procedures")
+        .select("user_id")
+        .eq("id", change.procedure_id)
+        .single();
 
-    if (upsertError) {
-      toast({ title: "Error applying change", description: upsertError.message, variant: "destructive" });
-      setProcessing(null);
-      return;
+      const ownerId = proc?.user_id || user.id;
+
+      // Apply the change to the live preference card
+      const { error: upsertError } = await supabase
+        .from("procedure_preferences")
+        .upsert(
+          {
+            procedure_id: change.procedure_id,
+            user_id: ownerId,
+            category: change.category,
+            value: change.new_value,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "procedure_id,user_id,category" }
+        );
+
+      if (upsertError) {
+        toast({ title: "Error applying change", description: upsertError.message, variant: "destructive" });
+        setProcessing(null);
+        return;
+      }
+
+      // Mark as approved
+      const { error: updateError } = await supabase
+        .from("pending_preference_changes")
+        .update({
+          status: "approved",
+          reviewed_by: user.id,
+          reviewed_at: new Date().toISOString(),
+          is_read: true,
+        })
+        .eq("id", change.id);
+
+      if (updateError) {
+        toast({ title: "Error updating status", description: updateError.message, variant: "destructive" });
+        setProcessing(null);
+        return;
+      }
+
+      toast({ title: "Change approved and applied" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
-
-    // Mark as approved
-    await supabase
-      .from("pending_preference_changes")
-      .update({
-        status: "approved",
-        reviewed_by: user.id,
-        reviewed_at: new Date().toISOString(),
-        is_read: true,
-      })
-      .eq("id", change.id);
-
-    toast({ title: "Change approved and applied" });
     setProcessing(null);
     fetchChanges();
   };
