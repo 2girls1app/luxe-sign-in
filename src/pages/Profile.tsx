@@ -94,9 +94,47 @@ const Profile = () => {
 
   const fetchProcedures = useCallback(async () => {
     if (!user) return;
-    // Doctors only see their own procedures
     const { data } = await supabase.from("procedures").select("id, name, category, facility_id, notes, is_favorite").eq("user_id", user.id);
-    if (data) setProcedures(data as Procedure[]);
+    if (data) {
+      setProcedures(data as Procedure[]);
+      // Fetch which procedures have robotic instruments
+      const procIds = data.map((p: any) => p.id);
+      if (procIds.length > 0) {
+        const { data: roboticData } = await supabase
+          .from("procedure_preferences")
+          .select("procedure_id")
+          .in("procedure_id", procIds)
+          .eq("category", "robotic_instruments");
+        if (roboticData) {
+          const ids = new Set<string>();
+          roboticData.forEach((r: any) => {
+            // Check if value is non-empty
+            try {
+              const parsed = JSON.parse(r.procedure_id === r.procedure_id ? "[]" : "[]");
+              ids.add(r.procedure_id);
+            } catch {
+              ids.add(r.procedure_id);
+            }
+          });
+          // Filter to only those with non-empty values
+          const { data: roboticWithValues } = await supabase
+            .from("procedure_preferences")
+            .select("procedure_id, value")
+            .in("procedure_id", procIds)
+            .eq("category", "robotic_instruments");
+          const validIds = new Set<string>();
+          roboticWithValues?.forEach((r: any) => {
+            try {
+              const val = JSON.parse(r.value);
+              if (Array.isArray(val) && val.length > 0) validIds.add(r.procedure_id);
+            } catch {
+              if (r.value && r.value.trim() && r.value.trim() !== '[]') validIds.add(r.procedure_id);
+            }
+          });
+          setRoboticProcedureIds(validIds);
+        }
+      }
+    }
   }, [user]);
 
 
