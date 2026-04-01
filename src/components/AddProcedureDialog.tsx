@@ -104,6 +104,16 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
               <p className="text-xs text-muted-foreground mt-1">Add a facility first to create a procedure</p>
             )}
           </div>
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger className="bg-secondary border-border text-foreground">
+              <SelectValue placeholder="Surgery specialty *" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border">
+              {SURGERY_SPECIALTIES.map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Textarea placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} className="bg-secondary border-border text-foreground placeholder:text-muted-foreground resize-none" rows={3} />
           <Button onClick={handleSubmit} disabled={!name.trim() || facilities.length === 0 || loading} className="rounded-full">
             {loading ? "Adding..." : "Save Procedure"}
