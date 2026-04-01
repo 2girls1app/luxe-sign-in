@@ -22,6 +22,13 @@ const professions = [
 const SelectProfession = () => {
   const [selected, setSelected] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { user, profile, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && user && profile?.onboarding_completed) {
+      navigate("/profile", { replace: true });
+    }
+  }, [loading, user, profile, navigate]);
 
   const handleSubmit = () => {
     if (selected) {

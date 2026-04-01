@@ -44,7 +44,7 @@ const Index = () => {
           .select("role, onboarding_completed")
           .eq("user_id", session.user.id)
           .single();
-        if (!profile?.role) {
+        if (!profile?.role || !profile?.onboarding_completed) {
           navigate("/select-profession");
         } else {
           navigate("/profile");

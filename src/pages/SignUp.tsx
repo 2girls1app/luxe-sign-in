@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -8,8 +8,16 @@ import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import PasswordInput from "@/components/PasswordInput";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SignUp = () => {
+  const { user: authUser, profile, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && authUser && profile?.onboarding_completed) {
+      navigate("/profile", { replace: true });
+    }
+  }, [authLoading, authUser, profile]);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");

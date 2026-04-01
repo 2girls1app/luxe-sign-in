@@ -33,6 +33,13 @@ const ProfilePicture = () => {
       if (preview) {
         localStorage.setItem("avatar_preview", preview);
       }
+      // Mark onboarding complete even if skipping photo
+      if (user) {
+        await supabase
+          .from("profiles")
+          .update({ onboarding_completed: true })
+          .eq("user_id", user.id);
+      }
       navigate("/profile");
       return;
     }
