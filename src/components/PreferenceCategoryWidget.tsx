@@ -108,7 +108,7 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onCli
       )}
       {!isFile && hasValue && (
         <span className="text-[10px] text-muted-foreground truncate max-w-full px-1">
-          {(isMedication || isSteps) ? getJsonPreview() : value}
+          {getPreviewText()}
         </span>
       )}
     </motion.button>
