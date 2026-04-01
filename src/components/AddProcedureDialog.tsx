@@ -6,6 +6,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
+const SURGERY_SPECIALTIES = [
+  "General Surgery",
+  "Orthopedic Surgery",
+  "Neurosurgery",
+  "ENT",
+  "Cardiothoracic Surgery",
+  "Plastic Surgery",
+  "OB/GYN",
+  "Urology",
+  "Vascular Surgery",
+  "Pediatric Surgery",
+  "Trauma Surgery",
+  "Bariatric Surgery",
+  "Ophthalmology",
+  "Podiatry",
+  "Oncologic Surgery",
+];
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
