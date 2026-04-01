@@ -62,6 +62,7 @@ const Profile = () => {
   const userRole = profile?.role || user?.user_metadata?.profession || "";
   const roleLabel = userRole ? userRole.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) : "";
   const isAdmin = ["administrative", "admin", "admin-staff", "admin staff"].includes(userRole.toLowerCase());
+  const isClinical = ["first-assist", "first assist", "nurse", "anesthesia", "physician-assistant", "physician assistant", "physician assist"].includes(userRole.toLowerCase());
   const username = emailUsername || displayName.toLowerCase().replace(/\s+/g, "");
   const specialty = profile?.specialty || "";
 
