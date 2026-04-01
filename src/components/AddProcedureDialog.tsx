@@ -53,10 +53,11 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
   const { toast } = useToast();
 
   useEffect(() => {
-    if (open && preselectedFacilityId) {
-      setFacilityId(preselectedFacilityId);
+    if (open) {
+      if (preselectedFacilityId) setFacilityId(preselectedFacilityId);
+      if (defaultSpecialty) setCategory(defaultSpecialty);
     }
-  }, [open, preselectedFacilityId]);
+  }, [open, preselectedFacilityId, defaultSpecialty]);
 
   const handleSubmit = async () => {
     if (!name.trim() || !user) return;
