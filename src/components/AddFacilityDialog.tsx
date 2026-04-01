@@ -1,62 +1,42 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
-interface FacilityOption {
-  id: string;
-  name: string;
-  location: string | null;
-  facility_code: string | null;
-}
+const APPROVED_FACILITIES = [
+  { name: "Emory Medical Center", code: "EMC-4827" },
+  { name: "Northside Hospital Duluth", code: "NSD-6154" },
+  { name: "Northside Hospital Gwinnett", code: "NSG-7309" },
+];
 
 interface AddFacilityDialogProps {
   onAdded: () => void;
+  existingFacilityNames?: string[];
 }
 
-const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
+const AddFacilityDialog = ({ onAdded, existingFacilityNames = [] }: AddFacilityDialogProps) => {
   const [open, setOpen] = useState(false);
   const [nameQuery, setNameQuery] = useState("");
-  const [selectedFacility, setSelectedFacility] = useState<FacilityOption | null>(null);
+  const [selectedFacility, setSelectedFacility] = useState<typeof APPROVED_FACILITIES[0] | null>(null);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [allFacilities, setAllFacilities] = useState<FacilityOption[]>([]);
-  const [fetchingFacilities, setFetchingFacilities] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const fetchFacilities = async () => {
-      setFetchingFacilities(true);
-      const { data } = await supabase
-        .from("facilities")
-        .select("id, name, location, facility_code")
-        .not("facility_code", "is", null)
-        .neq("facility_code", "")
-        .order("name");
-      setAllFacilities((data as FacilityOption[]) || []);
-      setFetchingFacilities(false);
-    };
-    fetchFacilities();
-  }, [open]);
+  const availableFacilities = APPROVED_FACILITIES.filter(
+    (f) => !existingFacilityNames.some((n) => n.toLowerCase() === f.name.toLowerCase())
+  );
 
   const filteredFacilities = nameQuery.trim().length > 0
-    ? allFacilities.filter((f) => {
-        const q = nameQuery.toLowerCase();
-        return (
-          f.name.toLowerCase().includes(q) ||
-          (f.location && f.location.toLowerCase().includes(q))
-        );
-      })
-    : allFacilities;
+    ? availableFacilities.filter((f) => f.name.toLowerCase().includes(nameQuery.toLowerCase()))
+    : availableFacilities;
 
   const resetForm = () => {
     setNameQuery("");
@@ -65,7 +45,7 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
     setShowDropdown(false);
   };
 
-  const handleSelectFacility = (facility: FacilityOption) => {
+  const handleSelectFacility = (facility: typeof APPROVED_FACILITIES[0]) => {
     setSelectedFacility(facility);
     setNameQuery(facility.name);
     setShowDropdown(false);
@@ -84,8 +64,7 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
     const { error } = await supabase.from("facilities").insert({
       user_id: user.id,
       name: selectedFacility.name,
-      location: selectedFacility.location,
-      facility_code: selectedFacility.facility_code,
+      facility_code: selectedFacility.code,
       notes: notes.trim() || null,
     } as any);
     setLoading(false);
@@ -99,10 +78,12 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
     }
   };
 
+  const allAssigned = availableFacilities.length === 0;
+
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
+        <Button size="sm" className="gap-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={allAssigned}>
           <Plus size={16} /> Add Facility
         </Button>
       </DialogTrigger>
@@ -123,27 +104,20 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
             />
             {showDropdown && (
               <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
-                {fetchingFacilities ? (
-                  <div className="flex items-center gap-2 p-3 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Loading facilities...
-                  </div>
-                ) : filteredFacilities.length === 0 ? (
+                {filteredFacilities.length === 0 ? (
                   <div className="p-3 text-sm text-muted-foreground text-center">
-                    No facilities found
+                    No facilities available
                   </div>
                 ) : (
-                  filteredFacilities.slice(0, 10).map((f) => (
+                  filteredFacilities.map((f) => (
                     <button
-                      key={f.id}
+                      key={f.code}
                       type="button"
                       className="w-full text-left px-3 py-2 hover:bg-accent text-sm cursor-pointer"
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => handleSelectFacility(f)}
                     >
                       <div className="font-medium text-foreground">{f.name}</div>
-                      {f.location && (
-                        <div className="text-xs text-muted-foreground">{f.location}</div>
-                      )}
                     </button>
                   ))
                 )}
