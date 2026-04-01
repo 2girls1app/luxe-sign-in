@@ -416,7 +416,7 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
                               e.stopPropagation();
                               handleApprove(change);
                             }}
-                            disabled={processing === change.id}
+                            disabled={processing === change.id || bulkProcessing}
                           >
                             <Check size={14} />
                             Approve
@@ -429,7 +429,7 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
                               e.stopPropagation();
                               handleDeny(change);
                             }}
-                            disabled={processing === change.id}
+                            disabled={processing === change.id || bulkProcessing}
                           >
                             <X size={14} />
                             Deny
