@@ -150,7 +150,7 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
     if (!user) return;
     setProcessing(change.id);
 
-    await supabase
+    const { error } = await supabase
       .from("pending_preference_changes")
       .update({
         status: "denied",
@@ -161,16 +161,24 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
       })
       .eq("id", change.id);
 
-    toast({ title: "Change denied" });
+    if (error) {
+      toast({ title: "Error denying change", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Change denied" });
+    }
     setProcessing(null);
     fetchChanges();
   };
 
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+
   const handleApproveAll = async () => {
+    setBulkProcessing(true);
     const pendingChanges = filtered.filter((c) => c.status === "pending");
     for (const change of pendingChanges) {
       await handleApprove(change);
     }
+    setBulkProcessing(false);
   };
 
   const markAsRead = async (id: string) => {
