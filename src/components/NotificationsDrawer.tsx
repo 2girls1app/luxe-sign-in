@@ -171,7 +171,6 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
     fetchChanges();
   };
 
-  const [bulkProcessing, setBulkProcessing] = useState(false);
 
   const handleApproveAll = async () => {
     setBulkProcessing(true);
