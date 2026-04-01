@@ -51,21 +51,10 @@ const FacilityDetails = () => {
     if (data) setDoctors(data.sort((a, b) => (a.display_name || "").localeCompare(b.display_name || "")));
   }, [facilityId]);
 
-  const fetchProcedures = useCallback(async () => {
-    if (!facilityId) return;
-    const { data } = await supabase
-      .from("procedures")
-      .select("id, name, category, user_id")
-      .eq("facility_id", facilityId)
-      .order("name");
-    if (data) setProcedures(data as FacilityProcedure[]);
-  }, [facilityId]);
-
   useEffect(() => {
     fetchFacility();
     fetchDoctors();
-    fetchProcedures();
-  }, [fetchFacility, fetchDoctors, fetchProcedures]);
+  }, [fetchFacility, fetchDoctors]);
 
   const getDoctorName = (userId: string) =>
     doctors.find(d => d.user_id === userId)?.display_name || "Unknown";
