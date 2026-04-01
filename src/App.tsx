@@ -27,6 +27,7 @@ import AdminEditPrefCard from "./pages/admin/AdminEditPrefCard.tsx";
 import AdminPendingChanges from "./pages/admin/AdminPendingChanges.tsx";
 import AdminUserDetail from "./pages/admin/AdminUserDetail.tsx";
 import Settings from "./pages/Settings.tsx";
+import ClinicalStaffDashboard from "./pages/ClinicalStaffDashboard.tsx";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
             <Route path="/admin/doctors/:userId" element={<AdminDoctorDetail />} />
             <Route path="/admin/doctors/:userId/procedure/:procedureId" element={<AdminEditPrefCard />} />
             <Route path="/admin/doctors/:userId/pending" element={<AdminPendingChanges />} />
+            <Route path="/clinical-dashboard" element={<ClinicalStaffDashboard />} />
             <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
