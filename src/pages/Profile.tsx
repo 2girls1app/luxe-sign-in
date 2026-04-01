@@ -342,7 +342,7 @@ const Profile = () => {
               <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
                 <Stethoscope size={16} className="text-primary" /> Procedures
               </h2>
-              <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} preselectedFacilityId={facilityFilter} />
+              <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} preselectedFacilityId={facilityFilter} defaultSpecialty={profile?.specialty || undefined} />
             </div>
 
             {filteredProcedures.length > 0 && (
