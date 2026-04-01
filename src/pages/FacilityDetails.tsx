@@ -21,12 +21,6 @@ interface DoctorProfile {
   specialty: string | null;
 }
 
-interface FacilityProcedure {
-  id: string;
-  name: string;
-  category: string | null;
-  user_id: string;
-}
 
 const FacilityDetails = () => {
   const navigate = useNavigate();
