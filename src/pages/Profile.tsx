@@ -93,21 +93,10 @@ const Profile = () => {
 
   const fetchProcedures = useCallback(async () => {
     if (!user) return;
-    // Fetch procedures owned by the user
-    const { data: ownedData } = await supabase.from("procedures").select("id, name, category, facility_id, notes, is_favorite").eq("user_id", user.id);
-    
-    // Also fetch procedures at the user's assigned facility
-    let facilityData: Procedure[] = [];
-    if (profile?.facility_id) {
-      const { data } = await supabase.from("procedures").select("id, name, category, facility_id, notes, is_favorite").eq("facility_id", profile.facility_id);
-      if (data) facilityData = data as Procedure[];
-    }
-    
-    // Merge and deduplicate
-    const allProcs = [...(ownedData || []), ...facilityData];
-    const unique = Array.from(new Map(allProcs.map(p => [p.id, p])).values());
-    setProcedures(unique);
-  }, [user, profile?.facility_id]);
+    // Doctors only see their own procedures
+    const { data } = await supabase.from("procedures").select("id, name, category, facility_id, notes, is_favorite").eq("user_id", user.id);
+    if (data) setProcedures(data as Procedure[]);
+  }, [user]);
 
 
   const fetchMusicPrefsCount = useCallback(async () => {
