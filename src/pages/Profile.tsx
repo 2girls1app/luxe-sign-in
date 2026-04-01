@@ -149,7 +149,8 @@ const Profile = () => {
 
 
   const deleteFacility = async (id: string) => {
-    const { error } = await supabase.from("facilities").delete().eq("id", id);
+    // Remove the join table link, not the facility itself
+    const { error } = await supabase.from("doctor_facilities" as any).delete().eq("user_id", user!.id).eq("facility_id", id);
     if (!error) fetchFacilities();
     else toast({ title: "Error", description: error.message, variant: "destructive" });
   };
