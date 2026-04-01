@@ -116,9 +116,7 @@ const FacilityDetails = () => {
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {filteredDoctors.map((doc) => {
-                const procCount = procedures.filter(p => p.user_id === doc.user_id).length;
-                return (
+              {filteredDoctors.map((doc) => (
                   <motion.div
                     key={doc.user_id}
                     initial={{ opacity: 0 }}
