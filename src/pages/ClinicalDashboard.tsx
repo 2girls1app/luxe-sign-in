@@ -6,7 +6,7 @@ import NotificationsDrawer from "@/components/NotificationsDrawer";
 import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
