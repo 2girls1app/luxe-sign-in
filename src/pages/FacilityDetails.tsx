@@ -29,7 +29,6 @@ const FacilityDetails = () => {
 
   const [facility, setFacility] = useState<FacilityInfo | null>(null);
   const [doctors, setDoctors] = useState<DoctorProfile[]>([]);
-  const [procedures, setProcedures] = useState<FacilityProcedure[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   const fetchFacility = useCallback(async () => {
