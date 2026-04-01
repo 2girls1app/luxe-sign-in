@@ -60,26 +60,89 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onCli
   const isMedication = category.key === "medication";
   const isSteps = category.key === "steps";
 
-  const getPreviewText = (): string | null => {
-    if (!value) return null;
-    try {
-      const parsed = JSON.parse(value);
-      if (Array.isArray(parsed)) {
-        if (parsed.length === 0) return null;
-        if (isMedication) return `${parsed.length} med${parsed.length !== 1 ? "s" : ""}`;
-        if (isSteps) return `${parsed.length} step${parsed.length !== 1 ? "s" : ""}`;
-        const names = parsed.map((item: any) => (typeof item === "object" && item !== null ? (item.name || item.label || "Item") : String(item)));
-        if (names.length === 1) return names[0];
-        if (names.length === 2) return names.join(", ");
-        return `${names[0]} + ${names.length - 1} more`;
-      }
-      if (typeof parsed === "object" && parsed !== null) {
-        return parsed.name || parsed.label || "1 item selected";
-      }
-    } catch {
-      // Not JSON, return as plain string
+  const summarizeNames = (names: string[]) => {
+    if (names.length === 0) return null;
+    if (names.length === 1) return names[0];
+    if (names.length === 2) return names.join(", ");
+    return `${names[0]} + ${names.length - 1} more`;
+  };
+
+  const extractNames = (input: unknown): string[] => {
+    if (Array.isArray(input)) {
+      return input.flatMap((item) => extractNames(item)).filter(Boolean);
     }
-    return value;
+
+    if (input && typeof input === "object") {
+      const record = input as Record<string, unknown>;
+      const directLabel = [record.name, record.label, record.title, record.value]
+        .find((entry) => typeof entry === "string" && entry.trim());
+
+      if (typeof directLabel === "string") {
+        return [directLabel.trim()];
+      }
+
+      return Object.values(record).flatMap((entry) => extractNames(entry)).filter(Boolean);
+    }
+
+    if (typeof input === "string") {
+      const trimmed = input.trim();
+      return trimmed ? [trimmed] : [];
+    }
+
+    return [];
+  };
+
+  const parseStructuredValue = (raw: string): unknown => {
+    let current: unknown = raw.trim();
+
+    for (let i = 0; i < 3 && typeof current === "string"; i += 1) {
+      const text = current.trim();
+      const looksStructured = text.startsWith("[") || text.startsWith("{") || text.startsWith('"[') || text.startsWith('"{');
+      if (!looksStructured) break;
+
+      try {
+        current = JSON.parse(text);
+      } catch {
+        break;
+      }
+    }
+
+    return current;
+  };
+
+  const getPreviewText = (): string | null => {
+    if (!value?.trim()) return null;
+
+    const raw = value.trim();
+    const parsed = parseStructuredValue(raw);
+
+    if (Array.isArray(parsed)) {
+      if (parsed.length === 0) return "No items selected";
+      if (isMedication) return `${parsed.length} med${parsed.length !== 1 ? "s" : ""}`;
+      if (isSteps) return `${parsed.length} step${parsed.length !== 1 ? "s" : ""}`;
+      return summarizeNames(extractNames(parsed)) || `${parsed.length} items selected`;
+    }
+
+    if (parsed && typeof parsed === "object") {
+      return summarizeNames(extractNames(parsed)) || "1 item selected";
+    }
+
+    if (typeof parsed === "string" && parsed !== raw) {
+      const normalized = parsed.trim();
+      if (!normalized) return "No items selected";
+      return normalized;
+    }
+
+    const extractedFromRaw = Array.from(raw.matchAll(/"name"\s*:\s*"([^"]+)"/g), (match) => match[1]?.trim()).filter(Boolean);
+    if (extractedFromRaw.length > 0) {
+      return summarizeNames(extractedFromRaw) || "Items selected";
+    }
+
+    if (raw.startsWith("[") || raw.startsWith("{")) {
+      return "Items selected";
+    }
+
+    return raw;
   };
 
   const hasValue = isFile ? (fileCount !== undefined && fileCount > 0) : !!value;
