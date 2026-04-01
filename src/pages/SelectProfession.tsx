@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
+import { useAuth } from "@/contexts/AuthContext";
 import physicianImg from "@/assets/physician.png";
 import firstAssistImg from "@/assets/first-assist.png";
 import nurseImg from "@/assets/nurse.png";
