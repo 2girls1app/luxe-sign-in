@@ -75,15 +75,39 @@ const Profile = () => {
 
   const fetchFacilities = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from("facilities").select("id, name, location, notes").eq("user_id", user.id).order("created_at", { ascending: false });
-    if (data) setFacilities(data.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })));
-  }, [user]);
+    // Fetch facilities the user owns
+    const { data: ownedData } = await supabase.from("facilities").select("id, name, location, notes").eq("user_id", user.id);
+    
+    // Also fetch the facility the user is assigned to (via profile.facility_id)
+    let assignedData: Facility[] = [];
+    if (profile?.facility_id) {
+      const { data } = await supabase.from("facilities").select("id, name, location, notes").eq("id", profile.facility_id);
+      if (data) assignedData = data as Facility[];
+    }
+    
+    // Merge and deduplicate
+    const allFacilities = [...(ownedData || []), ...assignedData];
+    const unique = Array.from(new Map(allFacilities.map(f => [f.id, f])).values());
+    setFacilities(unique.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })));
+  }, [user, profile?.facility_id]);
 
   const fetchProcedures = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from("procedures").select("id, name, category, facility_id, notes, is_favorite").eq("user_id", user.id).order("created_at", { ascending: false });
-    if (data) setProcedures(data as Procedure[]);
-  }, [user]);
+    // Fetch procedures owned by the user
+    const { data: ownedData } = await supabase.from("procedures").select("id, name, category, facility_id, notes, is_favorite").eq("user_id", user.id);
+    
+    // Also fetch procedures at the user's assigned facility
+    let facilityData: Procedure[] = [];
+    if (profile?.facility_id) {
+      const { data } = await supabase.from("procedures").select("id, name, category, facility_id, notes, is_favorite").eq("facility_id", profile.facility_id);
+      if (data) facilityData = data as Procedure[];
+    }
+    
+    // Merge and deduplicate
+    const allProcs = [...(ownedData || []), ...facilityData];
+    const unique = Array.from(new Map(allProcs.map(p => [p.id, p])).values());
+    setProcedures(unique);
+  }, [user, profile?.facility_id]);
 
 
   const fetchMusicPrefsCount = useCallback(async () => {
