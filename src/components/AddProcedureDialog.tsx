@@ -26,6 +26,7 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [facilityId, setFacilityId] = useState<string>("");
+  const [category, setCategory] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [facilityError, setFacilityError] = useState(false);
