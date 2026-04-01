@@ -47,6 +47,7 @@ const Profile = () => {
   const { toast } = useToast();
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
+  const [roboticProcedureIds, setRoboticProcedureIds] = useState<Set<string>>(new Set());
   const [searchProcedures, setSearchProcedures] = useState("");
   const [musicDrawerOpen, setMusicDrawerOpen] = useState(false);
   const [hasMusicPrefs, setHasMusicPrefs] = useState(false);
