@@ -102,9 +102,9 @@ const ProcedureCard = ({ id, name, category, facilityName, notes, isFavorite, on
       <div className="flex flex-col flex-1 p-4 gap-1.5">
         <p className="text-foreground font-medium text-sm leading-tight line-clamp-2">{name}</p>
 
-        {category && (
-          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full w-fit">{category}</span>
-        )}
+        <span className={`text-xs px-2 py-0.5 rounded-full w-fit ${category ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground italic"}`}>
+          {category || "Specialty not assigned"}
+        </span>
 
         {facilityName && (
           <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
