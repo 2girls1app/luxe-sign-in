@@ -319,7 +319,7 @@ const Profile = () => {
         )}
 
         {/* Procedures Section - only when viewing a specific facility */}
-        {facilityFilter && !isAdmin && (
+        {facilityFilter && !isAdmin && !isClinical && (
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
