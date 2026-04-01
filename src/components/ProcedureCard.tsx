@@ -134,10 +134,26 @@ const ProcedureCard = ({ id, name, category, facilityName, notes, isFavorite, ha
         />
       </button>
 
+      {/* Robotic indicator */}
+      {hasRoboticItems && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="absolute top-2 right-2 p-1.5 rounded-full bg-primary/20 text-primary">
+                <Bot size={14} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="bg-card border-border text-foreground text-xs">
+              Robotic
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+
       {/* Delete button */}
       <button
         onClick={(e) => { e.stopPropagation(); onDelete(id); }}
-        className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
+        className={`absolute ${hasRoboticItems ? "top-10" : "top-2"} right-2 p-1.5 rounded-full bg-background/80 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all`}
         aria-label="Delete procedure"
       >
         <Trash2 size={14} />
