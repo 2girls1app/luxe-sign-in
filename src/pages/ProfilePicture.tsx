@@ -54,12 +54,10 @@ const ProfilePicture = () => {
 
       await supabase
         .from("profiles")
-        .update({ avatar_url: publicUrl })
+        .update({ avatar_url: publicUrl, onboarding_completed: true })
         .eq("user_id", user.id);
 
       localStorage.setItem("avatar_preview", publicUrl);
-      const role = user?.user_metadata?.profession;
-      const isAdmin = role === "administrative" || role === "admin" || role === "admin-staff";
       navigate("/profile");
     } catch (error: any) {
       toast({
