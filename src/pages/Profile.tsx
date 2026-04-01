@@ -47,6 +47,7 @@ const Profile = () => {
   const { toast } = useToast();
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
+  const [roboticProcedureIds, setRoboticProcedureIds] = useState<Set<string>>(new Set());
   const [searchProcedures, setSearchProcedures] = useState("");
   const [musicDrawerOpen, setMusicDrawerOpen] = useState(false);
   const [hasMusicPrefs, setHasMusicPrefs] = useState(false);
@@ -93,9 +94,28 @@ const Profile = () => {
 
   const fetchProcedures = useCallback(async () => {
     if (!user) return;
-    // Doctors only see their own procedures
     const { data } = await supabase.from("procedures").select("id, name, category, facility_id, notes, is_favorite").eq("user_id", user.id);
-    if (data) setProcedures(data as Procedure[]);
+    if (data) {
+      setProcedures(data as Procedure[]);
+      const procIds = data.map((p: any) => p.id);
+      if (procIds.length > 0) {
+        const { data: roboticData } = await supabase
+          .from("procedure_preferences")
+          .select("procedure_id, value")
+          .in("procedure_id", procIds)
+          .eq("category", "robotic_instruments");
+        const validIds = new Set<string>();
+        roboticData?.forEach((r: any) => {
+          try {
+            const val = JSON.parse(r.value);
+            if (Array.isArray(val) && val.length > 0) validIds.add(r.procedure_id);
+          } catch {
+            if (r.value && r.value.trim() && r.value.trim() !== '[]') validIds.add(r.procedure_id);
+          }
+        });
+        setRoboticProcedureIds(validIds);
+      }
+    }
   }, [user]);
 
 
@@ -374,6 +394,7 @@ const Profile = () => {
                     facilityName={getFacilityName(p.facility_id)}
                     notes={p.notes}
                     isFavorite={p.is_favorite}
+                    hasRoboticItems={roboticProcedureIds.has(p.id)}
                     onDelete={deleteProcedure}
                     onToggleFavorite={toggleFavorite}
                   />

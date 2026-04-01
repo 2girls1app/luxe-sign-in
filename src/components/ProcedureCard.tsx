@@ -1,6 +1,7 @@
-import { Trash2, Building2, Heart, Brain, Bone, Eye, Baby, Scissors, Stethoscope, Activity, Syringe, Shield, Waypoints, Cross, HandMetal, Ear, Pill, Footprints, Ribbon, Flame, Zap } from "lucide-react";
+import { Trash2, Building2, Heart, Brain, Bone, Eye, Baby, Scissors, Stethoscope, Activity, Syringe, Shield, Waypoints, Cross, HandMetal, Ear, Pill, Footprints, Ribbon, Flame, Zap, Bot } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 interface ProcedureCardProps {
   id: string;
@@ -9,6 +10,7 @@ interface ProcedureCardProps {
   facilityName: string | null;
   notes: string | null;
   isFavorite: boolean;
+  hasRoboticItems?: boolean;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, current: boolean) => void;
 }
@@ -80,7 +82,7 @@ function getIconForProcedure(name: string, category: string | null): React.Eleme
   return Stethoscope;
 }
 
-const ProcedureCard = ({ id, name, category, facilityName, notes, isFavorite, onDelete, onToggleFavorite }: ProcedureCardProps) => {
+const ProcedureCard = ({ id, name, category, facilityName, notes, isFavorite, hasRoboticItems, onDelete, onToggleFavorite }: ProcedureCardProps) => {
   const Icon = getIconForProcedure(name, category);
   const navigate = useNavigate();
 
@@ -132,10 +134,26 @@ const ProcedureCard = ({ id, name, category, facilityName, notes, isFavorite, on
         />
       </button>
 
+      {/* Robotic indicator */}
+      {hasRoboticItems && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="absolute top-2 right-2 p-1.5 rounded-full bg-primary/20 text-primary">
+                <Bot size={14} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="bg-card border-border text-foreground text-xs">
+              Robotic
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+
       {/* Delete button */}
       <button
         onClick={(e) => { e.stopPropagation(); onDelete(id); }}
-        className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
+        className={`absolute ${hasRoboticItems ? "top-10" : "top-2"} right-2 p-1.5 rounded-full bg-background/80 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all`}
         aria-label="Delete procedure"
       >
         <Trash2 size={14} />
