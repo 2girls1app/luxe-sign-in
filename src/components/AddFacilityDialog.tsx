@@ -1,23 +1,16 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, MapPin, Loader2, Search, Building2 } from "lucide-react";
+import { Plus, Loader2, Search, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useNPPESFacilitySearch, NPPESFacility } from "@/hooks/useNPPESFacilitySearch";
 
 interface AddFacilityDialogProps {
   onAdded: () => void;
-}
-
-interface FacilityResult {
-  id: string;
-  name: string;
-  location: string | null;
-  latitude: number | null;
-  longitude: number | null;
 }
 
 const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
@@ -28,54 +21,17 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
   const [facilityCode, setFacilityCode] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [searchResults, setSearchResults] = useState<FacilityResult[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null);
   const [codeError, setCodeError] = useState("");
   const { user } = useAuth();
   const { toast } = useToast();
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // Search facilities from DB
-  useEffect(() => {
-    if (!showSuggestions || searchQuery.trim().length < 2) {
-      setSearchResults([]);
-      return;
-    }
+  const { results, loading: searching } = useNPPESFacilitySearch(searchQuery, showSuggestions);
 
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    debounceRef.current = setTimeout(async () => {
-      setSearching(true);
-      try {
-        const q = searchQuery.trim();
-        const { data } = await supabase
-          .from("facilities")
-          .select("id, name, location, latitude, longitude")
-          .or(`name.ilike.%${q}%,location.ilike.%${q}%`)
-          .limit(8);
-        setSearchResults((data as FacilityResult[]) || []);
-      } catch {
-        setSearchResults([]);
-      } finally {
-        setSearching(false);
-      }
-    }, 300);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [searchQuery, showSuggestions]);
-
-  const handleSelectFacility = (facility: FacilityResult) => {
+  const handleSelectFacility = (facility: NPPESFacility) => {
     setName(facility.name);
-    setLocation(facility.location || "");
-    setLatitude(facility.latitude);
-    setLongitude(facility.longitude);
-    setSelectedFacilityId(facility.id);
+    const fullAddress = [facility.address, facility.city, facility.state, facility.zip].filter(Boolean).join(", ");
+    setLocation(fullAddress);
     // Facility code is NEVER auto-filled
     setFacilityCode("");
     setCodeError("");
@@ -86,8 +42,6 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     setShowSuggestions(true);
-    // If user changes search, clear selection
-    setSelectedFacilityId(null);
   };
 
   const resetForm = () => {
@@ -96,10 +50,6 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
     setLocation("");
     setFacilityCode("");
     setNotes("");
-    setLatitude(null);
-    setLongitude(null);
-    setSelectedFacilityId(null);
-    setSearchResults([]);
     setCodeError("");
   };
 
@@ -120,8 +70,6 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
       location: location.trim(),
       facility_code: facilityCode.trim(),
       notes: notes.trim() || null,
-      latitude,
-      longitude,
     } as any);
     setLoading(false);
     if (error) {
@@ -152,7 +100,7 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
               placeholder="Search facility by name or address"
               value={searchQuery}
               onChange={handleSearchChange}
-              onFocus={() => searchQuery.trim().length >= 2 && setShowSuggestions(true)}
+              onFocus={() => searchQuery.trim().length >= 3 && setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               className="bg-secondary border-border text-foreground placeholder:text-muted-foreground pr-8"
             />
@@ -164,11 +112,11 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
               )}
             </div>
 
-            {showSuggestions && searchResults.length > 0 && (
-              <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden max-h-48 overflow-y-auto">
-                {searchResults.map((f) => (
+            {showSuggestions && results.length > 0 && (
+              <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden max-h-60 overflow-y-auto">
+                {results.map((f) => (
                   <button
-                    key={f.id}
+                    key={f.npi}
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleSelectFacility(f)}
@@ -177,9 +125,10 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
                     <Building2 size={14} className="text-primary mt-0.5 shrink-0" />
                     <div className="flex flex-col">
                       <span className="font-medium">{f.name}</span>
-                      {f.location && (
-                        <span className="text-xs text-muted-foreground line-clamp-1">{f.location}</span>
-                      )}
+                      <span className="text-xs text-muted-foreground">
+                        {[f.address, f.city, f.state, f.zip].filter(Boolean).join(", ")}
+                      </span>
+                      <span className="text-xs text-muted-foreground/70 italic">{f.facilityType}</span>
                     </div>
                   </button>
                 ))}
@@ -208,12 +157,6 @@ const AddFacilityDialog = ({ onAdded }: AddFacilityDialogProps) => {
               className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
             />
           </div>
-
-          {latitude !== null && (
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <MapPin size={10} /> Coordinates: {latitude.toFixed(4)}, {longitude?.toFixed(4)}
-            </p>
-          )}
 
           {/* Facility Code - always manual */}
           <div>
