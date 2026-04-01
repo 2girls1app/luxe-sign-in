@@ -42,11 +42,17 @@ const FacilityDetails = () => {
 
   const fetchDoctors = useCallback(async () => {
     if (!facilityId) return;
+    // Get doctor user_ids from the join table
+    const { data: links } = await supabase
+      .from("doctor_facilities")
+      .select("user_id")
+      .eq("facility_id", facilityId);
+    if (!links || links.length === 0) { setDoctors([]); return; }
+    const userIds = links.map(l => l.user_id);
     const { data } = await supabase
       .from("profiles")
       .select("user_id, display_name, avatar_url, specialty")
-      .eq("facility_id", facilityId)
-      .eq("role", "surgeon");
+      .in("user_id", userIds);
     if (data) setDoctors(data.sort((a, b) => (a.display_name || "").localeCompare(b.display_name || "")));
   }, [facilityId]);
 
