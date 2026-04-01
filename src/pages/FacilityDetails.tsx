@@ -1,10 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
-import { Building2, User, ClipboardList, ChevronRight, ArrowLeft, Search, MapPin } from "lucide-react";
+import { Building2, User, ArrowLeft, Search, MapPin } from "lucide-react";
 import NavHeader from "@/components/NavHeader";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -21,12 +20,6 @@ interface DoctorProfile {
   specialty: string | null;
 }
 
-interface FacilityProcedure {
-  id: string;
-  name: string;
-  category: string | null;
-  user_id: string;
-}
 
 const FacilityDetails = () => {
   const navigate = useNavigate();
@@ -35,7 +28,6 @@ const FacilityDetails = () => {
 
   const [facility, setFacility] = useState<FacilityInfo | null>(null);
   const [doctors, setDoctors] = useState<DoctorProfile[]>([]);
-  const [procedures, setProcedures] = useState<FacilityProcedure[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   const fetchFacility = useCallback(async () => {
@@ -58,24 +50,10 @@ const FacilityDetails = () => {
     if (data) setDoctors(data.sort((a, b) => (a.display_name || "").localeCompare(b.display_name || "")));
   }, [facilityId]);
 
-  const fetchProcedures = useCallback(async () => {
-    if (!facilityId) return;
-    const { data } = await supabase
-      .from("procedures")
-      .select("id, name, category, user_id")
-      .eq("facility_id", facilityId)
-      .order("name");
-    if (data) setProcedures(data as FacilityProcedure[]);
-  }, [facilityId]);
-
   useEffect(() => {
     fetchFacility();
     fetchDoctors();
-    fetchProcedures();
-  }, [fetchFacility, fetchDoctors, fetchProcedures]);
-
-  const getDoctorName = (userId: string) =>
-    doctors.find(d => d.user_id === userId)?.display_name || "Unknown";
+  }, [fetchFacility, fetchDoctors]);
 
   const filteredDoctors = doctors.filter(d =>
     (d.display_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -137,9 +115,7 @@ const FacilityDetails = () => {
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {filteredDoctors.map((doc) => {
-                const procCount = procedures.filter(p => p.user_id === doc.user_id).length;
-                return (
+              {filteredDoctors.map((doc) => (
                   <motion.div
                     key={doc.user_id}
                     initial={{ opacity: 0 }}
@@ -156,54 +132,12 @@ const FacilityDetails = () => {
                       <p className="text-sm font-medium text-foreground">{doc.display_name}</p>
                       <p className="text-xs text-primary">{doc.specialty || "No specialty"}</p>
                     </div>
-                    <Badge variant="secondary" className="text-[10px] shrink-0">
-                      {procCount} {procCount === 1 ? "card" : "cards"}
-                    </Badge>
                   </motion.div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Preference Cards Section */}
-        <div>
-          <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2 mb-3">
-            <ClipboardList size={16} className="text-primary" /> Preference Cards
-          </h2>
-          {procedures.length === 0 ? (
-            <div className="rounded-xl bg-card border border-border p-6 text-center">
-              <ClipboardList size={32} className="mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">No preferences available for this facility</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {procedures.map((proc) => (
-                <motion.button
-                  key={proc.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  onClick={() => navigate(`/procedure/${proc.id}/preferences`)}
-                  className="w-full flex items-center gap-3 rounded-xl bg-card border border-border p-4 hover:border-primary/40 transition-all text-left cursor-pointer"
-                >
-                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <ClipboardList size={16} className="text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{proc.name}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      {proc.category && (
-                        <p className="text-[10px] text-muted-foreground">{proc.category}</p>
-                      )}
-                      <p className="text-[10px] text-primary/70">Dr. {getDoctorName(proc.user_id)}</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={16} className="text-muted-foreground shrink-0" />
-                </motion.button>
               ))}
             </div>
           )}
         </div>
+
       </motion.div>
     </div>
   );
