@@ -56,9 +56,6 @@ const FacilityDetails = () => {
     fetchDoctors();
   }, [fetchFacility, fetchDoctors]);
 
-  const getDoctorName = (userId: string) =>
-    doctors.find(d => d.user_id === userId)?.display_name || "Unknown";
-
   const filteredDoctors = doctors.filter(d =>
     (d.display_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
     (d.specialty || "").toLowerCase().includes(searchQuery.toLowerCase())
