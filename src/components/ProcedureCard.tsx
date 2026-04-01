@@ -1,6 +1,7 @@
-import { Trash2, Building2, Heart, Brain, Bone, Eye, Baby, Scissors, Stethoscope, Activity, Syringe, Shield, Waypoints, Cross, HandMetal, Ear, Pill, Footprints, Ribbon, Flame, Zap } from "lucide-react";
+import { Trash2, Building2, Heart, Brain, Bone, Eye, Baby, Scissors, Stethoscope, Activity, Syringe, Shield, Waypoints, Cross, HandMetal, Ear, Pill, Footprints, Ribbon, Flame, Zap, Bot } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 interface ProcedureCardProps {
   id: string;
