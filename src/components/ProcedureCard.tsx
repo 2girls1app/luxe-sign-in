@@ -10,6 +10,7 @@ interface ProcedureCardProps {
   facilityName: string | null;
   notes: string | null;
   isFavorite: boolean;
+  hasRoboticItems?: boolean;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, current: boolean) => void;
 }
