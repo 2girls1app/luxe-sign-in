@@ -61,21 +61,6 @@ const ClinicalDashboard = () => {
     navigate("/");
   };
 
-  const doctorProcedures = selectedDoctor
-    ? procedures.filter(p => p.user_id === selectedDoctor)
-    : procedures;
-
-  const filteredDoctors = doctors.filter(d =>
-    (d.display_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (d.specialty || "").toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const getDoctorName = (userId: string) =>
-    doctors.find(d => d.user_id === userId)?.display_name || "Unknown";
-
-  const selectedDoctorProfile = selectedDoctor
-    ? doctors.find(d => d.user_id === selectedDoctor)
-    : null;
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pt-16 pb-8">
