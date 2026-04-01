@@ -134,8 +134,7 @@ const FacilityDetails = () => {
                       <p className="text-xs text-primary">{doc.specialty || "No specialty"}</p>
                     </div>
                   </motion.div>
-                );
-              })}
+              ))}
             </div>
           )}
         </div>
