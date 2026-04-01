@@ -26,25 +26,29 @@ const Index = () => {
       return;
     }
     setSigningIn(true);
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email: username,
       password,
     });
     setSigningIn(false);
     if (error) {
       toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
-    } else if (data.session) {
+    } else {
       localStorage.setItem("rememberMe", remember ? "true" : "false");
       sessionStorage.setItem("activeSession", "true");
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role, onboarding_completed")
-        .eq("user_id", data.session.user.id)
-        .single();
-      if (!profile?.role) {
-        navigate("/select-profession");
-      } else {
-        navigate("/profile");
+      // Check profile for redirect
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role, onboarding_completed")
+          .eq("user_id", session.user.id)
+          .single();
+        if (!profile?.role) {
+          navigate("/select-profession");
+        } else {
+          navigate("/profile");
+        }
       }
     }
   };
