@@ -38,9 +38,10 @@ interface AddProcedureDialogProps {
   preselectedFacilityId?: string;
   triggerVariant?: "default" | "prominent";
   forUserId?: string;
+  defaultSpecialty?: string;
 }
 
-const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, triggerVariant = "default", forUserId }: AddProcedureDialogProps) => {
+const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, triggerVariant = "default", forUserId, defaultSpecialty }: AddProcedureDialogProps) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [facilityId, setFacilityId] = useState<string>("");
