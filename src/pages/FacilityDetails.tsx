@@ -4,7 +4,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Building2, User, ArrowLeft, Search, MapPin } from "lucide-react";
 import NavHeader from "@/components/NavHeader";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
