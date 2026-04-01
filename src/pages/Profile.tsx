@@ -293,7 +293,7 @@ const Profile = () => {
 
             {/* Quick Add Procedure - non-admin only */}
             {!isAdmin && (
-              <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" />
+              <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" defaultSpecialty={profile?.specialty || undefined} />
             )}
 
             {/* Facilities Section - non-admin only */}
