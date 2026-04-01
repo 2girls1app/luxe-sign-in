@@ -323,7 +323,7 @@ const Profile = () => {
                   <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
                     <Building2 size={16} className="text-primary" /> Facilities
                   </h2>
-                  <AddFacilityDialog onAdded={fetchFacilities} />
+                  <AddFacilityDialog onAdded={fetchFacilities} existingFacilityNames={facilities.map((f: any) => f.name)} />
                 </div>
                 {facilities.length === 0 ? (
                   <div className="rounded-xl bg-card border border-border p-6 text-center">
