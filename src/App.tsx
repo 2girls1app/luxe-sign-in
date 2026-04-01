@@ -27,6 +27,7 @@ import AdminEditPrefCard from "./pages/admin/AdminEditPrefCard.tsx";
 import AdminPendingChanges from "./pages/admin/AdminPendingChanges.tsx";
 import AdminUserDetail from "./pages/admin/AdminUserDetail.tsx";
 import Settings from "./pages/Settings.tsx";
+import ClinicalStaffDashboard from "./pages/ClinicalStaffDashboard.tsx";
 
 const queryClient = new QueryClient();
 
