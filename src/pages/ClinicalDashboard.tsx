@@ -192,12 +192,19 @@ const ClinicalDashboard = () => {
             <Building2 size={16} className="text-primary" /> Assigned Facility
           </h2>
           {facility ? (
-            <div className="rounded-xl bg-card border border-border p-4">
-              <p className="text-foreground font-medium">{facility.name}</p>
-              {facility.location && (
-                <p className="text-xs text-muted-foreground mt-1">{facility.location}</p>
-              )}
-            </div>
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              onClick={() => navigate(`/facility/${facility.id}`)}
+              className="w-full rounded-xl bg-card border border-border p-4 hover:border-primary/40 transition-all text-left cursor-pointer flex items-center justify-between"
+            >
+              <div>
+                <p className="text-foreground font-medium">{facility.name}</p>
+                {facility.location && (
+                  <p className="text-xs text-muted-foreground mt-1">{facility.location}</p>
+                )}
+              </div>
+              <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+            </motion.button>
           ) : (
             <div className="rounded-xl bg-card border border-border p-6 text-center">
               <Building2 size={32} className="mx-auto text-muted-foreground mb-2" />
@@ -205,125 +212,6 @@ const ClinicalDashboard = () => {
             </div>
           )}
         </div>
-
-        {/* Doctors Section */}
-        {!selectedDoctor ? (
-          <div>
-            <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2 mb-3">
-              <User size={16} className="text-primary" /> Doctors
-            </h2>
-            {doctors.length > 3 && (
-              <div className="relative mb-3">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Search doctors..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-secondary pl-9 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-              </div>
-            )}
-            {filteredDoctors.length === 0 ? (
-              <div className="rounded-xl bg-card border border-border p-6 text-center">
-                <User size={32} className="mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">No doctors found at this facility</p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {filteredDoctors.map((doc) => {
-                  const procCount = procedures.filter(p => p.user_id === doc.user_id).length;
-                  return (
-                    <motion.button
-                      key={doc.user_id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      onClick={() => setSelectedDoctor(doc.user_id)}
-                      className="w-full flex items-center gap-3 rounded-xl bg-card border border-border p-4 hover:border-primary/40 transition-all text-left"
-                    >
-                      <Avatar className="h-10 w-10 border border-border">
-                        {doc.avatar_url ? <AvatarImage src={doc.avatar_url} /> : null}
-                        <AvatarFallback className="bg-secondary text-foreground text-sm">
-                          {(doc.display_name || "D").charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground">{doc.display_name}</p>
-                        <p className="text-xs text-primary">{doc.specialty || "No specialty"}</p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Badge variant="secondary" className="text-[10px]">
-                          {procCount} {procCount === 1 ? "card" : "cards"}
-                        </Badge>
-                        <ChevronRight size={16} className="text-muted-foreground" />
-                      </div>
-                    </motion.button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        ) : (
-          /* Doctor Detail - Preference Cards */
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <button
-                onClick={() => setSelectedDoctor(null)}
-                className="text-muted-foreground hover:text-foreground transition-colors p-1"
-              >
-                <ChevronRight size={18} className="rotate-180" />
-              </button>
-              {selectedDoctorProfile && (
-                <>
-                  <Avatar className="h-8 w-8 border border-border">
-                    {selectedDoctorProfile.avatar_url ? <AvatarImage src={selectedDoctorProfile.avatar_url} /> : null}
-                    <AvatarFallback className="bg-secondary text-foreground text-xs">
-                      {(selectedDoctorProfile.display_name || "D").charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{selectedDoctorProfile.display_name}</p>
-                    <p className="text-[10px] text-primary">{selectedDoctorProfile.specialty}</p>
-                  </div>
-                </>
-              )}
-            </div>
-
-            <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2 mb-3">
-              <ClipboardList size={16} className="text-primary" /> Preference Cards
-            </h2>
-
-            {doctorProcedures.length === 0 ? (
-              <div className="rounded-xl bg-card border border-border p-6 text-center">
-                <ClipboardList size={32} className="mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">No preference cards found</p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {doctorProcedures.map((proc) => (
-                  <motion.button
-                    key={proc.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    onClick={() => navigate(`/procedure/${proc.id}/preferences`)}
-                    className="w-full flex items-center gap-3 rounded-xl bg-card border border-border p-4 hover:border-primary/40 transition-all text-left"
-                  >
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <ClipboardList size={16} className="text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{proc.name}</p>
-                      {proc.category && (
-                        <p className="text-[10px] text-muted-foreground">{proc.category}</p>
-                      )}
-                    </div>
-                    <ChevronRight size={16} className="text-muted-foreground shrink-0" />
-                  </motion.button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Pending Changes Status */}
         {pendingCount > 0 && (
