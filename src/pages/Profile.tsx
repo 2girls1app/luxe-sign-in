@@ -61,8 +61,17 @@ const Profile = () => {
   const userRole = profile?.role || user?.user_metadata?.profession || "";
   const roleLabel = userRole ? userRole.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) : "";
   const isAdmin = ["administrative", "admin", "admin-staff", "admin staff"].includes(userRole.toLowerCase());
+  const CLINICAL_ROLES = ["first assist", "first-assist", "physician assistant", "physician-assistant", "nurse", "anesthesia"];
+  const isClinicalStaff = CLINICAL_ROLES.includes(userRole.toLowerCase());
   const username = emailUsername || displayName.toLowerCase().replace(/\s+/g, "");
   const specialty = profile?.specialty || "";
+
+  // Redirect clinical staff to their dedicated dashboard
+  useEffect(() => {
+    if (isClinicalStaff && !loading) {
+      navigate("/clinical-dashboard", { replace: true });
+    }
+  }, [isClinicalStaff, navigate]);
 
   const fetchFacilities = useCallback(async () => {
     if (!user) return;
