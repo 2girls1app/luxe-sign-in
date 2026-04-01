@@ -63,8 +63,7 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onCli
   const summarizeNames = (names: string[]) => {
     if (names.length === 0) return null;
     if (names.length === 1) return names[0];
-    if (names.length === 2) return names.join(", ");
-    return `${names[0]} + ${names.length - 1} more`;
+    return `${names[0]} + 1 more`;
   };
 
   const extractNames = (input: unknown): string[] => {
