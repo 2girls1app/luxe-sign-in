@@ -271,8 +271,11 @@ const Profile = () => {
             {/* Admin Dashboard - embedded */}
             {isAdmin && <AdminDashboardSection />}
 
-            {/* Quick Add Procedure - non-admin only */}
-            {!isAdmin && (
+            {/* Clinical Dashboard - embedded */}
+            {isClinical && <ClinicalDashboardSection />}
+
+            {/* Quick Add Procedure - doctor role only */}
+            {!isAdmin && !isClinical && (
               <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" />
             )}
 
