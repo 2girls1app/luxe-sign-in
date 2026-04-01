@@ -157,6 +157,25 @@ const PreferenceSummaryDrawer = ({
     return val;
   };
 
+  const formatItemList = (val: string): string => {
+    try {
+      const items = JSON.parse(val);
+      if (Array.isArray(items)) {
+        return items.map((item: any) => {
+          if (typeof item === "string") return item;
+          if (item && typeof item === "object" && item.name) {
+            let line = item.name;
+            if (item.qty && item.qty > 1) line += ` (Qty: ${item.qty})`;
+            if (item.hold) line += ` [HOLD${item.holdQty > 1 ? ` x${item.holdQty}` : ""}]`;
+            return line;
+          }
+          return String(item);
+        }).join("\n");
+      }
+    } catch { /* not JSON, return as-is */ }
+    return val;
+  };
+
   const getDisplayValue = (key: string, val: string): string => {
     if (key === "medication") return formatMedValue(val);
     if (key === "steps") {
@@ -166,7 +185,8 @@ const PreferenceSummaryDrawer = ({
       } catch { /* fallback */ }
       return val;
     }
-    return val;
+    // For all other categories, try to parse as item list
+    return formatItemList(val);
   };
 
   const fileCategories = PREFERENCE_CATEGORIES.filter((c) => c.type === "file");
