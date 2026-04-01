@@ -39,6 +39,7 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
   const [filter, setFilter] = useState<FilterStatus>("pending");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
+  const [bulkProcessing, setBulkProcessing] = useState(false);
 
   const getCategoryLabel = (key: string) => {
     const cat = PREFERENCE_CATEGORIES.find((c) => c.key === key);
@@ -91,38 +92,57 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
     if (!user) return;
     setProcessing(change.id);
 
-    // Apply the change to the live preference card
-    const { error: upsertError } = await supabase
-      .from("procedure_preferences")
-      .upsert(
-        {
-          procedure_id: change.procedure_id,
-          user_id: user.id,
-          category: change.category,
-          value: change.new_value,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "procedure_id,category" }
-      );
+    try {
+      // Get the procedure owner's user_id
+      const { data: proc } = await supabase
+        .from("procedures")
+        .select("user_id")
+        .eq("id", change.procedure_id)
+        .single();
 
-    if (upsertError) {
-      toast({ title: "Error applying change", description: upsertError.message, variant: "destructive" });
-      setProcessing(null);
-      return;
+      const ownerId = proc?.user_id || user.id;
+
+      // Apply the change to the live preference card
+      const { error: upsertError } = await supabase
+        .from("procedure_preferences")
+        .upsert(
+          {
+            procedure_id: change.procedure_id,
+            user_id: ownerId,
+            category: change.category,
+            value: change.new_value,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "procedure_id,user_id,category" }
+        );
+
+      if (upsertError) {
+        toast({ title: "Error applying change", description: upsertError.message, variant: "destructive" });
+        setProcessing(null);
+        return;
+      }
+
+      // Mark as approved
+      const { error: updateError } = await supabase
+        .from("pending_preference_changes")
+        .update({
+          status: "approved",
+          reviewed_by: user.id,
+          reviewed_at: new Date().toISOString(),
+          is_read: true,
+        })
+        .eq("id", change.id);
+
+      if (updateError) {
+        toast({ title: "Error updating status", description: updateError.message, variant: "destructive" });
+        setProcessing(null);
+        return;
+      }
+
+      toast({ title: "Change approved and applied" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
-
-    // Mark as approved
-    await supabase
-      .from("pending_preference_changes")
-      .update({
-        status: "approved",
-        reviewed_by: user.id,
-        reviewed_at: new Date().toISOString(),
-        is_read: true,
-      })
-      .eq("id", change.id);
-
-    toast({ title: "Change approved and applied" });
     setProcessing(null);
     fetchChanges();
   };
@@ -131,7 +151,7 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
     if (!user) return;
     setProcessing(change.id);
 
-    await supabase
+    const { error } = await supabase
       .from("pending_preference_changes")
       .update({
         status: "denied",
@@ -142,16 +162,23 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
       })
       .eq("id", change.id);
 
-    toast({ title: "Change denied" });
+    if (error) {
+      toast({ title: "Error denying change", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Change denied" });
+    }
     setProcessing(null);
     fetchChanges();
   };
 
+
   const handleApproveAll = async () => {
+    setBulkProcessing(true);
     const pendingChanges = filtered.filter((c) => c.status === "pending");
     for (const change of pendingChanges) {
       await handleApprove(change);
     }
+    setBulkProcessing(false);
   };
 
   const markAsRead = async (id: string) => {
@@ -248,9 +275,10 @@ const NotificationsDrawer = ({ open, onOpenChange, onCountChange }: Notification
               size="sm"
               className="text-xs h-8"
               onClick={handleApproveAll}
+              disabled={bulkProcessing}
             >
               <Check size={14} className="mr-1" />
-              Approve All ({pendingCount})
+              {bulkProcessing ? "Processing..." : `Approve All (${pendingCount})`}
             </Button>
           )}
 
