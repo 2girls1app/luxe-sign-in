@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import logoImg from "@/assets/logo.png";
 import NavHeader from "@/components/NavHeader";
@@ -9,8 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import PasswordInput from "@/components/PasswordInput";
 
-const CLINICAL_ROLES = ["first-assist", "physician-assistant", "nurse", "anesthesia"];
-
 const SignUp = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -18,13 +16,6 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phone, setPhone] = useState("");
-  const [facilityCode, setFacilityCode] = useState("");
-  const [facilityValidation, setFacilityValidation] = useState<{
-    valid: boolean | null;
-    facility_id?: string;
-    facility_name?: string;
-    checking: boolean;
-  }>({ valid: null, checking: false });
   const [captcha, setCaptcha] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -33,55 +24,8 @@ const SignUp = () => {
   const location = useLocation();
   const profession = (location.state as any)?.profession || "";
 
-  const isClinicalRole = CLINICAL_ROLES.includes(profession);
-
-  const validateFacilityCode = async (code: string) => {
-    if (!code.trim()) {
-      setFacilityValidation({ valid: null, checking: false });
-      return;
-    }
-    setFacilityValidation((prev) => ({ ...prev, checking: true }));
-    try {
-      const { data, error } = await supabase.functions.invoke("validate-facility-code", {
-        body: { facility_code: code.trim() },
-      });
-      if (error || !data?.valid) {
-        setFacilityValidation({ valid: false, checking: false });
-      } else {
-        setFacilityValidation({
-          valid: true,
-          facility_id: data.facility_id,
-          facility_name: data.facility_name,
-          checking: false,
-        });
-      }
-    } catch {
-      setFacilityValidation({ valid: false, checking: false });
-    }
-  };
-
-  const handleFacilityCodeChange = (value: string) => {
-    setFacilityCode(value);
-    setFacilityValidation({ valid: null, checking: false });
-  };
-
-  const handleFacilityCodeBlur = () => {
-    if (facilityCode.trim()) {
-      validateFacilityCode(facilityCode);
-    }
-  };
-
-  const canSubmit =
-    firstName &&
-    lastName &&
-    email &&
-    password &&
-    password === confirmPassword &&
-    captcha &&
-    (!isClinicalRole || facilityValidation.valid === true);
-
   const handleSubmit = async () => {
-    if (!canSubmit) return;
+    if (!firstName || !lastName || !email || !password || password !== confirmPassword || !captcha) return;
     const fullName = `${firstName} ${lastName}`;
     setSigningUp(true);
     const { error } = await supabase.auth.signUp({
@@ -93,9 +37,6 @@ const SignUp = () => {
           first_name: firstName,
           last_name: lastName,
           profession: profession,
-          ...(isClinicalRole && facilityValidation.facility_id
-            ? { facility_id: facilityValidation.facility_id }
-            : {}),
         },
       },
     });
@@ -103,8 +44,6 @@ const SignUp = () => {
     if (error) {
       toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
     } else {
-      // If clinical role, update profile with facility_id
-      // The trigger creates the profile, but we need to update facility_id after
       toast({ title: "Check your email", description: "We sent you a confirmation link." });
       navigate("/profile-picture");
     }
@@ -167,49 +106,6 @@ const SignUp = () => {
           <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} className="focus:ring-ring" />
           <PasswordInput value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm Password" className="focus:ring-ring" />
           <input type="tel" placeholder="Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
-
-          {/* Facility Code field for clinical roles */}
-          {isClinicalRole && (
-            <div className="w-full">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Facility Code (e.g., EMC-4827)"
-                  value={facilityCode}
-                  onChange={(e) => handleFacilityCodeChange(e.target.value.toUpperCase())}
-                  onBlur={handleFacilityCodeBlur}
-                  className={`${inputClass} pr-10 ${
-                    facilityValidation.valid === false
-                      ? "border-destructive focus:ring-destructive"
-                      : facilityValidation.valid === true
-                      ? "border-primary focus:ring-primary"
-                      : ""
-                  }`}
-                />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  {facilityValidation.checking && (
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  )}
-                  {facilityValidation.valid === true && (
-                    <CheckCircle2 className="h-4 w-4 text-primary" />
-                  )}
-                  {facilityValidation.valid === false && (
-                    <XCircle className="h-4 w-4 text-destructive" />
-                  )}
-                </div>
-              </div>
-              {facilityValidation.valid === true && facilityValidation.facility_name && (
-                <p className="text-xs text-primary mt-1.5 ml-1">
-                  ✓ {facilityValidation.facility_name}
-                </p>
-              )}
-              {facilityValidation.valid === false && (
-                <p className="text-xs text-destructive mt-1.5 ml-1">
-                  Invalid facility code
-                </p>
-              )}
-            </div>
-          )}
         </div>
 
         {/* CAPTCHA checkbox */}
@@ -233,7 +129,7 @@ const SignUp = () => {
 
         <button
           onClick={handleSubmit}
-          disabled={!canSubmit || signingUp}
+          disabled={!firstName || !lastName || !email || !password || password !== confirmPassword || !captcha || signingUp}
           className="rounded-lg bg-primary px-10 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-gold-light active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {signingUp ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "Sign Up"}

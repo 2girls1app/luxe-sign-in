@@ -10,7 +10,6 @@ interface Profile {
   role: string | null;
   specialty: string | null;
   onboarding_completed: boolean;
-  facility_id: string | null;
 }
 
 interface AuthContextType {
