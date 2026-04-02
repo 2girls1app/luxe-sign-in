@@ -226,7 +226,7 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
               </div>
             )}
             <Textarea placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} className="bg-secondary border-border text-foreground placeholder:text-muted-foreground resize-none" rows={3} />
-            <Button onClick={handleSubmit} disabled={!name.trim() || facilities.length === 0 || loading} className="rounded-full">
+            <Button onClick={handleSubmit} disabled={!name.trim() || loading} className="rounded-full">
               {loading ? "Adding..." : "Save Procedure"}
             </Button>
           </div>
