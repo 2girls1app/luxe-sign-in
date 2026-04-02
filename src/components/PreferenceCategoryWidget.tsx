@@ -152,7 +152,7 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onCli
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
       onClick={onClick}
-      className="relative flex flex-col items-center gap-2 rounded-2xl bg-card border border-border p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-95"
+      className="relative flex flex-col items-center gap-2 rounded-2xl bg-card border border-border p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-95 h-[120px] justify-center"
     >
       {hasValue && (
         <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
