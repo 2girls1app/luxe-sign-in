@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
@@ -11,11 +9,10 @@ interface ThemeSelectionDialogProps {
 }
 
 const ThemeSelectionDialog = ({ open, onComplete }: ThemeSelectionDialogProps) => {
-  const { theme, setTheme } = useTheme();
-  const [selected, setSelected] = useState<"light" | "dark">(theme);
+  const { setTheme } = useTheme();
 
-  const handleSave = () => {
-    setTheme(selected);
+  const handleSelect = (mode: "light" | "dark") => {
+    setTheme(mode);
     localStorage.setItem("hasChosenTheme", "true");
     onComplete();
   };
@@ -32,47 +29,43 @@ const ThemeSelectionDialog = ({ open, onComplete }: ThemeSelectionDialogProps) =
 
         <div className="grid grid-cols-2 gap-4 py-4">
           <button
-            onClick={() => setSelected("light")}
+            onClick={() => handleSelect("light")}
             className={cn(
-              "flex flex-col items-center gap-3 rounded-xl border-2 p-6 transition-all",
-              selected === "light"
-                ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.1)]"
-                : "border-border hover:border-muted-foreground/40"
+              "flex flex-col items-center gap-3 rounded-xl border-2 border-border p-6 transition-all",
+              "hover:border-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.1)] active:scale-95"
             )}
           >
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-50 text-amber-500">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-primary">
               <Sun className="h-8 w-8" />
             </div>
             <span className="font-medium text-foreground">Light Mode</span>
-            <div className="h-12 w-full rounded-lg bg-white border border-gray-200 flex items-center gap-1.5 px-2">
-              <div className="h-2 w-8 rounded bg-gray-300" />
-              <div className="h-2 w-5 rounded bg-gray-200" />
+            <div className="h-12 w-full rounded-lg border border-border bg-card flex items-center gap-1.5 px-2">
+              <div className="h-2 w-8 rounded bg-muted-foreground/30" />
+              <div className="h-2 w-5 rounded bg-muted" />
             </div>
           </button>
 
           <button
-            onClick={() => setSelected("dark")}
+            onClick={() => handleSelect("dark")}
             className={cn(
-              "flex flex-col items-center gap-3 rounded-xl border-2 p-6 transition-all",
-              selected === "dark"
-                ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.1)]"
-                : "border-border hover:border-muted-foreground/40"
+              "flex flex-col items-center gap-3 rounded-xl border-2 border-border p-6 transition-all",
+              "hover:border-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.1)] active:scale-95"
             )}
           >
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-950 text-indigo-300">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-primary">
               <Moon className="h-8 w-8" />
             </div>
             <span className="font-medium text-foreground">Dark Mode</span>
-            <div className="h-12 w-full rounded-lg bg-gray-900 border border-gray-700 flex items-center gap-1.5 px-2">
-              <div className="h-2 w-8 rounded bg-gray-600" />
-              <div className="h-2 w-5 rounded bg-gray-700" />
+            <div className="h-12 w-full rounded-lg border border-border bg-card flex items-center gap-1.5 px-2">
+              <div className="h-2 w-8 rounded bg-muted-foreground/30" />
+              <div className="h-2 w-5 rounded bg-muted" />
             </div>
           </button>
         </div>
 
-        <Button onClick={handleSave} className="w-full">
-          Save Preference
-        </Button>
+        <p className="text-center text-sm text-muted-foreground">
+          You can change this anytime in Settings.
+        </p>
       </DialogContent>
     </Dialog>
   );
