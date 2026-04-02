@@ -430,17 +430,16 @@ const PreferenceSummaryDrawer = ({
             Full Preference Card
           </DrawerTitle>
           <div className="flex gap-2">
-            {photos.length > 0 && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1.5 text-xs"
-                onClick={() => setShowPhotoPrint(true)}
-              >
-                <Image size={14} />
-                Photos ({photos.length})
-              </Button>
-            )}
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5 text-xs"
+              onClick={() => setShowPhotoPrint(true)}
+              disabled={photos.length === 0}
+            >
+              <Image size={14} />
+              Print Photos{photos.length > 0 ? ` (${photos.length})` : ""}
+            </Button>
             <Button
               size="sm"
               variant="outline"
