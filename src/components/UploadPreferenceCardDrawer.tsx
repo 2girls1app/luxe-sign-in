@@ -32,6 +32,7 @@ interface UploadPreferenceCardDrawerProps {
   onOpenChange: (open: boolean) => void;
   facilities: { id: string; name: string }[];
   onComplete: () => void;
+  forUserId?: string;
 }
 
 const CONFIDENCE_COLORS: Record<string, string> = {
@@ -46,9 +47,10 @@ PREFERENCE_CATEGORIES.forEach((c) => {
 });
 
 const UploadPreferenceCardDrawer = ({
-  open, onOpenChange, facilities, onComplete,
+  open, onOpenChange, facilities, onComplete, forUserId,
 }: UploadPreferenceCardDrawerProps) => {
   const { user } = useAuth();
+  const targetUserId = forUserId || user?.id;
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -87,7 +89,7 @@ const UploadPreferenceCardDrawer = ({
   };
 
   const handleFileSelect = async (file: File) => {
-    if (!user) return;
+    if (!user || !targetUserId) return;
 
     const validTypes = ["image/jpeg", "image/png", "image/webp", "image/heic", "application/pdf"];
     if (!validTypes.includes(file.type) && !file.name.toLowerCase().endsWith(".heic")) {
@@ -115,7 +117,7 @@ const UploadPreferenceCardDrawer = ({
     try {
       // Upload file to storage
       const ext = file.name.split(".").pop() || "jpg";
-      const path = `${user.id}/preference-card-uploads/${crypto.randomUUID()}.${ext}`;
+      const path = `${targetUserId}/preference-card-uploads/${crypto.randomUUID()}.${ext}`;
       setProgress(20);
 
       const { error: uploadError } = await supabase.storage
@@ -179,7 +181,7 @@ const UploadPreferenceCardDrawer = ({
   };
 
   const handleSave = async () => {
-    if (!user || !procedureName.trim()) {
+    if (!user || !targetUserId || !procedureName.trim()) {
       toast({ title: "Procedure name required", variant: "destructive" });
       return;
     }
@@ -192,7 +194,7 @@ const UploadPreferenceCardDrawer = ({
         .from("procedures")
         .insert({
           name: procedureName.trim(),
-          user_id: user.id,
+          user_id: targetUserId,
           facility_id: selectedFacility || null,
           notes: `Auto-generated from uploaded preference card: ${fileName}`,
         } as any)
@@ -214,7 +216,7 @@ const UploadPreferenceCardDrawer = ({
 
         inserts.push({
           procedure_id: proc.id,
-          user_id: user.id,
+          user_id: targetUserId,
           category,
           value: JSON.stringify(formatted),
         });
