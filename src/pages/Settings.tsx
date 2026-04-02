@@ -94,6 +94,12 @@ const Settings = () => {
 
   const sections = [
     {
+      id: "display-settings",
+      icon: Monitor,
+      label: "Display Settings",
+      description: "Theme & appearance",
+    },
+    {
       id: "edit-profile",
       icon: User,
       label: "Edit Profile",
