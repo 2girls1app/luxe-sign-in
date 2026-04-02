@@ -3,7 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, ClipboardList, User, AlertTriangle, Mic, MicOff, Send,
-  ListOrdered, MessageSquare, Eye, PenLine,
+  ListOrdered, MessageSquare, Eye, PenLine, Trash2, Plus, Clock,
+  CheckCircle2, XCircle,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +53,24 @@ const formatItems = (raw: string): string[] => {
   return raw ? [raw] : [];
 };
 
+const statusIcon = (status: string) => {
+  if (status === "approved") return <CheckCircle2 size={12} className="text-green-400" />;
+  if (status === "denied" || status === "rejected") return <XCircle size={12} className="text-destructive" />;
+  return <Clock size={12} className="text-amber-400" />;
+};
+
+const statusLabel = (status: string) => {
+  if (status === "approved") return "Approved";
+  if (status === "denied" || status === "rejected") return "Rejected";
+  return "Pending Doctor Approval";
+};
+
+const statusColor = (status: string) => {
+  if (status === "approved") return "bg-green-500/10 border-green-500/30 text-green-400";
+  if (status === "denied" || status === "rejected") return "bg-destructive/10 border-destructive/30 text-destructive";
+  return "bg-amber-500/10 border-amber-500/30 text-amber-400";
+};
+
 const DoctorProcedureView = () => {
   const { userId, procedureId } = useParams<{ userId: string; procedureId: string }>();
   const navigate = useNavigate();
@@ -67,6 +86,7 @@ const DoctorProcedureView = () => {
   const [updatedDates, setUpdatedDates] = useState<Record<string, string>>({});
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
   const [pendingChanges, setPendingChanges] = useState<PendingChange[]>([]);
+  const [allChanges, setAllChanges] = useState<PendingChange[]>([]);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
 
@@ -78,6 +98,7 @@ const DoctorProcedureView = () => {
   const [changeDrawerOpen, setChangeDrawerOpen] = useState(false);
   const [changeCategory, setChangeCategory] = useState<PreferenceCategory | null>(null);
   const [changeText, setChangeText] = useState("");
+  const [changeType, setChangeType] = useState<"change" | "delete" | "add_step" | "remove_step" | "add_preset">("change");
   const [submitting, setSubmitting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
@@ -88,12 +109,13 @@ const DoctorProcedureView = () => {
   const fetchData = useCallback(async () => {
     if (!procedureId || !userId) return;
 
-    const [procRes, profileRes, prefsRes, filesRes, pendingRes] = await Promise.all([
+    const [procRes, profileRes, prefsRes, filesRes, pendingRes, allRes] = await Promise.all([
       supabase.from("procedures").select("name, category, facility_id, facilities(name)").eq("id", procedureId).single(),
       supabase.from("profiles").select("display_name, avatar_url").eq("user_id", userId).single(),
       supabase.from("procedure_preferences").select("category, value, updated_at").eq("procedure_id", procedureId),
       supabase.from("procedure_files").select("category").eq("procedure_id", procedureId),
       supabase.from("pending_preference_changes").select("id, category, new_value, old_value, status, created_at, submitted_by").eq("procedure_id", procedureId).eq("status", "pending"),
+      supabase.from("pending_preference_changes").select("id, category, new_value, old_value, status, created_at, submitted_by").eq("procedure_id", procedureId).order("created_at", { ascending: false }).limit(50),
     ]);
 
     if (procRes.data) {
@@ -118,6 +140,7 @@ const DoctorProcedureView = () => {
       setFileCounts(counts);
     }
     if (pendingRes.data) setPendingChanges(pendingRes.data as PendingChange[]);
+    if (allRes.data) setAllChanges(allRes.data as PendingChange[]);
   }, [procedureId, userId]);
 
   useEffect(() => {
@@ -164,29 +187,61 @@ const DoctorProcedureView = () => {
     setViewDrawerOpen(true);
   };
 
-  const handleRequestChangeFromView = () => {
-    if (!viewCategory) return;
+  const openChangeRequest = (cat: PreferenceCategory, type: "change" | "delete" | "add_step" | "remove_step" | "add_preset") => {
     setViewDrawerOpen(false);
-    setChangeCategory(viewCategory);
+    setStepsOpen(false);
+    setChangeCategory(cat);
+    setChangeType(type);
     setChangeText("");
     setChangeDrawerOpen(true);
+  };
+
+  const getRequestPrefix = () => {
+    switch (changeType) {
+      case "delete": return "[DELETE REQUEST] ";
+      case "add_step": return "[ADD STEP REQUEST] ";
+      case "remove_step": return "[REMOVE STEP REQUEST] ";
+      case "add_preset": return "[ADD PRESET REQUEST] ";
+      default: return "";
+    }
+  };
+
+  const getRequestTitle = () => {
+    switch (changeType) {
+      case "delete": return "Request Deletion";
+      case "add_step": return "Request Add Step";
+      case "remove_step": return "Request Remove Step";
+      case "add_preset": return "Request New Preset Item";
+      default: return "Request Change";
+    }
+  };
+
+  const getRequestPlaceholder = () => {
+    switch (changeType) {
+      case "delete": return "Describe which item(s) to remove and why...";
+      case "add_step": return "Describe the step to add and where it should go...";
+      case "remove_step": return "Describe which step to remove and why...";
+      case "add_preset": return "Describe the new preset item to add to the library...";
+      default: return "Describe your suggested change...";
+    }
   };
 
   const handleSubmitChange = async () => {
     if (!changeCategory || !changeText.trim() || !procedureId || !user) return;
     setSubmitting(true);
+    const prefixedValue = getRequestPrefix() + changeText.trim();
     const { error } = await supabase.from("pending_preference_changes").insert({
       procedure_id: procedureId,
       category: changeCategory.key,
       old_value: preferences[changeCategory.key] || "",
-      new_value: changeText.trim(),
+      new_value: prefixedValue,
       submitted_by: user.id,
       status: "pending",
     });
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Change request submitted", description: "The doctor will review your suggestion." });
+      toast({ title: "Request submitted", description: "Pending doctor approval." });
       setChangeDrawerOpen(false);
       setChangeText("");
       await fetchData();
@@ -199,7 +254,7 @@ const DoctorProcedureView = () => {
     pendingCount: pendingChanges.filter(pc => pc.category === cat.key).length,
   }));
 
-  // Parse steps for viewer
+  // Parse steps
   const stepsData: string[] = (() => {
     try {
       const parsed = JSON.parse(preferences["steps"] || "[]");
@@ -207,6 +262,8 @@ const DoctorProcedureView = () => {
     } catch {}
     return [];
   })();
+
+  const stepsCategory = PREFERENCE_CATEGORIES.find(c => c.key === "steps") || { key: "steps", label: "Steps", icon: ListOrdered };
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pt-16 pb-8">
@@ -305,7 +362,7 @@ const DoctorProcedureView = () => {
         </div>
       </motion.div>
 
-      {/* View Preference Drawer (read-only with Request Change button) */}
+      {/* View Preference Drawer with View / Request Change / Request Delete */}
       <Drawer open={viewDrawerOpen} onOpenChange={setViewDrawerOpen}>
         <DrawerContent className="bg-card border-border max-h-[85vh]">
           <DrawerHeader>
@@ -323,7 +380,7 @@ const DoctorProcedureView = () => {
               const raw = preferences[viewCategory.key];
               const isFile = viewCategory.type === "file";
               const count = fileCounts[viewCategory.key] || 0;
-              const pendingForCat = pendingChanges.filter(pc => pc.category === viewCategory.key);
+              const changesForCat = allChanges.filter(pc => pc.category === viewCategory.key);
 
               if (isFile) {
                 return (
@@ -363,16 +420,20 @@ const DoctorProcedureView = () => {
                     )}
                   </div>
 
-                  {/* Pending changes for this category */}
-                  {pendingForCat.length > 0 && (
-                    <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
-                      <p className="text-[10px] font-medium text-amber-400 uppercase tracking-wider mb-2">
-                        Pending Changes ({pendingForCat.length})
+                  {/* Change history for this category */}
+                  {changesForCat.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                        Change Requests ({changesForCat.length})
                       </p>
-                      {pendingForCat.map(pc => (
-                        <div key={pc.id} className="text-xs text-amber-300 mb-1.5 last:mb-0">
-                          <p className="line-clamp-2">{pc.new_value}</p>
-                          <p className="text-[9px] text-amber-400/60 mt-0.5">
+                      {changesForCat.map(pc => (
+                        <div key={pc.id} className={`rounded-lg border p-2.5 ${statusColor(pc.status)}`}>
+                          <div className="flex items-center gap-1.5 mb-1">
+                            {statusIcon(pc.status)}
+                            <span className="text-[10px] font-semibold">{statusLabel(pc.status)}</span>
+                          </div>
+                          <p className="text-xs line-clamp-2">{pc.new_value}</p>
+                          <p className="text-[9px] opacity-60 mt-0.5">
                             {new Date(pc.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                           </p>
                         </div>
@@ -383,19 +444,39 @@ const DoctorProcedureView = () => {
               );
             })()}
 
-            {/* Request Change button */}
-            <Button
-              onClick={handleRequestChangeFromView}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
-            >
-              <PenLine size={14} />
-              Request Change
-            </Button>
+            {/* Action buttons */}
+            {viewCategory && viewCategory.type !== "file" && (
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={() => openChangeRequest(viewCategory, "change")}
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                >
+                  <PenLine size={14} />
+                  Request Change
+                </Button>
+                <Button
+                  onClick={() => openChangeRequest(viewCategory, "delete")}
+                  variant="outline"
+                  className="w-full border-destructive/50 text-destructive hover:bg-destructive/10 gap-2"
+                >
+                  <Trash2 size={14} />
+                  Request Deletion
+                </Button>
+                <Button
+                  onClick={() => openChangeRequest(viewCategory, "add_preset")}
+                  variant="outline"
+                  className="w-full gap-2"
+                >
+                  <Plus size={14} />
+                  Request New Preset Item
+                </Button>
+              </div>
+            )}
           </div>
         </DrawerContent>
       </Drawer>
 
-      {/* Change Request Drawer */}
+      {/* Change / Delete / Add Request Drawer */}
       <Drawer open={changeDrawerOpen} onOpenChange={setChangeDrawerOpen}>
         <DrawerContent className="bg-card border-border">
           <DrawerHeader>
@@ -403,13 +484,13 @@ const DoctorProcedureView = () => {
               {changeCategory && (
                 <>
                   <changeCategory.icon size={18} className="text-primary" />
-                  Request Change: {changeCategory.label}
+                  {getRequestTitle()}: {changeCategory.label}
                 </>
               )}
             </DrawerTitle>
           </DrawerHeader>
           <div className="px-4 pb-6 space-y-4">
-            {changeCategory && preferences[changeCategory.key] && (
+            {changeCategory && preferences[changeCategory.key] && changeType !== "add_preset" && (
               <div className="rounded-lg bg-secondary/50 border border-border p-3">
                 <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Current Value</p>
                 <p className="text-xs text-foreground line-clamp-3">
@@ -420,12 +501,16 @@ const DoctorProcedureView = () => {
 
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                Describe your suggested change
+                {changeType === "delete" ? "What should be removed and why?" :
+                 changeType === "add_preset" ? "Describe the new preset item" :
+                 changeType === "add_step" ? "Describe the step to add" :
+                 changeType === "remove_step" ? "Which step should be removed?" :
+                 "Describe your suggested change"}
               </label>
               <Textarea
                 value={changeText}
                 onChange={(e) => setChangeText(e.target.value)}
-                placeholder="e.g., Please add 10-blade scalpel to instruments..."
+                placeholder={getRequestPlaceholder()}
                 className="bg-secondary border-border text-foreground placeholder:text-muted-foreground min-h-[100px] resize-none"
               />
             </div>
@@ -453,14 +538,17 @@ const DoctorProcedureView = () => {
               </Button>
             </div>
 
-            <p className="text-[10px] text-muted-foreground text-center">
-              Your change request will be sent to the doctor for approval. It will not update the preference card until approved.
-            </p>
+            <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-2.5 flex items-center gap-2">
+              <Clock size={14} className="text-amber-400 shrink-0" />
+              <p className="text-[10px] text-amber-300">
+                This request will be saved as <span className="font-semibold">Pending Doctor Approval</span>. No changes will be applied until approved.
+              </p>
+            </div>
           </div>
         </DrawerContent>
       </Drawer>
 
-      {/* Steps Viewer Drawer */}
+      {/* Steps Viewer Drawer with Add/Remove Step request buttons */}
       <Drawer open={stepsOpen} onOpenChange={setStepsOpen}>
         <DrawerContent className="bg-card border-border max-h-[85vh]">
           <DrawerHeader>
@@ -469,7 +557,7 @@ const DoctorProcedureView = () => {
               Procedure Steps
             </DrawerTitle>
           </DrawerHeader>
-          <div className="px-4 pb-6 overflow-y-auto">
+          <div className="px-4 pb-6 overflow-y-auto space-y-4">
             {stepsData.length === 0 ? (
               <div className="rounded-lg bg-secondary/50 border border-border p-4 text-center">
                 <p className="text-sm text-muted-foreground">No procedure steps defined</p>
@@ -486,6 +574,47 @@ const DoctorProcedureView = () => {
                 ))}
               </ol>
             )}
+
+            {/* Pending step changes */}
+            {(() => {
+              const stepChanges = allChanges.filter(pc => pc.category === "steps");
+              if (stepChanges.length === 0) return null;
+              return (
+                <div className="space-y-2">
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                    Step Change Requests ({stepChanges.length})
+                  </p>
+                  {stepChanges.map(pc => (
+                    <div key={pc.id} className={`rounded-lg border p-2.5 ${statusColor(pc.status)}`}>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        {statusIcon(pc.status)}
+                        <span className="text-[10px] font-semibold">{statusLabel(pc.status)}</span>
+                      </div>
+                      <p className="text-xs line-clamp-2">{pc.new_value}</p>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+
+            {/* Request buttons */}
+            <div className="flex gap-2">
+              <Button
+                onClick={() => openChangeRequest(stepsCategory as PreferenceCategory, "add_step")}
+                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 gap-2 text-xs"
+              >
+                <Plus size={14} />
+                Request Add Step
+              </Button>
+              <Button
+                onClick={() => openChangeRequest(stepsCategory as PreferenceCategory, "remove_step")}
+                variant="outline"
+                className="flex-1 border-destructive/50 text-destructive hover:bg-destructive/10 gap-2 text-xs"
+              >
+                <Trash2 size={14} />
+                Request Remove Step
+              </Button>
+            </div>
           </div>
         </DrawerContent>
       </Drawer>
@@ -500,6 +629,7 @@ const DoctorProcedureView = () => {
         preferences={preferences}
         fileCounts={fileCounts}
         procedureId={procedureId || ""}
+        ownerUserId={userId}
       />
 
       {/* Team Chat */}
