@@ -181,7 +181,7 @@ const UploadPreferenceCardDrawer = ({
   };
 
   const handleSave = async () => {
-    if (!user || !procedureName.trim()) {
+    if (!user || !targetUserId || !procedureName.trim()) {
       toast({ title: "Procedure name required", variant: "destructive" });
       return;
     }
