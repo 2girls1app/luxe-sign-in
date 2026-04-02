@@ -122,13 +122,14 @@ const FacilityDetails = () => {
           ) : (
             <div className="flex flex-col gap-2">
               {filteredDoctors.map((doc) => (
-                  <motion.div
+                  <motion.button
                     key={doc.user_id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="w-full flex items-center gap-3 rounded-xl bg-card border border-border p-4"
+                    onClick={() => navigate(`/doctor/${doc.user_id}`)}
+                    className="w-full flex items-center gap-3 rounded-xl bg-card border border-border p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all text-left"
                   >
-                    <Avatar className="h-10 w-10 border border-border">
+                     <Avatar className="h-10 w-10 border border-border">
                       {doc.avatar_url ? <AvatarImage src={doc.avatar_url} /> : null}
                       <AvatarFallback className="bg-secondary text-foreground text-sm">
                         {(doc.display_name || "D").charAt(0).toUpperCase()}
@@ -138,7 +139,8 @@ const FacilityDetails = () => {
                       <p className="text-sm font-medium text-foreground">{doc.display_name}</p>
                       <p className="text-xs text-primary">{doc.specialty || "No specialty"}</p>
                     </div>
-                  </motion.div>
+                    <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+                  </motion.button>
               ))}
             </div>
           )}
