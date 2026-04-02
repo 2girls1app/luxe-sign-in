@@ -5,6 +5,7 @@ import {
   ArrowLeft, ClipboardList, User, AlertTriangle, Mic, MicOff, Send,
   ListOrdered, MessageSquare, PenLine, Trash2, Plus, Clock,
   CheckCircle2, XCircle, ChevronRight, Library, Check,
+  ArrowUp, ArrowDown,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -122,6 +123,8 @@ const DoctorProcedureView = () => {
 
   // Steps viewer
   const [stepsOpen, setStepsOpen] = useState(false);
+  const [newStepText, setNewStepText] = useState("");
+  const [submittingStep, setSubmittingStep] = useState(false);
 
   // Preset library
   const [presetOpen, setPresetOpen] = useState(false);
@@ -681,6 +684,9 @@ const DoctorProcedureView = () => {
             <DrawerTitle className="text-foreground flex items-center gap-2">
               <ListOrdered size={18} className="text-primary" />
               Procedure Steps
+              {stepsData.length > 0 && (
+                <span className="text-xs text-muted-foreground font-normal">({stepsData.length})</span>
+              )}
             </DrawerTitle>
           </DrawerHeader>
           <div className="px-4 pb-6 overflow-y-auto space-y-4">
@@ -690,16 +696,134 @@ const DoctorProcedureView = () => {
               </div>
             ) : (
               <ol className="space-y-2">
-                {stepsData.map((step, idx) => (
-                  <li key={idx} className="flex items-start gap-3 rounded-lg bg-secondary/50 border border-border p-3">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">
-                      {idx + 1}
-                    </span>
-                    <p className="text-sm text-foreground pt-0.5">{step}</p>
-                  </li>
-                ))}
+                {stepsData.map((step, idx) => {
+                  const hasPendingDelete = pendingChanges.some(
+                    pc => pc.category === "steps" && pc.new_value.includes("[REMOVE STEP REQUEST]") && pc.new_value.includes(step)
+                  );
+                  return (
+                    <li key={idx} className="flex items-start gap-2 rounded-lg bg-secondary/50 border border-border p-3 group">
+                      <div className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5">
+                        {idx > 0 && (
+                          <button
+                            onClick={async () => {
+                              if (!procedureId || !user) return;
+                              const reordered = [...stepsData];
+                              [reordered[idx - 1], reordered[idx]] = [reordered[idx], reordered[idx - 1]];
+                              await supabase.from("pending_preference_changes").insert({
+                                procedure_id: procedureId,
+                                category: "steps",
+                                old_value: JSON.stringify(stepsData),
+                                new_value: `[REORDER REQUEST] Move step ${idx + 1} ("${step}") up to position ${idx}`,
+                                submitted_by: user.id,
+                                status: "pending",
+                              });
+                              toast({ title: "Reorder request submitted", description: "Pending doctor approval." });
+                              await fetchData();
+                            }}
+                            className="p-0.5 rounded hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
+                            title="Request move up"
+                          >
+                            <ArrowUp size={12} />
+                          </button>
+                        )}
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold">
+                          {idx + 1}
+                        </span>
+                        {idx < stepsData.length - 1 && (
+                          <button
+                            onClick={async () => {
+                              if (!procedureId || !user) return;
+                              await supabase.from("pending_preference_changes").insert({
+                                procedure_id: procedureId,
+                                category: "steps",
+                                old_value: JSON.stringify(stepsData),
+                                new_value: `[REORDER REQUEST] Move step ${idx + 1} ("${step}") down to position ${idx + 2}`,
+                                submitted_by: user.id,
+                                status: "pending",
+                              });
+                              toast({ title: "Reorder request submitted", description: "Pending doctor approval." });
+                              await fetchData();
+                            }}
+                            className="p-0.5 rounded hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
+                            title="Request move down"
+                          >
+                            <ArrowDown size={12} />
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-sm text-foreground pt-1 flex-1 min-w-0">{step}</p>
+                      <div className="flex items-center gap-1 shrink-0 pt-0.5">
+                        {hasPendingDelete ? (
+                          <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px]">
+                            <Clock size={10} className="mr-0.5" /> Pending
+                          </Badge>
+                        ) : (
+                          <button
+                            onClick={async () => {
+                              if (!procedureId || !user) return;
+                              await supabase.from("pending_preference_changes").insert({
+                                procedure_id: procedureId,
+                                category: "steps",
+                                old_value: step,
+                                new_value: `[REMOVE STEP REQUEST] Remove step ${idx + 1}: "${step}"`,
+                                submitted_by: user.id,
+                                status: "pending",
+                              });
+                              toast({ title: "Deletion request submitted", description: "Pending doctor approval." });
+                              await fetchData();
+                            }}
+                            className="p-1 rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                            title="Request step deletion"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
               </ol>
             )}
+
+            {/* Add new step inline */}
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-2">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Add New Step</p>
+              <div className="flex gap-2">
+                <Textarea
+                  value={newStepText}
+                  onChange={(e) => setNewStepText(e.target.value)}
+                  placeholder="Describe the new step..."
+                  className="bg-secondary border-border text-foreground placeholder:text-muted-foreground min-h-[60px] resize-none text-sm flex-1"
+                />
+                <Button
+                  onClick={async () => {
+                    if (!newStepText.trim() || !procedureId || !user) return;
+                    setSubmittingStep(true);
+                    await supabase.from("pending_preference_changes").insert({
+                      procedure_id: procedureId,
+                      category: "steps",
+                      old_value: preferences["steps"] || "[]",
+                      new_value: `[ADD STEP REQUEST] ${newStepText.trim()}`,
+                      submitted_by: user.id,
+                      status: "pending",
+                    });
+                    toast({ title: "Step request submitted", description: "Pending doctor approval." });
+                    setNewStepText("");
+                    setSubmittingStep(false);
+                    await fetchData();
+                  }}
+                  disabled={!newStepText.trim() || submittingStep}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 self-end"
+                  size="sm"
+                >
+                  <Send size={14} />
+                </Button>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock size={12} className="text-amber-400" />
+                <p className="text-[9px] text-amber-400">New steps require doctor approval before going live</p>
+              </div>
+            </div>
 
             {/* Pending step changes */}
             {(() => {
@@ -717,30 +841,14 @@ const DoctorProcedureView = () => {
                         <span className="text-[10px] font-semibold">{statusLabel(pc.status)}</span>
                       </div>
                       <p className="text-xs line-clamp-2">{pc.new_value}</p>
+                      <p className="text-[9px] opacity-60 mt-0.5">
+                        {new Date(pc.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                      </p>
                     </div>
                   ))}
                 </div>
               );
             })()}
-
-            {/* Request buttons */}
-            <div className="flex gap-2">
-              <Button
-                onClick={() => openChangeRequest(stepsCategory as PreferenceCategory, "add_step")}
-                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 gap-2 text-xs"
-              >
-                <Plus size={14} />
-                Request Add Step
-              </Button>
-              <Button
-                onClick={() => openChangeRequest(stepsCategory as PreferenceCategory, "remove_step")}
-                variant="outline"
-                className="flex-1 border-destructive/50 text-destructive hover:bg-destructive/10 gap-2 text-xs"
-              >
-                <Trash2 size={14} />
-                Request Remove Step
-              </Button>
-            </div>
           </div>
         </DrawerContent>
       </Drawer>
