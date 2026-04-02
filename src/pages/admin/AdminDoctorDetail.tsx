@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, ClipboardList, Clock, AlertTriangle } from "lucide-react";
+import { ArrowLeft, User, ClipboardList, Clock, AlertTriangle, Building2, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -19,6 +19,9 @@ interface Procedure {
 interface PendingChange {
   id: string; procedure_id: string; category: string; status: string;
 }
+interface Facility {
+  id: string; name: string;
+}
 
 const AdminDoctorDetail = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -28,19 +31,40 @@ const AdminDoctorDetail = () => {
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [pendingChanges, setPendingChanges] = useState<PendingChange[]>([]);
   const [prefCounts, setPrefCounts] = useState<Record<string, number>>({});
-  const [facilities, setFacilities] = useState<{ id: string; name: string }[]>([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [expandedFacilities, setExpandedFacilities] = useState<Set<string>>(new Set());
 
   const fetchData = useCallback(async () => {
     if (!userId || !isAdmin) return;
 
-    const [profileRes, procsRes, facilRes] = await Promise.all([
+    // Fetch profile and procedures
+    const [profileRes, procsRes] = await Promise.all([
       supabase.from("profiles").select("user_id, display_name, avatar_url, role, specialty").eq("user_id", userId).single(),
       supabase.from("procedures").select("id, name, category, created_at, facility_id").eq("user_id", userId).order("name"),
-      supabase.from("facilities").select("id, name").eq("user_id", userId).order("name"),
     ]);
 
     if (profileRes.data) setDoctor(profileRes.data as DoctorProfile);
-    if (facilRes.data) setFacilities(facilRes.data);
+
+    // Fetch facilities via doctor_facilities join table
+    const { data: links } = await supabase.from("doctor_facilities").select("facility_id").eq("user_id", userId);
+    const facilityIds = (links || []).map((l: any) => l.facility_id);
+    
+    // Also include profile facility_id for backwards compat
+    if (profileRes.data?.facility_id && !facilityIds.includes((profileRes.data as any).facility_id)) {
+      facilityIds.push((profileRes.data as any).facility_id);
+    }
+
+    if (facilityIds.length > 0) {
+      const { data: facilData } = await supabase.from("facilities").select("id, name").in("id", facilityIds).order("name");
+      if (facilData) {
+        setFacilities(facilData);
+        // Auto-expand all facilities
+        setExpandedFacilities(new Set(facilData.map((f: any) => f.id)));
+      }
+    } else {
+      setFacilities([]);
+    }
+
     if (procsRes.data) {
       setProcedures(procsRes.data as Procedure[]);
       const procIds = (procsRes.data as Procedure[]).map(p => p.id);
@@ -64,8 +88,53 @@ const AdminDoctorDetail = () => {
     if (isAdmin) fetchData();
   }, [isAdmin, loading, fetchData]);
 
+  const toggleFacility = (id: string) => {
+    setExpandedFacilities(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  // Group procedures by facility
+  const proceduresByFacility = facilities.map(f => ({
+    facility: f,
+    procedures: procedures.filter(p => p.facility_id === f.id),
+  }));
+  const unassignedProcedures = procedures.filter(p => !p.facility_id || !facilities.some(f => f.id === p.facility_id));
+
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-background"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
   if (!isAdmin) return null;
+
+  const renderProcedure = (proc: Procedure) => {
+    const pending = pendingChanges.filter(pc => pc.procedure_id === proc.id);
+    return (
+      <button
+        key={proc.id}
+        onClick={() => navigate(`/admin/doctors/${userId}/procedure/${proc.id}`)}
+        className="w-full flex items-center gap-3 rounded-xl bg-card border border-border p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all text-left"
+      >
+        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+          <ClipboardList size={16} className="text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-foreground truncate">{proc.name}</p>
+          <p className="text-[10px] text-muted-foreground">
+            {prefCounts[proc.id] || 0} preferences
+            {proc.category && ` · ${proc.category}`}
+          </p>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {pending.length > 0 && (
+            <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px]">
+              <AlertTriangle size={10} className="mr-0.5" />
+              {pending.length} pending
+            </Badge>
+          )}
+        </div>
+      </button>
+    );
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pt-16 pb-8">
@@ -117,43 +186,52 @@ const AdminDoctorDetail = () => {
           defaultSpecialty={doctor?.specialty || undefined}
         />
 
-        {/* Procedures list */}
+        {/* Procedures grouped by facility */}
         <div>
           <h2 className="text-sm font-semibold text-foreground mb-3">Preference Cards</h2>
-          <div className="space-y-2">
-            {procedures.map(proc => {
-              const pending = pendingChanges.filter(pc => pc.procedure_id === proc.id);
-              return (
-                <button
-                  key={proc.id}
-                  onClick={() => navigate(`/admin/doctors/${userId}/procedure/${proc.id}`)}
-                  className="w-full flex items-center gap-3 rounded-xl bg-card border border-border p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all text-left"
-                >
-                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <ClipboardList size={16} className="text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{proc.name}</p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {prefCounts[proc.id] || 0} preferences
-                      {proc.category && ` · ${proc.category}`}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {pending.length > 0 && (
-                      <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px]">
-                        <AlertTriangle size={10} className="mr-0.5" />
-                        {pending.length} pending
-                      </Badge>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-            {procedures.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-8">No preference cards found for this doctor</p>
-            )}
-          </div>
+
+          {procedures.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-8">No preference cards found for this doctor</p>
+          )}
+
+          {proceduresByFacility.map(({ facility, procedures: facProcs }) => (
+            <div key={facility.id} className="mb-3">
+              <button
+                onClick={() => toggleFacility(facility.id)}
+                className="w-full flex items-center gap-2 py-2 text-left"
+              >
+                <Building2 size={14} className="text-primary" />
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex-1">
+                  {facility.name}
+                </span>
+                <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full mr-1">
+                  {facProcs.length}
+                </span>
+                {expandedFacilities.has(facility.id)
+                  ? <ChevronUp size={14} className="text-muted-foreground" />
+                  : <ChevronDown size={14} className="text-muted-foreground" />
+                }
+              </button>
+              {expandedFacilities.has(facility.id) && (
+                <div className="space-y-2 ml-1">
+                  {facProcs.length === 0 ? (
+                    <p className="text-xs text-muted-foreground py-3 text-center">No procedures at this facility</p>
+                  ) : (
+                    facProcs.map(renderProcedure)
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {unassignedProcedures.length > 0 && (
+            <div className="mb-3">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider py-2">Unassigned</p>
+              <div className="space-y-2">
+                {unassignedProcedures.map(renderProcedure)}
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
     </div>
