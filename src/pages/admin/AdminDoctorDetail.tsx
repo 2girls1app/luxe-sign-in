@@ -39,7 +39,7 @@ const AdminDoctorDetail = () => {
 
     // Fetch profile and procedures
     const [profileRes, procsRes] = await Promise.all([
-      supabase.from("profiles").select("user_id, display_name, avatar_url, role, specialty").eq("user_id", userId).single(),
+      supabase.from("profiles").select("user_id, display_name, avatar_url, role, specialty, facility_id").eq("user_id", userId).single(),
       supabase.from("procedures").select("id, name, category, created_at, facility_id").eq("user_id", userId).order("name"),
     ]);
 
