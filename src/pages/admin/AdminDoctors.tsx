@@ -1,14 +1,19 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Stethoscope, Search, ChevronRight, Filter } from "lucide-react";
+import { ArrowLeft, Stethoscope, Search, ChevronRight, Filter, MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { supabase } from "@/integrations/supabase/client";
 import NavHeader from "@/components/NavHeader";
 import CreateSurgeonDialog from "@/components/CreateSurgeonDialog";
-
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 interface UserProfile {
   id: string; user_id: string; display_name: string | null; avatar_url: string | null;
   role: string | null; specialty: string | null; created_at: string;
