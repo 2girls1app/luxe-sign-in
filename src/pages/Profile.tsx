@@ -58,6 +58,7 @@ const Profile = () => {
   const [showThemeDialog, setShowThemeDialog] = useState(() => {
     return localStorage.getItem("hasChosenTheme") !== "true";
   });
+  const [uploadCardOpen, setUploadCardOpen] = useState(false);
 
   const SPECIALTIES = [
     "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
