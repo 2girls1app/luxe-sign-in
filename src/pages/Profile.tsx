@@ -77,6 +77,7 @@ const Profile = () => {
   const userRole = profile?.role || user?.user_metadata?.profession || "";
   const roleLabel = userRole ? userRole.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) : "";
   const isAdmin = ["administrative", "admin", "admin-staff", "admin staff"].includes(userRole.toLowerCase());
+  const isDoctor = ["doctor", "surgeon", "physician"].some(r => userRole.toLowerCase().includes(r));
   const username = emailUsername || displayName.toLowerCase().replace(/\s+/g, "");
   const specialty = profile?.specialty || "";
 
@@ -343,7 +344,7 @@ const Profile = () => {
                   <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
                     <Building2 size={16} className="text-primary" /> Facilities
                   </h2>
-                  <AddFacilityDialog onAdded={fetchFacilities} existingFacilityIds={facilities.map((f: any) => f.id)} />
+                  {!isDoctor && <AddFacilityDialog onAdded={fetchFacilities} existingFacilityIds={facilities.map((f: any) => f.id)} />}
                 </div>
                 {facilities.length === 0 ? (
                   <div className="rounded-xl bg-card border border-border p-6 text-center">
