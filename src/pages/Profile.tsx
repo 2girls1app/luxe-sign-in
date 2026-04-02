@@ -383,7 +383,18 @@ const Profile = () => {
               <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
                 <Stethoscope size={16} className="text-primary" /> Procedures
               </h2>
-              <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} preselectedFacilityId={facilityFilter} defaultSpecialty={profile?.specialty || undefined} />
+              <div className="flex items-center gap-2">
+                {isDoctor && (
+                  <button
+                    onClick={() => setUploadCardOpen(true)}
+                    className="flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 h-9 w-9"
+                    aria-label="Upload Preference Card"
+                  >
+                    <Upload size={16} />
+                  </button>
+                )}
+                <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} preselectedFacilityId={facilityFilter} defaultSpecialty={profile?.specialty || undefined} />
+              </div>
             </div>
 
             {filteredProcedures.length > 0 && (
