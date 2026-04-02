@@ -216,7 +216,7 @@ const UploadPreferenceCardDrawer = ({
 
         inserts.push({
           procedure_id: proc.id,
-          user_id: user.id,
+          user_id: targetUserId,
           category,
           value: JSON.stringify(formatted),
         });
