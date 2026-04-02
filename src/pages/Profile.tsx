@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import AdminDashboardSection from "@/components/AdminDashboardSection";
+import ThemeSelectionDialog from "@/components/ThemeSelectionDialog";
 interface Facility {
   id: string;
   name: string;
@@ -53,6 +54,9 @@ const Profile = () => {
   const [hasMusicPrefs, setHasMusicPrefs] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [showThemeDialog, setShowThemeDialog] = useState(() => {
+    return localStorage.getItem("hasChosenTheme") !== "true";
+  });
 
   const SPECIALTIES = [
     "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
@@ -200,6 +204,7 @@ const Profile = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pt-16 pb-8">
+      <ThemeSelectionDialog open={showThemeDialog} onComplete={() => setShowThemeDialog(false)} />
       <NavHeader />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
