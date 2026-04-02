@@ -204,6 +204,7 @@ const Profile = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pt-16 pb-8">
+      <ThemeSelectionDialog open={showThemeDialog} onComplete={() => setShowThemeDialog(false)} />
       <NavHeader />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
