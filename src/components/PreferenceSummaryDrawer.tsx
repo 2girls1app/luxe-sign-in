@@ -46,11 +46,12 @@ const PreferenceSummaryDrawer = ({
 
   const fetchPhotos = useCallback(async () => {
     if (!procedureId || !user) return;
+    const fileUserId = ownerUserId || user.id;
     const { data } = await supabase
       .from("procedure_files")
       .select("id, file_name, file_path, mime_type, category")
       .eq("procedure_id", procedureId)
-      .eq("user_id", user.id);
+      .eq("user_id", fileUserId);
 
     if (data) {
       const imageFiles = data.filter(
