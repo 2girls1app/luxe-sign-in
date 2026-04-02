@@ -37,24 +37,10 @@ interface PreferenceCategoryWidgetProps {
   updatedAt?: string;
   onClick: () => void;
   index: number;
+  pendingCount?: number;
 }
 
-const formatUpdatedDate = (dateStr: string) => {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-};
-
-const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onClick, index }: PreferenceCategoryWidgetProps) => {
+const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, pendingCount }: PreferenceCategoryWidgetProps) => {
   const Icon = category.icon;
   const isFile = category.type === "file";
   const isMedication = category.key === "medication";
@@ -70,106 +56,90 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, updatedAt, onCli
     if (Array.isArray(input)) {
       return input.flatMap((item) => extractNames(item)).filter(Boolean);
     }
-
     if (input && typeof input === "object") {
       const record = input as Record<string, unknown>;
       const directLabel = [record.name, record.label, record.title, record.value]
         .find((entry) => typeof entry === "string" && entry.trim());
-
-      if (typeof directLabel === "string") {
-        return [directLabel.trim()];
-      }
-
+      if (typeof directLabel === "string") return [directLabel.trim()];
       return Object.values(record).flatMap((entry) => extractNames(entry)).filter(Boolean);
     }
-
     if (typeof input === "string") {
       const trimmed = input.trim();
       return trimmed ? [trimmed] : [];
     }
-
     return [];
   };
 
   const parseStructuredValue = (raw: string): unknown => {
     let current: unknown = raw.trim();
-
     for (let i = 0; i < 3 && typeof current === "string"; i += 1) {
       const text = current.trim();
       const looksStructured = text.startsWith("[") || text.startsWith("{") || text.startsWith('"[') || text.startsWith('"{');
       if (!looksStructured) break;
-
-      try {
-        current = JSON.parse(text);
-      } catch {
-        break;
-      }
+      try { current = JSON.parse(text); } catch { break; }
     }
-
     return current;
   };
 
   const getPreviewText = (): string | null => {
     if (!value?.trim()) return null;
-
     const raw = value.trim();
     const parsed = parseStructuredValue(raw);
-
     if (Array.isArray(parsed)) {
       if (parsed.length === 0) return "No items selected";
       if (isMedication) return `${parsed.length} med${parsed.length !== 1 ? "s" : ""}`;
       if (isSteps) return `${parsed.length} step${parsed.length !== 1 ? "s" : ""}`;
       return summarizeNames(extractNames(parsed)) || `${parsed.length} items selected`;
     }
-
     if (parsed && typeof parsed === "object") {
       return summarizeNames(extractNames(parsed)) || "1 item selected";
     }
-
     if (typeof parsed === "string" && parsed !== raw) {
       const normalized = parsed.trim();
       if (!normalized) return "No items selected";
       return normalized;
     }
-
     const extractedFromRaw = Array.from(raw.matchAll(/"name"\s*:\s*"([^"]+)"/g), (match) => match[1]?.trim()).filter(Boolean);
-    if (extractedFromRaw.length > 0) {
-      return summarizeNames(extractedFromRaw) || "Items selected";
-    }
-
-    if (raw.startsWith("[") || raw.startsWith("{")) {
-      return "Items selected";
-    }
-
+    if (extractedFromRaw.length > 0) return summarizeNames(extractedFromRaw) || "Items selected";
+    if (raw.startsWith("[") || raw.startsWith("{")) return "Items selected";
     return raw;
   };
 
   const hasValue = isFile ? (fileCount !== undefined && fileCount > 0) : !!value;
+  const previewText = isFile
+    ? (hasValue ? `${fileCount} file${fileCount !== 1 ? "s" : ""}` : "No files")
+    : (getPreviewText() || "Not set");
 
   return (
     <motion.button
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.3 }}
+      transition={{ delay: index * 0.04, duration: 0.3 }}
       onClick={onClick}
-      className="relative flex flex-col items-center gap-2 rounded-2xl bg-card border border-border p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-95 h-[120px] justify-center"
+      className="relative flex flex-col items-center justify-center gap-2.5 rounded-2xl bg-card border border-border p-4 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-0.5 transition-all duration-200 active:scale-95 aspect-square"
     >
       {hasValue && (
-        <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+        <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-md shadow-primary/30">
           <Check size={12} className="text-primary-foreground" />
         </span>
       )}
+
+      {pendingCount !== undefined && pendingCount > 0 && (
+        <span className="absolute top-2.5 left-2.5 min-w-[18px] h-[18px] rounded-full bg-amber-500 flex items-center justify-center text-[9px] font-bold text-black px-1">
+          {pendingCount}
+        </span>
+      )}
+
       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
         <Icon size={22} className="text-primary" />
       </div>
-      <span className="text-xs font-medium text-foreground">{category.label}</span>
-      {hasValue && (
-        <span className="text-[10px] text-muted-foreground truncate max-w-full px-1">
-          {isFile
-            ? `${fileCount} file${fileCount !== 1 ? "s" : ""}`
-            : getPreviewText() || "Items selected"}
+
+      <div className="flex flex-col items-center gap-0.5 w-full">
+        <span className="text-xs font-semibold text-foreground leading-tight">{category.label}</span>
+        <span className="text-[10px] text-muted-foreground truncate max-w-full px-1 leading-tight">
+          {previewText}
         </span>
-      )}
+      </div>
     </motion.button>
   );
 };
