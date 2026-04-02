@@ -3,8 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, ClipboardList, User, AlertTriangle, Mic, MicOff, Send,
-  ListOrdered, MessageSquare, Eye, PenLine, Trash2, Plus, Clock,
-  CheckCircle2, XCircle,
+  ListOrdered, MessageSquare, PenLine, Trash2, Plus, Clock,
+  CheckCircle2, XCircle, ChevronRight, Library, Check,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -13,10 +13,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import PreferenceCategoryWidget, {
+import {
   PREFERENCE_CATEGORIES,
   type PreferenceCategory,
 } from "@/components/PreferenceCategoryWidget";
+import { MULTI_SELECT_CATEGORIES } from "@/data/preferenceOptions";
 import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
 import TeamChatDrawer from "@/components/TeamChatDrawer";
 import NavHeader from "@/components/NavHeader";
@@ -71,6 +72,22 @@ const statusColor = (status: string) => {
   return "bg-amber-500/10 border-amber-500/30 text-amber-400";
 };
 
+const getPreviewSummary = (raw: string | undefined, key: string, fileCount?: number): string => {
+  if (key === "images" || key === "videos" || key === "pdfs") {
+    const count = fileCount || 0;
+    return count > 0 ? `${count} file${count !== 1 ? "s" : ""}` : "None";
+  }
+  if (!raw?.trim()) return "Not set";
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      if (parsed.length === 0) return "Not set";
+      return `${parsed.length} item${parsed.length !== 1 ? "s" : ""}`;
+    }
+  } catch {}
+  return raw.length > 30 ? raw.slice(0, 30) + "…" : raw;
+};
+
 const DoctorProcedureView = () => {
   const { userId, procedureId } = useParams<{ userId: string; procedureId: string }>();
   const navigate = useNavigate();
@@ -90,11 +107,11 @@ const DoctorProcedureView = () => {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
 
-  // View drawer state
+  // View drawer
   const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
   const [viewCategory, setViewCategory] = useState<PreferenceCategory | null>(null);
 
-  // Change request state
+  // Change request
   const [changeDrawerOpen, setChangeDrawerOpen] = useState(false);
   const [changeCategory, setChangeCategory] = useState<PreferenceCategory | null>(null);
   const [changeText, setChangeText] = useState("");
@@ -105,6 +122,11 @@ const DoctorProcedureView = () => {
 
   // Steps viewer
   const [stepsOpen, setStepsOpen] = useState(false);
+
+  // Preset library
+  const [presetOpen, setPresetOpen] = useState(false);
+  const [presetCategory, setPresetCategory] = useState<PreferenceCategory | null>(null);
+  const [presetSubmitting, setPresetSubmitting] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!procedureId || !userId) return;
@@ -196,6 +218,12 @@ const DoctorProcedureView = () => {
     setChangeDrawerOpen(true);
   };
 
+  const openPresetLibrary = (cat: PreferenceCategory) => {
+    setViewDrawerOpen(false);
+    setPresetCategory(cat);
+    setPresetOpen(true);
+  };
+
   const getRequestPrefix = () => {
     switch (changeType) {
       case "delete": return "[DELETE REQUEST] ";
@@ -247,6 +275,26 @@ const DoctorProcedureView = () => {
       await fetchData();
     }
     setSubmitting(false);
+  };
+
+  const handlePresetSelect = async (presetName: string) => {
+    if (!presetCategory || !procedureId || !user) return;
+    setPresetSubmitting(presetName);
+    const { error } = await supabase.from("pending_preference_changes").insert({
+      procedure_id: procedureId,
+      category: presetCategory.key,
+      old_value: preferences[presetCategory.key] || "",
+      new_value: `[PRESET ADD REQUEST] ${presetName}`,
+      submitted_by: user.id,
+      status: "pending",
+    });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Submitted for approval", description: `"${presetName}" is pending doctor approval.` });
+      await fetchData();
+    }
+    setPresetSubmitting(null);
   };
 
   const categoriesWithPendingCounts = PREFERENCE_CATEGORIES.map(cat => ({
@@ -334,35 +382,47 @@ const DoctorProcedureView = () => {
           </button>
         </div>
 
-        {/* Widget grid */}
+        {/* Widget list — matching doctor workspace card style */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-foreground">Preference Categories</h2>
-            <p className="text-[10px] text-muted-foreground">Tap to view details</p>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            {categoriesWithPendingCounts.map((cat, i) => (
-              <div key={cat.key} className="relative">
-                <PreferenceCategoryWidget
-                  category={cat}
-                  value={preferences[cat.key]}
-                  fileCount={fileCounts[cat.key]}
-                  updatedAt={updatedDates[cat.key]}
+          <h2 className="text-sm font-semibold text-foreground mb-3">Preference Categories</h2>
+          <div className="flex flex-col gap-2">
+            {categoriesWithPendingCounts.map((cat) => {
+              const Icon = cat.icon;
+              const summary = getPreviewSummary(preferences[cat.key], cat.key, fileCounts[cat.key]);
+              const hasPresets = !!MULTI_SELECT_CATEGORIES[cat.key];
+              return (
+                <button
+                  key={cat.key}
                   onClick={() => handleWidgetClick(cat)}
-                  index={i}
-                />
-                {cat.pendingCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center text-[9px] font-bold text-amber-950 z-10">
-                    {cat.pendingCount}
-                  </span>
-                )}
-              </div>
-            ))}
+                  className="flex items-center gap-3 rounded-xl bg-card border border-border p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all text-left"
+                >
+                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <Icon size={16} className="text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{cat.label}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{summary}</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {cat.pendingCount > 0 && (
+                      <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px]">
+                        <AlertTriangle size={10} className="mr-0.5" />
+                        {cat.pendingCount}
+                      </Badge>
+                    )}
+                    {hasPresets && (
+                      <Library size={14} className="text-muted-foreground" />
+                    )}
+                    <ChevronRight size={16} className="text-muted-foreground" />
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </motion.div>
 
-      {/* View Preference Drawer with View / Request Change / Request Delete */}
+      {/* View Preference Drawer */}
       <Drawer open={viewDrawerOpen} onOpenChange={setViewDrawerOpen}>
         <DrawerContent className="bg-card border-border max-h-[85vh]">
           <DrawerHeader>
@@ -381,6 +441,7 @@ const DoctorProcedureView = () => {
               const isFile = viewCategory.type === "file";
               const count = fileCounts[viewCategory.key] || 0;
               const changesForCat = allChanges.filter(pc => pc.category === viewCategory.key);
+              const hasPresets = !!MULTI_SELECT_CATEGORIES[viewCategory.key];
 
               if (isFile) {
                 return (
@@ -391,36 +452,36 @@ const DoctorProcedureView = () => {
                 );
               }
 
-              if (!raw?.trim()) {
-                return (
-                  <div className="rounded-lg bg-secondary/50 border border-border p-4 text-center">
-                    <p className="text-sm text-muted-foreground">No preferences set for {viewCategory.label}</p>
-                  </div>
-                );
-              }
-
-              const items = formatItems(raw);
               return (
                 <>
-                  <div className="rounded-lg bg-secondary/50 border border-border p-3">
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
-                      Current Preferences
-                    </p>
-                    {items.length > 0 ? (
-                      <ul className="space-y-1.5">
-                        {items.map((item, idx) => (
-                          <li key={idx} className="flex items-start gap-2 text-xs text-foreground">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-xs text-foreground">{raw}</p>
-                    )}
-                  </div>
+                  {raw?.trim() ? (
+                    <div className="rounded-lg bg-secondary/50 border border-border p-3">
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                        Current Preferences
+                      </p>
+                      {(() => {
+                        const items = formatItems(raw);
+                        return items.length > 0 ? (
+                          <ul className="space-y-1.5">
+                            {items.map((item, idx) => (
+                              <li key={idx} className="flex items-start gap-2 text-xs text-foreground">
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-xs text-foreground">{raw}</p>
+                        );
+                      })()}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg bg-secondary/50 border border-border p-4 text-center">
+                      <p className="text-sm text-muted-foreground">No preferences set for {viewCategory.label}</p>
+                    </div>
+                  )}
 
-                  {/* Change history for this category */}
+                  {/* Change history */}
                   {changesForCat.length > 0 && (
                     <div className="space-y-2">
                       <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
@@ -440,36 +501,121 @@ const DoctorProcedureView = () => {
                       ))}
                     </div>
                   )}
+
+                  {/* Action buttons */}
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      onClick={() => openChangeRequest(viewCategory, "change")}
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                    >
+                      <PenLine size={14} />
+                      Request Change
+                    </Button>
+                    <Button
+                      onClick={() => openChangeRequest(viewCategory, "delete")}
+                      variant="outline"
+                      className="w-full border-destructive/50 text-destructive hover:bg-destructive/10 gap-2"
+                    >
+                      <Trash2 size={14} />
+                      Request Deletion
+                    </Button>
+                    {hasPresets && (
+                      <Button
+                        onClick={() => openPresetLibrary(viewCategory)}
+                        variant="outline"
+                        className="w-full gap-2"
+                      >
+                        <Library size={14} />
+                        Open Preset Library
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => openChangeRequest(viewCategory, "add_preset")}
+                      variant="outline"
+                      className="w-full gap-2"
+                    >
+                      <Plus size={14} />
+                      Request New Preset Item
+                    </Button>
+                  </div>
                 </>
               );
             })()}
+          </div>
+        </DrawerContent>
+      </Drawer>
 
-            {/* Action buttons */}
-            {viewCategory && viewCategory.type !== "file" && (
-              <div className="flex flex-col gap-2">
-                <Button
-                  onClick={() => openChangeRequest(viewCategory, "change")}
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+      {/* Preset Library Drawer */}
+      <Drawer open={presetOpen} onOpenChange={setPresetOpen}>
+        <DrawerContent className="bg-card border-border max-h-[85vh]">
+          <DrawerHeader>
+            <DrawerTitle className="text-foreground flex items-center gap-2">
+              <Library size={18} className="text-primary" />
+              {presetCategory?.label} — Preset Library
+            </DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-6 overflow-y-auto space-y-2">
+            <p className="text-[10px] text-muted-foreground mb-2">
+              Select a preset item to submit for doctor approval. It will not go live until approved.
+            </p>
+            {presetCategory && MULTI_SELECT_CATEGORIES[presetCategory.key]?.map((item) => {
+              const isCurrentlySelected = (() => {
+                try {
+                  const parsed = JSON.parse(preferences[presetCategory.key] || "[]");
+                  if (Array.isArray(parsed)) {
+                    return parsed.some((p: any) =>
+                      (typeof p === "string" ? p : p.name || "") === item.name
+                    );
+                  }
+                } catch {}
+                return false;
+              })();
+
+              const isPendingForItem = pendingChanges.some(
+                pc => pc.category === presetCategory.key && pc.new_value.includes(item.name)
+              );
+
+              return (
+                <button
+                  key={item.name}
+                  onClick={() => {
+                    if (!isCurrentlySelected && !isPendingForItem) {
+                      handlePresetSelect(item.name);
+                    }
+                  }}
+                  disabled={isCurrentlySelected || isPendingForItem || presetSubmitting === item.name}
+                  className={`w-full flex items-center gap-3 rounded-xl border p-3 text-left transition-all ${
+                    isCurrentlySelected
+                      ? "bg-primary/10 border-primary/30 opacity-70"
+                      : isPendingForItem
+                      ? "bg-amber-500/10 border-amber-500/30 opacity-70"
+                      : "bg-secondary/50 border-border hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
+                  }`}
                 >
-                  <PenLine size={14} />
-                  Request Change
-                </Button>
-                <Button
-                  onClick={() => openChangeRequest(viewCategory, "delete")}
-                  variant="outline"
-                  className="w-full border-destructive/50 text-destructive hover:bg-destructive/10 gap-2"
-                >
-                  <Trash2 size={14} />
-                  Request Deletion
-                </Button>
-                <Button
-                  onClick={() => openChangeRequest(viewCategory, "add_preset")}
-                  variant="outline"
-                  className="w-full gap-2"
-                >
-                  <Plus size={14} />
-                  Request New Preset Item
-                </Button>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">{item.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                  </div>
+                  {isCurrentlySelected ? (
+                    <Badge className="bg-primary/20 text-primary border-primary/30 text-[9px] shrink-0">
+                      <Check size={10} className="mr-0.5" /> Active
+                    </Badge>
+                  ) : isPendingForItem ? (
+                    <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] shrink-0">
+                      <Clock size={10} className="mr-0.5" /> Pending
+                    </Badge>
+                  ) : presetSubmitting === item.name ? (
+                    <span className="text-[10px] text-muted-foreground animate-pulse">Submitting…</span>
+                  ) : (
+                    <Plus size={16} className="text-muted-foreground shrink-0" />
+                  )}
+                </button>
+              );
+            })}
+
+            {presetCategory && !MULTI_SELECT_CATEGORIES[presetCategory.key] && (
+              <div className="rounded-lg bg-secondary/50 border border-border p-4 text-center">
+                <p className="text-sm text-muted-foreground">No preset library available for {presetCategory.label}</p>
               </div>
             )}
           </div>
@@ -548,7 +694,7 @@ const DoctorProcedureView = () => {
         </DrawerContent>
       </Drawer>
 
-      {/* Steps Viewer Drawer with Add/Remove Step request buttons */}
+      {/* Steps Viewer Drawer */}
       <Drawer open={stepsOpen} onOpenChange={setStepsOpen}>
         <DrawerContent className="bg-card border-border max-h-[85vh]">
           <DrawerHeader>
