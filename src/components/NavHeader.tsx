@@ -14,7 +14,7 @@ const NavHeader = () => {
         <span className="text-xs font-medium">BACK</span>
       </button>
       <button
-        onClick={() => navigate("/")}
+        onClick={() => navigate("/profile")}
         className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
       >
         <Home size={20} />
