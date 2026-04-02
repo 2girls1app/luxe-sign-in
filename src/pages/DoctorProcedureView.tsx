@@ -382,42 +382,22 @@ const DoctorProcedureView = () => {
           </button>
         </div>
 
-        {/* Widget list — matching doctor workspace card style */}
+        {/* Widget grid */}
         <div>
           <h2 className="text-sm font-semibold text-foreground mb-3">Preference Categories</h2>
-          <div className="flex flex-col gap-2">
-            {categoriesWithPendingCounts.map((cat) => {
-              const Icon = cat.icon;
-              const summary = getPreviewSummary(preferences[cat.key], cat.key, fileCounts[cat.key]);
-              const hasPresets = !!MULTI_SELECT_CATEGORIES[cat.key];
-              return (
-                <button
-                  key={cat.key}
-                  onClick={() => handleWidgetClick(cat)}
-                  className="flex items-center gap-3 rounded-xl bg-card border border-border p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all text-left"
-                >
-                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Icon size={16} className="text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{cat.label}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">{summary}</p>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {cat.pendingCount > 0 && (
-                      <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px]">
-                        <AlertTriangle size={10} className="mr-0.5" />
-                        {cat.pendingCount}
-                      </Badge>
-                    )}
-                    {hasPresets && (
-                      <Library size={14} className="text-muted-foreground" />
-                    )}
-                    <ChevronRight size={16} className="text-muted-foreground" />
-                  </div>
-                </button>
-              );
-            })}
+          <div className="grid grid-cols-3 gap-3">
+            {categoriesWithPendingCounts.map((cat, i) => (
+              <PreferenceCategoryWidget
+                key={cat.key}
+                category={cat}
+                value={preferences[cat.key]}
+                fileCount={fileCounts[cat.key]}
+                updatedAt={updatedDates[cat.key]}
+                onClick={() => handleWidgetClick(cat)}
+                index={i}
+                pendingCount={cat.pendingCount}
+              />
+            ))}
           </div>
         </div>
       </motion.div>
