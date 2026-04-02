@@ -35,43 +35,45 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/select-profession" element={<SelectProfession />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/profile-picture" element={<ProfilePicture />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/clinical-dashboard" element={<ClinicalDashboard />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/procedure/:procedureId/preferences" element={<ProcedurePreferences />} />
-            <Route path="/shared/procedure/:procedureId" element={<SharedPreferenceCard />} />
-            
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/users/:userId" element={<AdminUserDetail />} />
-            <Route path="/admin/doctors" element={<AdminDoctors />} />
-            <Route path="/admin/preference-cards" element={<AdminPrefCards />} />
-            <Route path="/admin/notifications" element={<AdminNotifications />} />
-            <Route path="/admin/supply-library" element={<AdminSupplyLibrary />} />
-            <Route path="/admin/activity-logs" element={<AdminActivityLogs />} />
-            <Route path="/admin/doctors/:userId" element={<AdminDoctorDetail />} />
-            <Route path="/admin/doctors/:userId/procedure/:procedureId" element={<AdminEditPrefCard />} />
-            <Route path="/admin/doctors/:userId/pending" element={<AdminPendingChanges />} />
-            <Route path="/facility/:facilityId" element={<FacilityDetails />} />
-            <Route path="/settings" element={<Settings />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/select-profession" element={<SelectProfession />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/profile-picture" element={<ProfilePicture />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/clinical-dashboard" element={<ClinicalDashboard />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/procedure/:procedureId/preferences" element={<ProcedurePreferences />} />
+              <Route path="/shared/procedure/:procedureId" element={<SharedPreferenceCard />} />
+              
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/users/:userId" element={<AdminUserDetail />} />
+              <Route path="/admin/doctors" element={<AdminDoctors />} />
+              <Route path="/admin/preference-cards" element={<AdminPrefCards />} />
+              <Route path="/admin/notifications" element={<AdminNotifications />} />
+              <Route path="/admin/supply-library" element={<AdminSupplyLibrary />} />
+              <Route path="/admin/activity-logs" element={<AdminActivityLogs />} />
+              <Route path="/admin/doctors/:userId" element={<AdminDoctorDetail />} />
+              <Route path="/admin/doctors/:userId/procedure/:procedureId" element={<AdminEditPrefCard />} />
+              <Route path="/admin/doctors/:userId/pending" element={<AdminPendingChanges />} />
+              <Route path="/facility/:facilityId" element={<FacilityDetails />} />
+              <Route path="/settings" element={<Settings />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
