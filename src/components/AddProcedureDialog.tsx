@@ -90,17 +90,12 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
 
   const handleSubmit = async () => {
     if (!name.trim() || !user) return;
-    if (!facilityId) {
-      setFacilityError(true);
-      return;
-    }
-    setFacilityError(false);
     setLoading(true);
     const { error } = await supabase.from("procedures").insert({
       user_id: forUserId || user.id,
       name: name.trim(),
       category: defaultSpecialty || null,
-      facility_id: facilityId,
+      facility_id: preselectedFacilityId || null,
       notes: notes.trim() || null,
     });
     setLoading(false);
@@ -225,31 +220,13 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
         {mode === "new" && (
           <div className="flex flex-col gap-3 mt-2">
             <Input placeholder="Procedure name *" value={name} onChange={(e) => setName(e.target.value)} className="bg-secondary border-border text-foreground placeholder:text-muted-foreground" />
-            <div>
-              <Select value={facilityId} onValueChange={(v) => { setFacilityId(v); setFacilityError(false); }}>
-                <SelectTrigger className={`bg-secondary border-border text-foreground ${facilityError ? "border-destructive ring-1 ring-destructive" : ""}`}>
-                  <SelectValue placeholder="Associate with facility *" />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-border">
-                  {[...facilities].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })).map((f) => (
-                    <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {facilityError && (
-                <p className="text-xs text-destructive mt-1">Please select a facility</p>
-              )}
-              {facilities.length === 0 && (
-                <p className="text-xs text-muted-foreground mt-1">Add a facility first to create a procedure</p>
-              )}
-            </div>
             {defaultSpecialty && (
               <div className="bg-secondary border border-border rounded-md px-3 py-2 text-sm text-muted-foreground">
                 Specialty: <span className="text-foreground font-medium">{defaultSpecialty}</span>
               </div>
             )}
             <Textarea placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} className="bg-secondary border-border text-foreground placeholder:text-muted-foreground resize-none" rows={3} />
-            <Button onClick={handleSubmit} disabled={!name.trim() || facilities.length === 0 || loading} className="rounded-full">
+            <Button onClick={handleSubmit} disabled={!name.trim() || loading} className="rounded-full">
               {loading ? "Adding..." : "Save Procedure"}
             </Button>
           </div>
