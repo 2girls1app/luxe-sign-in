@@ -77,6 +77,7 @@ const Profile = () => {
   const userRole = profile?.role || user?.user_metadata?.profession || "";
   const roleLabel = userRole ? userRole.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) : "";
   const isAdmin = ["administrative", "admin", "admin-staff", "admin staff"].includes(userRole.toLowerCase());
+  const isDoctor = ["doctor", "surgeon", "physician"].some(r => userRole.toLowerCase().includes(r));
   const username = emailUsername || displayName.toLowerCase().replace(/\s+/g, "");
   const specialty = profile?.specialty || "";
 
