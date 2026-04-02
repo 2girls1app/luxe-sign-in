@@ -322,7 +322,18 @@ const Profile = () => {
 
             {/* Quick Add Procedure - non-admin only */}
             {!isAdmin && (
-              <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" defaultSpecialty={profile?.specialty || undefined} />
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" defaultSpecialty={profile?.specialty || undefined} />
+                </div>
+                <button
+                  onClick={() => setUploadCardOpen(true)}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-primary/40 bg-card hover:border-primary/70 transition-colors px-4 py-3 text-primary"
+                  aria-label="Upload Preference Card"
+                >
+                  <Upload size={18} />
+                </button>
+              </div>
             )}
 
             {/* Facilities Section - non-admin only */}
