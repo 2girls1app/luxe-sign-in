@@ -54,6 +54,9 @@ const Profile = () => {
   const [hasMusicPrefs, setHasMusicPrefs] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [showThemeDialog, setShowThemeDialog] = useState(() => {
+    return localStorage.getItem("hasChosenTheme") !== "true";
+  });
 
   const SPECIALTIES = [
     "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
