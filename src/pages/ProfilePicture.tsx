@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Camera, Upload, User } from "lucide-react";
+import { Camera, Upload, User, Sun, Moon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -11,9 +12,11 @@ const ProfilePicture = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState<"light" | "dark" | null>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { setTheme } = useTheme();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -25,7 +28,21 @@ const ProfilePicture = () => {
     }
   };
 
+  const handleThemeSelect = (theme: "light" | "dark") => {
+    setSelectedTheme(theme);
+    setTheme(theme);
+  };
+
   const handleUpload = async () => {
+    if (!selectedTheme) {
+      toast({
+        title: "Theme required",
+        description: "Please choose a display preference before continuing.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const role = user?.user_metadata?.profession;
     const isAdmin = role === "administrative" || role === "admin" || role === "admin-staff";
 
@@ -33,7 +50,6 @@ const ProfilePicture = () => {
       if (preview) {
         localStorage.setItem("avatar_preview", preview);
       }
-      // Mark onboarding complete even if skipping photo
       if (user) {
         await supabase
           .from("profiles")
@@ -112,19 +128,73 @@ const ProfilePicture = () => {
           </label>
         </div>
 
+        {/* Display Preference Section */}
+        <div className="w-full flex flex-col gap-3">
+          <div className="text-center">
+            <h2 className="text-sm font-semibold tracking-wider text-foreground uppercase">
+              Display Preference
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Choose how you want the app to look
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => handleThemeSelect("light")}
+              className={`flex flex-col items-center gap-2 rounded-lg border-2 px-4 py-4 transition-all ${
+                selectedTheme === "light"
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-secondary hover:bg-muted"
+              }`}
+            >
+              <Sun size={28} className={selectedTheme === "light" ? "text-primary" : "text-muted-foreground"} />
+              <span className={`text-sm font-medium ${selectedTheme === "light" ? "text-primary" : "text-foreground"}`}>
+                Light
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleThemeSelect("dark")}
+              className={`flex flex-col items-center gap-2 rounded-lg border-2 px-4 py-4 transition-all ${
+                selectedTheme === "dark"
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-secondary hover:bg-muted"
+              }`}
+            >
+              <Moon size={28} className={selectedTheme === "dark" ? "text-primary" : "text-muted-foreground"} />
+              <span className={`text-sm font-medium ${selectedTheme === "dark" ? "text-primary" : "text-foreground"}`}>
+                Dark
+              </span>
+            </button>
+          </div>
+        </div>
+
         <button
           onClick={handleUpload}
-          disabled={uploading}
-          className="rounded-lg bg-primary px-12 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-gold-light active:scale-95 disabled:opacity-50"
+          disabled={uploading || !selectedTheme}
+          className="rounded-lg bg-primary px-12 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-gold-light active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {uploading ? "Uploading..." : "Upload"}
+          {uploading ? "Uploading..." : "Continue"}
         </button>
 
         <button
-          onClick={() => navigate("/profile")}
+          onClick={() => {
+            if (!selectedTheme) {
+              toast({
+                title: "Theme required",
+                description: "Please choose a display preference before continuing.",
+                variant: "destructive",
+              });
+              return;
+            }
+            handleUpload();
+          }}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          Skip for now
+          Skip photo
         </button>
       </motion.div>
     </div>
