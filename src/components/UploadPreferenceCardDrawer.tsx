@@ -194,7 +194,7 @@ const UploadPreferenceCardDrawer = ({
         .from("procedures")
         .insert({
           name: procedureName.trim(),
-          user_id: user.id,
+          user_id: targetUserId,
           facility_id: selectedFacility || null,
           notes: `Auto-generated from uploaded preference card: ${fileName}`,
         } as any)
