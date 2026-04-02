@@ -123,6 +123,8 @@ const DoctorProcedureView = () => {
 
   // Steps viewer
   const [stepsOpen, setStepsOpen] = useState(false);
+  const [newStepText, setNewStepText] = useState("");
+  const [submittingStep, setSubmittingStep] = useState(false);
 
   // Preset library
   const [presetOpen, setPresetOpen] = useState(false);
