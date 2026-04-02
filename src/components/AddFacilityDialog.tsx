@@ -9,9 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 const APPROVED_FACILITIES: { name: string; code: string; facilityId: string }[] = [
-  { name: "Emory Medical Center", code: "EMC-4827", facilityId: "ee2a97d8-c191-4190-a9bc-749837f5de86" },
   { name: "Northside Hospital Duluth", code: "NSD-6154", facilityId: "6e5219ec-9ab4-42d7-a98e-75181416f917" },
-  { name: "Northside Hospital Gwinnett", code: "NSG-7309", facilityId: "14cd4d26-d27b-4b02-8a28-11a8b57a6dbe" },
 ];
 
 interface AddFacilityDialogProps {
