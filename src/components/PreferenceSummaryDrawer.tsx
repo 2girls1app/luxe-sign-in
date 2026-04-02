@@ -35,6 +35,7 @@ const PreferenceSummaryDrawer = ({
   preferences,
   fileCounts,
   procedureId,
+  ownerUserId,
 }: PreferenceSummaryDrawerProps) => {
   const { user } = useAuth();
   const [generating, setGenerating] = useState(false);
