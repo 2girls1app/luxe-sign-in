@@ -438,6 +438,14 @@ const Profile = () => {
         onOpenChange={setNotificationsOpen}
         onCountChange={setPendingCount}
       />
+      {!isAdmin && (
+        <UploadPreferenceCardDrawer
+          open={uploadCardOpen}
+          onOpenChange={setUploadCardOpen}
+          facilities={facilities}
+          onComplete={fetchProcedures}
+        />
+      )}
     </div>
   );
 };
