@@ -30,6 +30,8 @@ import AdminPendingChanges from "./pages/admin/AdminPendingChanges.tsx";
 import AdminUserDetail from "./pages/admin/AdminUserDetail.tsx";
 import Settings from "./pages/Settings.tsx";
 import FacilityDetails from "./pages/FacilityDetails.tsx";
+import DoctorWorkspace from "./pages/DoctorWorkspace.tsx";
+import DoctorProcedureView from "./pages/DoctorProcedureView.tsx";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +68,8 @@ const App = () => (
               <Route path="/admin/doctors/:userId/procedure/:procedureId" element={<AdminEditPrefCard />} />
               <Route path="/admin/doctors/:userId/pending" element={<AdminPendingChanges />} />
               <Route path="/facility/:facilityId" element={<FacilityDetails />} />
+              <Route path="/doctor/:userId" element={<DoctorWorkspace />} />
+              <Route path="/doctor/:userId/procedure/:procedureId" element={<DoctorProcedureView />} />
               <Route path="/settings" element={<Settings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
