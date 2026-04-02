@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Music, Bell, Settings, ArrowLeft } from "lucide-react";
+import { Search, LogOut, MapPin, Building2, Stethoscope, Trash2, Music, Bell, Settings, ArrowLeft, Upload } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import NotificationsDrawer from "@/components/NotificationsDrawer";
@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import AdminDashboardSection from "@/components/AdminDashboardSection";
 import ThemeSelectionDialog from "@/components/ThemeSelectionDialog";
+import UploadPreferenceCardDrawer from "@/components/UploadPreferenceCardDrawer";
 interface Facility {
   id: string;
   name: string;
@@ -57,6 +58,7 @@ const Profile = () => {
   const [showThemeDialog, setShowThemeDialog] = useState(() => {
     return localStorage.getItem("hasChosenTheme") !== "true";
   });
+  const [uploadCardOpen, setUploadCardOpen] = useState(false);
 
   const SPECIALTIES = [
     "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
@@ -320,7 +322,18 @@ const Profile = () => {
 
             {/* Quick Add Procedure - non-admin only */}
             {!isAdmin && (
-              <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" defaultSpecialty={profile?.specialty || undefined} />
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" defaultSpecialty={profile?.specialty || undefined} />
+                </div>
+                <button
+                  onClick={() => setUploadCardOpen(true)}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-primary/40 bg-card hover:border-primary/70 transition-colors px-4 py-3 text-primary"
+                  aria-label="Upload Preference Card"
+                >
+                  <Upload size={18} />
+                </button>
+              </div>
             )}
 
             {/* Facilities Section - non-admin only */}
@@ -425,6 +438,14 @@ const Profile = () => {
         onOpenChange={setNotificationsOpen}
         onCountChange={setPendingCount}
       />
+      {!isAdmin && (
+        <UploadPreferenceCardDrawer
+          open={uploadCardOpen}
+          onOpenChange={setUploadCardOpen}
+          facilities={facilities}
+          onComplete={fetchProcedures}
+        />
+      )}
     </div>
   );
 };
