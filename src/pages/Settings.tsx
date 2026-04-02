@@ -15,7 +15,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
-
+  const { theme, setTheme } = useTheme();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   // Edit Profile state
