@@ -22,20 +22,6 @@ interface Procedure {
   id: string; name: string; user_id: string; category: string | null;
 }
 
-const SPECIALTIES = [
-  "All Specialties",
-  "Cosmetic Surgery",
-  "Bariatric Surgery",
-  "Orthopedic Surgery",
-  "Neurosurgery",
-  "Cardiothoracic Surgery",
-  "Vascular Surgery",
-  "General Surgery",
-  "Plastic Surgery",
-  "Urologic Surgery",
-  "ENT Surgery",
-  "Gynecologic Surgery",
-];
 
 const AdminDoctors = () => {
   const navigate = useNavigate();
