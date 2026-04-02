@@ -203,9 +203,8 @@ const Profile = () => {
   const greeting = hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
 
   return (
-    <div className="flex min-h-screen flex-col bg-background px-6 pt-16 pb-8">
+    <div className="flex min-h-screen flex-col bg-background px-6 pt-8 pb-8">
       <ThemeSelectionDialog open={showThemeDialog} onComplete={() => setShowThemeDialog(false)} />
-      <NavHeader />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
