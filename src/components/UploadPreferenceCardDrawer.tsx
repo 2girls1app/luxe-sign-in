@@ -89,7 +89,7 @@ const UploadPreferenceCardDrawer = ({
   };
 
   const handleFileSelect = async (file: File) => {
-    if (!user) return;
+    if (!user || !targetUserId) return;
 
     const validTypes = ["image/jpeg", "image/png", "image/webp", "image/heic", "application/pdf"];
     if (!validTypes.includes(file.type) && !file.name.toLowerCase().endsWith(".heic")) {
