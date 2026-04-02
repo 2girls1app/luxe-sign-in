@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Lock, Mail, Phone, ShieldCheck, HeadphonesIcon, Stethoscope } from "lucide-react";
+import { ArrowLeft, User, Lock, Mail, Phone, ShieldCheck, HeadphonesIcon, Stethoscope, Sun, Moon, Monitor } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +15,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
-
+  const { theme, setTheme } = useTheme();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   // Edit Profile state
@@ -93,6 +94,12 @@ const Settings = () => {
 
   const sections = [
     {
+      id: "display-settings",
+      icon: Monitor,
+      label: "Display Settings",
+      description: "Theme & appearance",
+    },
+    {
       id: "edit-profile",
       icon: User,
       label: "Edit Profile",
@@ -162,6 +169,44 @@ const Settings = () => {
                     <p className="text-xs text-muted-foreground">{section.description}</p>
                   </div>
                 </button>
+
+                {/* Display Settings */}
+                {isExpanded && section.id === "display-settings" && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="px-4 pb-4 flex flex-col gap-4 border-t border-border pt-4"
+                  >
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Theme</label>
+                      <p className="text-xs text-muted-foreground mb-3">Choose how the app looks to you</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setTheme("light")}
+                          className={`flex-1 flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition-all ${
+                            theme === "light"
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border bg-secondary text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <Sun size={16} />
+                          Light
+                        </button>
+                        <button
+                          onClick={() => setTheme("dark")}
+                          className={`flex-1 flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition-all ${
+                            theme === "dark"
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border bg-secondary text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <Moon size={16} />
+                          Dark
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
 
                 {/* Edit Profile */}
                 {isExpanded && section.id === "edit-profile" && (
