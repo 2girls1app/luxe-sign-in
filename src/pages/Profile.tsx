@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import AdminDashboardSection from "@/components/AdminDashboardSection";
+import ThemeSelectionDialog from "@/components/ThemeSelectionDialog";
 interface Facility {
   id: string;
   name: string;
