@@ -170,6 +170,44 @@ const Settings = () => {
                   </div>
                 </button>
 
+                {/* Display Settings */}
+                {isExpanded && section.id === "display-settings" && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="px-4 pb-4 flex flex-col gap-4 border-t border-border pt-4"
+                  >
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Theme</label>
+                      <p className="text-xs text-muted-foreground mb-3">Choose how the app looks to you</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setTheme("light")}
+                          className={`flex-1 flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition-all ${
+                            theme === "light"
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border bg-secondary text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <Sun size={16} />
+                          Light
+                        </button>
+                        <button
+                          onClick={() => setTheme("dark")}
+                          className={`flex-1 flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition-all ${
+                            theme === "dark"
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border bg-secondary text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <Moon size={16} />
+                          Dark
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
                 {/* Edit Profile */}
                 {isExpanded && section.id === "edit-profile" && (
                   <motion.div
