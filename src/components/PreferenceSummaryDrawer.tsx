@@ -71,7 +71,7 @@ const PreferenceSummaryDrawer = ({
       }
       setPhotoUrls(urls);
     }
-  }, [procedureId, user]);
+  }, [procedureId, user, ownerUserId]);
 
   useEffect(() => {
     if (open) fetchPhotos();
