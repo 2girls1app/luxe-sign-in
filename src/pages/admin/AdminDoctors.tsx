@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Stethoscope, Search, ChevronRight, Filter, MoreHorizontal } from "lucide-react";
+import { ArrowLeft, Stethoscope, Search, ChevronRight, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -22,20 +22,6 @@ interface Procedure {
   id: string; name: string; user_id: string; category: string | null;
 }
 
-const SPECIALTIES = [
-  "All Specialties",
-  "Cosmetic Surgery",
-  "Bariatric Surgery",
-  "Orthopedic Surgery",
-  "Neurosurgery",
-  "Cardiothoracic Surgery",
-  "Vascular Surgery",
-  "General Surgery",
-  "Plastic Surgery",
-  "Urologic Surgery",
-  "ENT Surgery",
-  "Gynecologic Surgery",
-];
 
 const AdminDoctors = () => {
   const navigate = useNavigate();
@@ -99,49 +85,24 @@ const AdminDoctors = () => {
         </div>
 
         {/* Specialty Filter */}
-        {(() => {
-          const sorted = [...SPECIALTIES.filter(s => s !== "All Specialties")]
-            .filter(s => s === specialtyFilter || uniqueSpecialties.some(us => us.toLowerCase() === s.toLowerCase()))
-            .sort((a, b) => a.localeCompare(b));
-          const visible = sorted.slice(0, 3);
-          const overflow = sorted.slice(3);
-          const chipClass = (s: string) =>
-            `shrink-0 rounded-full px-3 py-1 text-[11px] font-medium border transition-colors ${
-              specialtyFilter === s
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-card text-muted-foreground border-border hover:border-primary/50"
-            }`;
-          return (
-            <div className="flex items-center gap-2 flex-wrap">
-              <Filter size={14} className="text-muted-foreground shrink-0" />
-              <button onClick={() => setSpecialtyFilter("All Specialties")} className={chipClass("All Specialties")}>All Specialties</button>
-              {visible.map(s => (
-                <button key={s} onClick={() => setSpecialtyFilter(s)} className={chipClass(s)}>{s}</button>
-              ))}
-              {overflow.length > 0 && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-medium border transition-colors flex items-center gap-1 ${
-                      overflow.includes(specialtyFilter)
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-card text-muted-foreground border-border hover:border-primary/50"
-                    }`}>
-                      <MoreHorizontal size={12} />
-                      More ({overflow.length})
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="min-w-[180px]">
-                    {overflow.map(s => (
-                      <DropdownMenuItem key={s} onClick={() => setSpecialtyFilter(s)} className={specialtyFilter === s ? "bg-accent" : ""}>
-                        {s}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
-          );
-        })()}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2 rounded-lg border border-border bg-secondary px-3 py-2.5 text-sm text-muted-foreground hover:border-primary/50 transition-colors">
+              <Filter size={14} />
+              <span>{specialtyFilter === "All Specialties" ? "Filter by Specialty" : specialtyFilter}</span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="min-w-[220px]">
+            <DropdownMenuItem onClick={() => setSpecialtyFilter("All Specialties")} className={specialtyFilter === "All Specialties" ? "bg-accent" : ""}>
+              All Specialties
+            </DropdownMenuItem>
+            {[...uniqueSpecialties].sort((a, b) => a.localeCompare(b)).map(s => (
+              <DropdownMenuItem key={s} onClick={() => setSpecialtyFilter(s)} className={specialtyFilter === s ? "bg-accent" : ""}>
+                {s}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <div className="space-y-2">
           {filtered.map(d => (
