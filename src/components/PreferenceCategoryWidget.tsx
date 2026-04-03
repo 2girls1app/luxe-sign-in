@@ -116,30 +116,37 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, duration: 0.3 }}
       onClick={onClick}
-      className="relative flex flex-col items-center justify-center gap-2.5 rounded-2xl bg-card border border-border p-4 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-0.5 transition-all duration-200 active:scale-95 aspect-square"
+      className="relative flex flex-col items-center rounded-2xl bg-card border border-border overflow-hidden hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.97]"
     >
+      {/* Icon area */}
+      <div className="w-full flex items-center justify-center py-5 bg-primary/5">
+        <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+          <Icon size={24} className="text-primary" />
+        </div>
+      </div>
+
+      {/* Content area */}
+      <div className="w-full flex flex-col items-center gap-1 px-3 py-3">
+        <span className="text-sm font-semibold text-foreground leading-tight tracking-tight">
+          {category.label}
+        </span>
+        <span className="text-[11px] text-muted-foreground truncate max-w-full leading-tight">
+          {previewText}
+        </span>
+      </div>
+
+      {/* Status indicators */}
       {hasValue && (
-        <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-md shadow-primary/30">
+        <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-md shadow-primary/30">
           <Check size={12} className="text-primary-foreground" />
         </span>
       )}
 
       {pendingCount !== undefined && pendingCount > 0 && (
-        <span className="absolute top-2.5 left-2.5 min-w-[18px] h-[18px] rounded-full bg-amber-500 flex items-center justify-center text-[9px] font-bold text-black px-1">
+        <span className="absolute top-2 left-2 min-w-[20px] h-5 rounded-full bg-amber-500 flex items-center justify-center text-[10px] font-bold text-black px-1.5">
           {pendingCount}
         </span>
       )}
-
-      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-        <Icon size={22} className="text-primary" />
-      </div>
-
-      <div className="flex flex-col items-center gap-0.5 w-full">
-        <span className="text-xs font-semibold text-foreground leading-tight">{category.label}</span>
-        <span className="text-[10px] text-muted-foreground truncate max-w-full px-1 leading-tight">
-          {previewText}
-        </span>
-      </div>
     </motion.button>
   );
 };
