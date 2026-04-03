@@ -516,7 +516,7 @@ const DoctorProcedureView = () => {
       </Drawer>
 
       {/* Preset Library Drawer */}
-      <Drawer open={presetOpen} onOpenChange={setPresetOpen}>
+      <Drawer open={presetOpen} onOpenChange={(open) => { setPresetOpen(open); if (!open) setPresetSelected([]); }}>
         <DrawerContent className="bg-card border-border max-h-[85vh]">
           <DrawerHeader>
             <DrawerTitle className="text-foreground flex items-center gap-2">
@@ -526,7 +526,7 @@ const DoctorProcedureView = () => {
           </DrawerHeader>
           <div className="px-4 pb-6 overflow-y-auto space-y-2">
             <p className="text-[10px] text-muted-foreground mb-2">
-              Select a preset item to submit for doctor approval. It will not go live until approved.
+              Select one or more preset items, then submit for doctor approval.
             </p>
             {presetCategory && MULTI_SELECT_CATEGORIES[presetCategory.key]?.map((item) => {
               const isCurrentlySelected = (() => {
@@ -545,23 +545,34 @@ const DoctorProcedureView = () => {
                 pc => pc.category === presetCategory.key && pc.new_value.includes(item.name)
               );
 
+              const isChecked = presetSelected.includes(item.name);
+              const isDisabled = isCurrentlySelected || isPendingForItem;
+
               return (
                 <button
                   key={item.name}
-                  onClick={() => {
-                    if (!isCurrentlySelected && !isPendingForItem) {
-                      handlePresetSelect(item.name);
-                    }
-                  }}
-                  disabled={isCurrentlySelected || isPendingForItem || presetSubmitting === item.name}
+                  onClick={() => { if (!isDisabled) togglePresetItem(item.name); }}
+                  disabled={isDisabled}
                   className={`w-full flex items-center gap-3 rounded-xl border p-3 text-left transition-all ${
                     isCurrentlySelected
                       ? "bg-primary/10 border-primary/30 opacity-70"
                       : isPendingForItem
                       ? "bg-amber-500/10 border-amber-500/30 opacity-70"
+                      : isChecked
+                      ? "bg-primary/15 border-primary/50 shadow-sm shadow-primary/10"
                       : "bg-secondary/50 border-border hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
                   }`}
                 >
+                  {/* Checkbox indicator */}
+                  <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
+                    isDisabled
+                      ? "border-muted-foreground/30 bg-muted/20"
+                      : isChecked
+                      ? "border-primary bg-primary"
+                      : "border-border bg-secondary"
+                  }`}>
+                    {(isChecked || isCurrentlySelected) && <Check size={12} className={isDisabled ? "text-muted-foreground" : "text-primary-foreground"} />}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground">{item.name}</p>
                     <p className="text-[10px] text-muted-foreground">{item.desc}</p>
@@ -574,11 +585,7 @@ const DoctorProcedureView = () => {
                     <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] shrink-0">
                       <Clock size={10} className="mr-0.5" /> Pending
                     </Badge>
-                  ) : presetSubmitting === item.name ? (
-                    <span className="text-[10px] text-muted-foreground animate-pulse">Submitting…</span>
-                  ) : (
-                    <Plus size={16} className="text-muted-foreground shrink-0" />
-                  )}
+                  ) : null}
                 </button>
               );
             })}
@@ -586,6 +593,26 @@ const DoctorProcedureView = () => {
             {presetCategory && !MULTI_SELECT_CATEGORIES[presetCategory.key] && (
               <div className="rounded-lg bg-secondary/50 border border-border p-4 text-center">
                 <p className="text-sm text-muted-foreground">No preset library available for {presetCategory.label}</p>
+              </div>
+            )}
+
+            {/* Submit button */}
+            {presetSelected.length > 0 && (
+              <div className="sticky bottom-0 pt-3 bg-card">
+                <Button
+                  onClick={handlePresetSubmitAll}
+                  disabled={presetSubmitting}
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                >
+                  <Send size={14} />
+                  {presetSubmitting ? "Submitting..." : `Submit Changes (${presetSelected.length})`}
+                </Button>
+                <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-2 mt-2 flex items-center gap-2">
+                  <Clock size={12} className="text-amber-400 shrink-0" />
+                  <p className="text-[9px] text-amber-300">
+                    Selected items will be saved as <span className="font-semibold">Pending Doctor Approval</span>
+                  </p>
+                </div>
               </div>
             )}
           </div>
