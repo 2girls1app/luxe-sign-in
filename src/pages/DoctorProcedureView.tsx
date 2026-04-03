@@ -22,6 +22,7 @@ import { MULTI_SELECT_CATEGORIES } from "@/data/preferenceOptions";
 import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
 import TeamChatDrawer from "@/components/TeamChatDrawer";
 import NavHeader from "@/components/NavHeader";
+import ReadOnlyPreferenceViewer from "@/components/ReadOnlyPreferenceViewer";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle,
 } from "@/components/ui/drawer";
