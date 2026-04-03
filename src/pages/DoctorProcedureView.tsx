@@ -23,6 +23,7 @@ import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
 import TeamChatDrawer from "@/components/TeamChatDrawer";
 import NavHeader from "@/components/NavHeader";
 import ReadOnlyPreferenceViewer from "@/components/ReadOnlyPreferenceViewer";
+import FileUploadDrawer from "@/components/FileUploadDrawer";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle,
 } from "@/components/ui/drawer";
@@ -132,6 +133,10 @@ const DoctorProcedureView = () => {
   const [presetCategory, setPresetCategory] = useState<PreferenceCategory | null>(null);
   const [presetSubmitting, setPresetSubmitting] = useState<string | null>(null);
 
+  // File upload drawer
+  const [fileDrawerOpen, setFileDrawerOpen] = useState(false);
+  const [fileCategory, setFileCategory] = useState<PreferenceCategory | null>(null);
+
   const fetchData = useCallback(async () => {
     if (!procedureId || !userId) return;
 
@@ -209,8 +214,13 @@ const DoctorProcedureView = () => {
   };
 
   const handleWidgetClick = (cat: PreferenceCategory) => {
-    setViewCategory(cat);
-    setViewDrawerOpen(true);
+    if (cat.type === "file") {
+      setFileCategory(cat);
+      setFileDrawerOpen(true);
+    } else {
+      setViewCategory(cat);
+      setViewDrawerOpen(true);
+    }
   };
 
   const openChangeRequest = (cat: PreferenceCategory, type: "change" | "delete" | "add_step" | "remove_step" | "add_preset") => {
@@ -845,6 +855,15 @@ const DoctorProcedureView = () => {
         onOpenChange={setChatOpen}
         procedureId={procedureId || ""}
         procedureName={procedureName}
+      />
+
+      {/* File Upload Drawer */}
+      <FileUploadDrawer
+        open={fileDrawerOpen}
+        onOpenChange={setFileDrawerOpen}
+        category={fileCategory}
+        procedureId={procedureId || ""}
+        onFilesChanged={fetchData}
       />
     </div>
   );
