@@ -4,6 +4,7 @@ import {
   Pill, Hand, RotateCcw, Droplets, Wrench, Scissors, LayoutGrid, Package, Ribbon,
   Image, Video, FileText, ListOrdered, Bot,
 } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 export interface PreferenceCategory {
   key: string;
