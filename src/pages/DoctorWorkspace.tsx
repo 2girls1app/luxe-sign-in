@@ -1,9 +1,14 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ClipboardList, Clock, AlertTriangle, ChevronRight } from "lucide-react";
+import { ArrowLeft, MapPin, Search, Plus, Stethoscope,
+  Heart, Activity, Brain, Bone, Eye, Baby, Scissors, HandMetal, Ear,
+  Waypoints, Shield, Flame, Zap, Ribbon, Footprints, Syringe, Cross,
+  Building2,
+} from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import NavHeader from "@/components/NavHeader";
@@ -20,57 +25,78 @@ interface Procedure {
   id: string;
   name: string;
   category: string | null;
+  facility_id: string | null;
   created_at: string;
 }
 
-interface PendingChange {
-  id: string;
-  procedure_id: string;
-  category: string;
-  status: string;
+const PROCEDURE_ICON_MAP: Record<string, React.ElementType> = {
+  breast: Heart, cardiac: Activity, cardio: Activity, heart: Activity,
+  neuro: Brain, brain: Brain, spine: Brain,
+  ortho: Bone, bone: Bone, joint: Bone, knee: Bone, hip: Bone, shoulder: Bone, fracture: Bone,
+  eye: Eye, ophthalm: Eye, lasik: Eye, cataract: Eye,
+  pediatric: Baby,
+  cosmetic: Scissors, plastic: Scissors, rhinoplasty: Scissors, facelift: Scissors,
+  hand: HandMetal, ear: Ear, ent: Ear, sinus: Ear,
+  vascular: Waypoints, transplant: Shield,
+  bariatric: Flame, gastric: Flame,
+  trauma: Zap, emergency: Zap,
+  oncol: Ribbon, cancer: Ribbon, tumor: Ribbon, biopsy: Ribbon,
+  foot: Footprints, ankle: Footprints,
+  injection: Syringe, botox: Syringe,
+  hernia: Cross, appendix: Cross, gallbladder: Cross, cholecyst: Cross, laparo: Cross, abdomin: Cross,
+};
+
+function getIconForProcedure(name: string, category: string | null): React.ElementType {
+  const searchText = `${name} ${category || ""}`.toLowerCase();
+  for (const [keyword, Icon] of Object.entries(PROCEDURE_ICON_MAP)) {
+    if (searchText.includes(keyword)) return Icon;
+  }
+  return Stethoscope;
 }
 
 const DoctorWorkspace = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   const [doctor, setDoctor] = useState<DoctorProfile | null>(null);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
-  const [pendingChanges, setPendingChanges] = useState<PendingChange[]>([]);
-  const [prefCounts, setPrefCounts] = useState<Record<string, number>>({});
+  const [facilityName, setFacilityName] = useState("");
+  const [facilityLocation, setFacilityLocation] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const isDoctor = profile?.role === "doctor" || profile?.role === "surgeon";
+  const canAdd = isDoctor && user?.id === userId;
 
   const fetchData = useCallback(async () => {
     if (!userId || !user) return;
 
     const [profileRes, procsRes] = await Promise.all([
-      supabase.from("profiles").select("user_id, display_name, avatar_url, role, specialty").eq("user_id", userId).single(),
-      supabase.from("procedures").select("id, name, category, created_at").eq("user_id", userId).order("name"),
+      supabase.from("profiles").select("user_id, display_name, avatar_url, role, specialty, facility_id, facilities(name, location)").eq("user_id", userId).single(),
+      supabase.from("procedures").select("id, name, category, facility_id, created_at").eq("user_id", userId).order("name"),
     ]);
 
-    if (profileRes.data) setDoctor(profileRes.data as DoctorProfile);
+    if (profileRes.data) {
+      setDoctor(profileRes.data as unknown as DoctorProfile);
+      const fac = (profileRes.data as any).facilities;
+      if (fac) {
+        setFacilityName(fac.name || "");
+        setFacilityLocation(fac.location || "");
+      }
+    }
 
     if (procsRes.data) {
       setProcedures(procsRes.data as Procedure[]);
-      const procIds = (procsRes.data as Procedure[]).map(p => p.id);
-      if (procIds.length > 0) {
-        const [prefsRes, pendingRes] = await Promise.all([
-          supabase.from("procedure_preferences").select("procedure_id").in("procedure_id", procIds),
-          supabase.from("pending_preference_changes").select("id, procedure_id, category, status").eq("status", "pending").in("procedure_id", procIds),
-        ]);
-        if (prefsRes.data) {
-          const counts: Record<string, number> = {};
-          prefsRes.data.forEach((p: any) => { counts[p.procedure_id] = (counts[p.procedure_id] || 0) + 1; });
-          setPrefCounts(counts);
-        }
-        if (pendingRes.data) setPendingChanges(pendingRes.data as PendingChange[]);
-      }
     }
   }, [userId, user]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const filtered = procedures.filter(p =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (!doctor) {
     return (
@@ -81,90 +107,114 @@ const DoctorWorkspace = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background px-6 pt-16 pb-8">
+    <div className="flex min-h-screen flex-col bg-background px-4 pt-16 pb-8">
       <NavHeader />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm mx-auto flex flex-col gap-5"
+        className="w-full max-w-lg mx-auto flex flex-col gap-5"
       >
-        {/* Header */}
-        <div className="flex items-center gap-3">
+        {/* Facility / Doctor Header */}
+        <div className="rounded-2xl bg-card border border-border p-4 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="text-muted-foreground hover:text-foreground transition-colors p-1"
+            className="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0"
           >
             <ArrowLeft size={20} />
           </button>
-          <Avatar className="h-12 w-12 border border-border">
-            {doctor.avatar_url ? <AvatarImage src={doctor.avatar_url} /> : null}
-            <AvatarFallback className="bg-secondary text-foreground text-base">
-              {(doctor.display_name || "D").charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-base font-semibold text-foreground">{doctor.display_name}</p>
-            <p className="text-xs text-primary">{doctor.specialty || "No specialty"}</p>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl bg-card border border-border p-4 text-center">
-            <ClipboardList size={18} className="text-primary mx-auto mb-1" />
-            <p className="text-lg font-bold text-foreground">{procedures.length}</p>
-            <p className="text-[10px] text-muted-foreground">Preference Cards</p>
-          </div>
-          <div className="rounded-xl bg-card border border-border p-4 text-center">
-            <Clock size={18} className="text-amber-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-foreground">{pendingChanges.length}</p>
-            <p className="text-[10px] text-muted-foreground">Pending Changes</p>
-          </div>
-        </div>
-
-        {/* Procedures */}
-        <div>
-          <h2 className="text-sm font-semibold text-foreground mb-3">Preference Cards</h2>
-
-          {procedures.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No preference cards found for this doctor
+            <p className="text-base font-bold text-foreground truncate">
+              {facilityName || doctor.display_name || "Doctor"}
             </p>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {procedures.map((proc) => {
-                const pending = pendingChanges.filter(pc => pc.procedure_id === proc.id);
-                return (
-                  <button
-                    key={proc.id}
-                    onClick={() => navigate(`/doctor/${userId}/procedure/${proc.id}`)}
-                    className="flex items-center gap-3 rounded-xl bg-card border border-border p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all text-left"
-                  >
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <ClipboardList size={16} className="text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{proc.name}</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {prefCounts[proc.id] || 0} preferences
-                        {proc.category && ` · ${proc.category}`}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {pending.length > 0 && (
-                        <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px]">
-                          <AlertTriangle size={10} className="mr-0.5" />
-                          {pending.length}
-                        </Badge>
-                      )}
-                      <ChevronRight size={16} className="text-muted-foreground" />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+            {facilityLocation && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <MapPin size={10} className="shrink-0" />
+                {facilityLocation}
+              </p>
+            )}
+            {!facilityLocation && doctor.specialty && (
+              <p className="text-xs text-primary">{doctor.specialty}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Section header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Stethoscope size={16} className="text-primary" />
+            <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Procedures</h2>
+          </div>
+          {canAdd && (
+            <Button
+              size="sm"
+              className="gap-1.5 rounded-full text-xs"
+              onClick={() => navigate("/profile")}
+            >
+              <Plus size={14} />
+              Add Procedure
+            </Button>
           )}
         </div>
+
+        {/* Search */}
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search procedures..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 bg-card border-border rounded-xl text-sm"
+          />
+        </div>
+
+        {/* Procedure grid */}
+        {filtered.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-12">
+            {searchQuery ? "No procedures match your search" : "No procedures found for this doctor"}
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {filtered.map((proc, i) => {
+              const Icon = getIconForProcedure(proc.name, proc.category);
+              return (
+                <motion.div
+                  key={proc.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.03 }}
+                  onClick={() => navigate(`/doctor/${userId}/procedure/${proc.id}`)}
+                  className="group relative flex flex-col rounded-2xl bg-card border border-border overflow-hidden hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 cursor-pointer transition-all"
+                >
+                  {/* Icon area */}
+                  <div className="flex items-center justify-center bg-primary/5 py-6">
+                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Icon size={28} className="text-primary" />
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex flex-col flex-1 p-3 gap-1.5">
+                    <p className="text-foreground font-medium text-sm leading-tight line-clamp-2">
+                      {proc.name}
+                    </p>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full w-fit ${
+                      proc.category
+                        ? "bg-primary/10 text-primary"
+                        : "bg-muted text-muted-foreground italic"
+                    }`}>
+                      {proc.category || "Specialty not assigned"}
+                    </span>
+                    {facilityName && (
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <Building2 size={10} /> {facilityName}
+                      </span>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
       </motion.div>
     </div>
   );
