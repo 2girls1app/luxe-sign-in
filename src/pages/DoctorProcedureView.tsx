@@ -293,24 +293,33 @@ const DoctorProcedureView = () => {
     setSubmitting(false);
   };
 
-  const handlePresetSelect = async (presetName: string) => {
-    if (!presetCategory || !procedureId || !user) return;
-    setPresetSubmitting(presetName);
-    const { error } = await supabase.from("pending_preference_changes").insert({
+  const togglePresetItem = (name: string) => {
+    setPresetSelected(prev =>
+      prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
+    );
+  };
+
+  const handlePresetSubmitAll = async () => {
+    if (!presetCategory || !procedureId || !user || presetSelected.length === 0) return;
+    setPresetSubmitting(true);
+    const inserts = presetSelected.map(name => ({
       procedure_id: procedureId,
       category: presetCategory.key,
       old_value: preferences[presetCategory.key] || "",
-      new_value: `[PRESET ADD REQUEST] ${presetName}`,
+      new_value: `[PRESET ADD REQUEST] ${name}`,
       submitted_by: user.id,
       status: "pending",
-    });
+    }));
+    const { error } = await supabase.from("pending_preference_changes").insert(inserts);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Submitted for approval", description: `"${presetName}" is pending doctor approval.` });
+      toast({ title: "Submitted for approval", description: `${presetSelected.length} item(s) pending doctor approval.` });
+      setPresetSelected([]);
+      setPresetOpen(false);
       await fetchData();
     }
-    setPresetSubmitting(null);
+    setPresetSubmitting(false);
   };
 
   const categoriesWithPendingCounts = PREFERENCE_CATEGORIES.map(cat => ({
