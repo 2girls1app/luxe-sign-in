@@ -470,13 +470,6 @@ const DoctorProcedureView = () => {
                   {!isFile && (
                     <div className="flex flex-col gap-2">
                       <Button
-                        onClick={() => openChangeRequest(viewCategory, "change")}
-                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
-                      >
-                        <PenLine size={14} />
-                        Request Change
-                      </Button>
-                      <Button
                         onClick={() => openChangeRequest(viewCategory, "delete")}
                         variant="outline"
                         className="w-full border-destructive/50 text-destructive hover:bg-destructive/10 gap-2"
