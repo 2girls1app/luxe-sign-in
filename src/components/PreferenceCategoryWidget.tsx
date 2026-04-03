@@ -4,6 +4,7 @@ import {
   Pill, Hand, RotateCcw, Droplets, Wrench, Scissors, LayoutGrid, Package, Ribbon,
   Image, Video, FileText, ListOrdered, Bot,
 } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 export interface PreferenceCategory {
   key: string;
@@ -125,9 +126,18 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
       )}
 
       {pendingCount !== undefined && pendingCount > 0 && (
-        <span className="absolute top-2.5 left-2.5 min-w-[18px] h-[18px] rounded-full bg-amber-500 flex items-center justify-center text-[9px] font-bold text-black px-1">
-          {pendingCount}
-        </span>
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="absolute top-2.5 left-2.5 min-w-[18px] h-[18px] rounded-full bg-destructive flex items-center justify-center text-[9px] font-bold text-destructive-foreground px-1 cursor-default">
+                {pendingCount}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">
+              Pending doctor approval
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
 
       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
