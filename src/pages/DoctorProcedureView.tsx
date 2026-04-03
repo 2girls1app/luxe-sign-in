@@ -133,6 +133,10 @@ const DoctorProcedureView = () => {
   const [presetCategory, setPresetCategory] = useState<PreferenceCategory | null>(null);
   const [presetSubmitting, setPresetSubmitting] = useState<string | null>(null);
 
+  // File upload drawer
+  const [fileDrawerOpen, setFileDrawerOpen] = useState(false);
+  const [fileCategory, setFileCategory] = useState<PreferenceCategory | null>(null);
+
   const fetchData = useCallback(async () => {
     if (!procedureId || !userId) return;
 
