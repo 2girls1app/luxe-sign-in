@@ -388,7 +388,7 @@ const DoctorProcedureView = () => {
         {/* Widget grid */}
         <div>
           <h2 className="text-sm font-semibold text-foreground mb-3">Preference Categories</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             {categoriesWithPendingCounts.map((cat, i) => (
               <PreferenceCategoryWidget
                 key={cat.key}
