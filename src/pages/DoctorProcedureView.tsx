@@ -214,8 +214,13 @@ const DoctorProcedureView = () => {
   };
 
   const handleWidgetClick = (cat: PreferenceCategory) => {
-    setViewCategory(cat);
-    setViewDrawerOpen(true);
+    if (cat.type === "file") {
+      setFileCategory(cat);
+      setFileDrawerOpen(true);
+    } else {
+      setViewCategory(cat);
+      setViewDrawerOpen(true);
+    }
   };
 
   const openChangeRequest = (cat: PreferenceCategory, type: "change" | "delete" | "add_step" | "remove_step" | "add_preset") => {
