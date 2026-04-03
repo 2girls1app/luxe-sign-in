@@ -1,0 +1,349 @@
+import { Badge } from "@/components/ui/badge";
+import { Pill, Check, Pause } from "lucide-react";
+import { MULTI_SELECT_CATEGORIES } from "@/data/preferenceOptions";
+
+import supineImg from "@/assets/positions/supine.png";
+import proneImg from "@/assets/positions/prone.png";
+import lateralImg from "@/assets/positions/lateral.png";
+import lithotomyImg from "@/assets/positions/lithotomy.png";
+import trendelenburgImg from "@/assets/positions/trendelenburg.png";
+import reverseTrendelenburgImg from "@/assets/positions/reverse-trendelenburg.png";
+import sittingImg from "@/assets/positions/sitting.png";
+import jackknifeImg from "@/assets/positions/jackknife.png";
+
+const GLOVE_SIZES = ["5", "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9"];
+const POSITIONS: { name: string; img: string }[] = [
+  { name: "Supine", img: supineImg },
+  { name: "Prone", img: proneImg },
+  { name: "Lateral", img: lateralImg },
+  { name: "Lithotomy", img: lithotomyImg },
+  { name: "Trendelenburg", img: trendelenburgImg },
+  { name: "Reverse Trendelenburg", img: reverseTrendelenburgImg },
+  { name: "Sitting", img: sittingImg },
+  { name: "Jackknife", img: jackknifeImg },
+];
+
+interface SelectedMedication {
+  name: string;
+  category: string;
+  dosage?: string;
+  route?: string;
+  notes?: string;
+  isCustom?: boolean;
+  hold?: boolean;
+  holdQty?: number;
+}
+
+interface ItemData {
+  name: string;
+  qty: number;
+  hold?: boolean;
+  holdQty?: number;
+}
+
+const parseMedications = (value: string): SelectedMedication[] => {
+  if (!value?.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed;
+  } catch {}
+  return value.trim() ? [{ name: value.trim(), category: "Other" }] : [];
+};
+
+const parseItems = (value: string): ItemData[] => {
+  if (!value?.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed))
+      return parsed.map((item: any) => ({
+        name: typeof item === "string" ? item : item.name,
+        qty: item.qty ?? 1,
+        hold: item.hold ?? false,
+        holdQty: item.holdQty ?? 1,
+      }));
+  } catch {}
+  return value
+    .split(", ")
+    .filter(Boolean)
+    .map((name) => ({ name, qty: 1, hold: false, holdQty: 1 }));
+};
+
+interface ReadOnlyPreferenceViewerProps {
+  categoryKey: string;
+  value: string;
+  fileCount?: number;
+}
+
+const ReadOnlyPreferenceViewer = ({
+  categoryKey,
+  value,
+  fileCount,
+}: ReadOnlyPreferenceViewerProps) => {
+  // --- Files ---
+  if (categoryKey === "images" || categoryKey === "videos" || categoryKey === "pdfs") {
+    const count = fileCount || 0;
+    return (
+      <div className="rounded-lg bg-secondary/50 border border-border p-4 text-center">
+        <p className="text-sm text-foreground">
+          {count} file{count !== 1 ? "s" : ""} uploaded
+        </p>
+        <p className="text-[10px] text-muted-foreground mt-1">
+          Files are viewable in the full preference card
+        </p>
+      </div>
+    );
+  }
+
+  // --- Gloves ---
+  if (categoryKey === "gloves") {
+    return (
+      <div>
+        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+          Glove Size
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {GLOVE_SIZES.map((size) => (
+            <div
+              key={size}
+              className={`flex items-center justify-center rounded-xl border px-3 py-3 text-sm font-medium ${
+                value === size
+                  ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
+                  : "border-border bg-secondary text-muted-foreground/40"
+              }`}
+            >
+              {size}
+              {value === size && <Check size={14} className="ml-1.5" />}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // --- Position ---
+  if (categoryKey === "position") {
+    return (
+      <div>
+        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+          Patient Position
+        </p>
+        <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto">
+          {POSITIONS.map((pos) => (
+            <div
+              key={pos.name}
+              className={`flex flex-col items-center gap-2 rounded-xl border p-3 ${
+                value === pos.name
+                  ? "border-primary bg-primary/15 shadow-sm shadow-primary/10"
+                  : "border-border bg-secondary opacity-50"
+              }`}
+            >
+              <img
+                src={pos.img}
+                alt={pos.name}
+                loading="lazy"
+                width={100}
+                height={100}
+                className="w-20 h-20 object-contain"
+              />
+              <span
+                className={`text-xs font-medium ${
+                  value === pos.name ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                {pos.name}
+              </span>
+              {value === pos.name && (
+                <Badge className="bg-primary/20 text-primary border-primary/30 text-[9px]">
+                  <Check size={10} className="mr-0.5" /> Selected
+                </Badge>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // --- Medication ---
+  if (categoryKey === "medication") {
+    const medications = parseMedications(value);
+    if (medications.length === 0) {
+      return (
+        <div className="rounded-lg bg-secondary/50 border border-border p-4 text-center">
+          <p className="text-sm text-muted-foreground">No medications selected</p>
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-2">
+        <p className="text-[10px] font-medium text-primary uppercase tracking-wider flex items-center gap-1.5">
+          <Pill size={12} />
+          Medications ({medications.length})
+        </p>
+        {medications.map((med, idx) => (
+          <div
+            key={`${med.name}-${idx}`}
+            className="rounded-xl border-2 border-primary/30 bg-primary/5 overflow-hidden"
+          >
+            <div className="flex items-start gap-2 px-3 py-3">
+              <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
+                <Pill size={14} className="text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-foreground truncate">
+                    {med.name}
+                  </span>
+                  {med.isCustom && (
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] px-1.5 py-0 border-primary/30 text-primary"
+                    >
+                      Custom
+                    </Badge>
+                  )}
+                  {med.hold && (
+                    <Badge className="text-[9px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                      <Pause size={8} className="mr-0.5" />
+                      Hold{med.holdQty && med.holdQty > 1 ? ` ×${med.holdQty}` : ""}
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                  {med.dosage && (
+                    <span className="text-[10px] font-medium text-foreground bg-secondary rounded-md px-2 py-0.5 border border-border">
+                      💊 {med.dosage}
+                    </span>
+                  )}
+                  {med.route && (
+                    <span className="text-[10px] font-medium text-foreground bg-secondary rounded-md px-2 py-0.5 border border-border">
+                      🔄 {med.route}
+                    </span>
+                  )}
+                  {med.notes && (
+                    <span className="text-[10px] text-muted-foreground bg-secondary rounded-md px-2 py-0.5 border border-border">
+                      📝 {med.notes}
+                    </span>
+                  )}
+                  {!med.dosage && !med.route && !med.notes && (
+                    <span className="text-[10px] text-muted-foreground/50 italic">
+                      No details added
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // --- Multi-select categories (skinprep, equipment, instruments, robotic_instruments, trays, supplies, suture) ---
+  const presetOptions = MULTI_SELECT_CATEGORIES[categoryKey];
+  if (presetOptions) {
+    const items = parseItems(value);
+    if (items.length === 0) {
+      return (
+        <div className="rounded-lg bg-secondary/50 border border-border p-4 text-center">
+          <p className="text-sm text-muted-foreground">No items selected</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+          Selected Items ({items.length})
+        </p>
+        <div className="space-y-1.5">
+          {items.map((item, idx) => {
+            const presetInfo = presetOptions.find(
+              (o) => o.name.toLowerCase() === item.name.toLowerCase()
+            );
+            return (
+              <div
+                key={`${item.name}-${idx}`}
+                className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 p-3"
+              >
+                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                  <Check size={12} className="text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">{item.name}</p>
+                  {presetInfo?.desc && (
+                    <p className="text-[10px] text-muted-foreground">{presetInfo.desc}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {item.qty > 1 && (
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] border-primary/30 text-primary"
+                    >
+                      ×{item.qty}
+                    </Badge>
+                  )}
+                  {item.hold && (
+                    <Badge className="text-[9px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                      <Pause size={8} className="mr-0.5" />
+                      Hold{item.holdQty && item.holdQty > 1 ? ` ×${item.holdQty}` : ""}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Show unselected items from preset library (dimmed) */}
+        {(() => {
+          const unselected = presetOptions.filter(
+            (o) => !items.some((i) => i.name.toLowerCase() === o.name.toLowerCase())
+          );
+          if (unselected.length === 0) return null;
+          return (
+            <div className="mt-3">
+              <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mb-1.5">
+                Available in Library ({unselected.length})
+              </p>
+              <div className="space-y-1">
+                {unselected.map((item) => (
+                  <div
+                    key={item.name}
+                    className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 p-2.5 opacity-50"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground">{item.name}</p>
+                      <p className="text-[9px] text-muted-foreground/60">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+    );
+  }
+
+  // --- Fallback: plain text ---
+  if (!value?.trim()) {
+    return (
+      <div className="rounded-lg bg-secondary/50 border border-border p-4 text-center">
+        <p className="text-sm text-muted-foreground">No preference set</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg bg-secondary/50 border border-border p-3">
+      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+        Current Preference
+      </p>
+      <p className="text-sm text-foreground">{value}</p>
+    </div>
+  );
+};
+
+export default ReadOnlyPreferenceViewer;

@@ -22,6 +22,7 @@ import { MULTI_SELECT_CATEGORIES } from "@/data/preferenceOptions";
 import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
 import TeamChatDrawer from "@/components/TeamChatDrawer";
 import NavHeader from "@/components/NavHeader";
+import ReadOnlyPreferenceViewer from "@/components/ReadOnlyPreferenceViewer";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle,
 } from "@/components/ui/drawer";
@@ -422,47 +423,17 @@ const DoctorProcedureView = () => {
             {viewCategory && (() => {
               const raw = preferences[viewCategory.key];
               const isFile = viewCategory.type === "file";
-              const count = fileCounts[viewCategory.key] || 0;
               const changesForCat = allChanges.filter(pc => pc.category === viewCategory.key);
               const hasPresets = !!MULTI_SELECT_CATEGORIES[viewCategory.key];
 
-              if (isFile) {
-                return (
-                  <div className="rounded-lg bg-secondary/50 border border-border p-4 text-center">
-                    <p className="text-sm text-foreground">{count} file{count !== 1 ? "s" : ""} uploaded</p>
-                    <p className="text-[10px] text-muted-foreground mt-1">Files are viewable in the full preference card</p>
-                  </div>
-                );
-              }
-
               return (
                 <>
-                  {raw?.trim() ? (
-                    <div className="rounded-lg bg-secondary/50 border border-border p-3">
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
-                        Current Preferences
-                      </p>
-                      {(() => {
-                        const items = formatItems(raw);
-                        return items.length > 0 ? (
-                          <ul className="space-y-1.5">
-                            {items.map((item, idx) => (
-                              <li key={idx} className="flex items-start gap-2 text-xs text-foreground">
-                                <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
-                                {item}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-xs text-foreground">{raw}</p>
-                        );
-                      })()}
-                    </div>
-                  ) : (
-                    <div className="rounded-lg bg-secondary/50 border border-border p-4 text-center">
-                      <p className="text-sm text-muted-foreground">No preferences set for {viewCategory.label}</p>
-                    </div>
-                  )}
+                  {/* Rich read-only viewer matching doctor role UIs */}
+                  <ReadOnlyPreferenceViewer
+                    categoryKey={viewCategory.key}
+                    value={raw || ""}
+                    fileCount={fileCounts[viewCategory.key]}
+                  />
 
                   {/* Change history */}
                   {changesForCat.length > 0 && (
@@ -486,41 +457,43 @@ const DoctorProcedureView = () => {
                   )}
 
                   {/* Action buttons */}
-                  <div className="flex flex-col gap-2">
-                    <Button
-                      onClick={() => openChangeRequest(viewCategory, "change")}
-                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
-                    >
-                      <PenLine size={14} />
-                      Request Change
-                    </Button>
-                    <Button
-                      onClick={() => openChangeRequest(viewCategory, "delete")}
-                      variant="outline"
-                      className="w-full border-destructive/50 text-destructive hover:bg-destructive/10 gap-2"
-                    >
-                      <Trash2 size={14} />
-                      Request Deletion
-                    </Button>
-                    {hasPresets && (
+                  {!isFile && (
+                    <div className="flex flex-col gap-2">
                       <Button
-                        onClick={() => openPresetLibrary(viewCategory)}
+                        onClick={() => openChangeRequest(viewCategory, "change")}
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                      >
+                        <PenLine size={14} />
+                        Request Change
+                      </Button>
+                      <Button
+                        onClick={() => openChangeRequest(viewCategory, "delete")}
+                        variant="outline"
+                        className="w-full border-destructive/50 text-destructive hover:bg-destructive/10 gap-2"
+                      >
+                        <Trash2 size={14} />
+                        Request Deletion
+                      </Button>
+                      {hasPresets && (
+                        <Button
+                          onClick={() => openPresetLibrary(viewCategory)}
+                          variant="outline"
+                          className="w-full gap-2"
+                        >
+                          <Library size={14} />
+                          Open Preset Library
+                        </Button>
+                      )}
+                      <Button
+                        onClick={() => openChangeRequest(viewCategory, "add_preset")}
                         variant="outline"
                         className="w-full gap-2"
                       >
-                        <Library size={14} />
-                        Open Preset Library
+                        <Plus size={14} />
+                        Request New Preset Item
                       </Button>
-                    )}
-                    <Button
-                      onClick={() => openChangeRequest(viewCategory, "add_preset")}
-                      variant="outline"
-                      className="w-full gap-2"
-                    >
-                      <Plus size={14} />
-                      Request New Preset Item
-                    </Button>
-                  </div>
+                    </div>
+                  )}
                 </>
               );
             })()}
