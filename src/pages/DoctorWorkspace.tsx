@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, MapPin, Search, Plus, Stethoscope,
+import {
+  ArrowLeft, MapPin, Search, Plus, Stethoscope, User, Bot,
   Heart, Activity, Brain, Bone, Eye, Baby, Scissors, HandMetal, Ear,
   Waypoints, Shield, Flame, Zap, Ribbon, Footprints, Syringe, Cross,
   Building2,
@@ -9,8 +10,10 @@ import { ArrowLeft, MapPin, Search, Plus, Stethoscope,
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import NavHeader from "@/components/NavHeader";
 
 interface DoctorProfile {
@@ -58,12 +61,15 @@ const DoctorWorkspace = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { toast } = useToast();
 
   const [doctor, setDoctor] = useState<DoctorProfile | null>(null);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [facilityName, setFacilityName] = useState("");
   const [facilityLocation, setFacilityLocation] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [roboticProcIds, setRoboticProcIds] = useState<Set<string>>(new Set());
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   const isDoctor = profile?.role === "doctor" || profile?.role === "surgeon";
   const canAdd = isDoctor && user?.id === userId;
@@ -86,13 +92,73 @@ const DoctorWorkspace = () => {
     }
 
     if (procsRes.data) {
-      setProcedures(procsRes.data as Procedure[]);
+      const procs = procsRes.data as Procedure[];
+      setProcedures(procs);
+
+      const procIds = procs.map(p => p.id);
+      if (procIds.length > 0) {
+        // Fetch robotic preferences and favorites in parallel
+        const [roboticRes, favRes] = await Promise.all([
+          supabase.from("procedure_preferences")
+            .select("procedure_id, value")
+            .in("procedure_id", procIds)
+            .eq("category", "robotic_instruments"),
+          supabase.from("procedure_favorites")
+            .select("procedure_id")
+            .eq("user_id", user.id)
+            .in("procedure_id", procIds),
+        ]);
+
+        if (roboticRes.data) {
+          const ids = new Set<string>();
+          roboticRes.data.forEach((r: any) => {
+            try {
+              const parsed = JSON.parse(r.value);
+              if (Array.isArray(parsed) && parsed.length > 0) ids.add(r.procedure_id);
+            } catch {
+              if (r.value?.trim()) ids.add(r.procedure_id);
+            }
+          });
+          setRoboticProcIds(ids);
+        }
+
+        if (favRes.data) {
+          setFavorites(new Set(favRes.data.map((f: any) => f.procedure_id)));
+        }
+      }
     }
   }, [userId, user]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const toggleFavorite = async (procId: string) => {
+    if (!user) return;
+    const isFav = favorites.has(procId);
+
+    // Optimistic update
+    setFavorites(prev => {
+      const next = new Set(prev);
+      if (isFav) next.delete(procId); else next.add(procId);
+      return next;
+    });
+
+    if (isFav) {
+      await supabase.from("procedure_favorites").delete()
+        .eq("user_id", user.id).eq("procedure_id", procId);
+    } else {
+      const { error } = await supabase.from("procedure_favorites").insert({
+        user_id: user.id,
+        procedure_id: procId,
+      });
+      if (error) {
+        // Revert
+        setFavorites(prev => { const next = new Set(prev); next.delete(procId); return next; });
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      }
+    }
+  };
 
   const filtered = procedures.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -114,29 +180,45 @@ const DoctorWorkspace = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-lg mx-auto flex flex-col gap-5"
       >
-        {/* Facility / Doctor Header */}
-        <div className="rounded-2xl bg-card border border-border p-4 flex items-center gap-3">
+        {/* Doctor profile header */}
+        <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
             className="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0"
           >
             <ArrowLeft size={20} />
           </button>
+          <Avatar className="h-12 w-12 border-2 border-primary/30 shrink-0">
+            {doctor.avatar_url ? <AvatarImage src={doctor.avatar_url} alt={doctor.display_name || ""} /> : null}
+            <AvatarFallback className="bg-primary/10 text-primary text-base font-semibold">
+              {(doctor.display_name || "D").charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-base font-bold text-foreground truncate">
-              {facilityName || doctor.display_name || "Doctor"}
+              {doctor.display_name || "Doctor"}
             </p>
-            {facilityLocation && (
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <MapPin size={10} className="shrink-0" />
-                {facilityLocation}
-              </p>
-            )}
-            {!facilityLocation && doctor.specialty && (
-              <p className="text-xs text-primary">{doctor.specialty}</p>
-            )}
+            <p className="text-xs text-primary font-medium">
+              {doctor.specialty || "No specialty"}
+            </p>
           </div>
         </div>
+
+        {/* Facility bar */}
+        {facilityName && (
+          <div className="rounded-xl bg-card border border-border px-4 py-3 flex items-center gap-2">
+            <Building2 size={14} className="text-primary shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">{facilityName}</p>
+              {facilityLocation && (
+                <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <MapPin size={8} className="shrink-0" />
+                  {facilityLocation}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Section header */}
         <div className="flex items-center justify-between">
@@ -176,6 +258,9 @@ const DoctorWorkspace = () => {
           <div className="grid grid-cols-2 gap-3">
             {filtered.map((proc, i) => {
               const Icon = getIconForProcedure(proc.name, proc.category);
+              const hasRobotic = roboticProcIds.has(proc.id);
+              const isFav = favorites.has(proc.id);
+
               return (
                 <motion.div
                   key={proc.id}
@@ -185,6 +270,37 @@ const DoctorWorkspace = () => {
                   onClick={() => navigate(`/doctor/${userId}/procedure/${proc.id}`)}
                   className="group relative flex flex-col rounded-2xl bg-card border border-border overflow-hidden hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 cursor-pointer transition-all"
                 >
+                  {/* Favorite button */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleFavorite(proc.id); }}
+                    className="absolute top-2 left-2 z-10 p-1.5 rounded-full bg-background/80 transition-all hover:scale-110"
+                    aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+                  >
+                    <Heart
+                      size={14}
+                      className={isFav
+                        ? "text-primary fill-primary"
+                        : "text-muted-foreground hover:text-primary"
+                      }
+                    />
+                  </button>
+
+                  {/* Robotic indicator */}
+                  {hasRobotic && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-primary/20 text-primary">
+                            <Bot size={14} />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="bg-card border-border text-foreground text-xs">
+                          Robotic
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+
                   {/* Icon area */}
                   <div className="flex items-center justify-center bg-primary/5 py-6">
                     <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
