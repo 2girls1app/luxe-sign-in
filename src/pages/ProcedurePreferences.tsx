@@ -255,7 +255,7 @@ const ProcedurePreferences = () => {
         </div>
 
         {/* Widget grid - 3 per row */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {PREFERENCE_CATEGORIES.map((cat, i) => (
               <PreferenceCategoryWidget
                 key={cat.key}
