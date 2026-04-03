@@ -236,6 +236,7 @@ const DoctorProcedureView = () => {
   const openPresetLibrary = (cat: PreferenceCategory) => {
     setViewDrawerOpen(false);
     setPresetCategory(cat);
+    setPresetSelected([]);
     setPresetOpen(true);
   };
 
