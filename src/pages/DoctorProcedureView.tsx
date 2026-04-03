@@ -856,6 +856,15 @@ const DoctorProcedureView = () => {
         procedureId={procedureId || ""}
         procedureName={procedureName}
       />
+
+      {/* File Upload Drawer */}
+      <FileUploadDrawer
+        open={fileDrawerOpen}
+        onOpenChange={setFileDrawerOpen}
+        category={fileCategory}
+        procedureId={procedureId || ""}
+        onFilesChanged={fetchData}
+      />
     </div>
   );
 };
