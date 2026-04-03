@@ -131,7 +131,8 @@ const DoctorProcedureView = () => {
   // Preset library
   const [presetOpen, setPresetOpen] = useState(false);
   const [presetCategory, setPresetCategory] = useState<PreferenceCategory | null>(null);
-  const [presetSubmitting, setPresetSubmitting] = useState<string | null>(null);
+  const [presetSubmitting, setPresetSubmitting] = useState(false);
+  const [presetSelected, setPresetSelected] = useState<string[]>([]);
 
   // File upload drawer
   const [fileDrawerOpen, setFileDrawerOpen] = useState(false);
