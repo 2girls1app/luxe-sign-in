@@ -24,6 +24,7 @@ interface PreferenceSummaryDrawerProps {
   fileCounts: Record<string, number>;
   procedureId: string;
   ownerUserId?: string;
+  isComplete?: boolean;
 }
 
 const PreferenceSummaryDrawer = ({
