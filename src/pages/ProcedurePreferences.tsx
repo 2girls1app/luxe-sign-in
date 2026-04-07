@@ -346,9 +346,22 @@ const ProcedurePreferences = () => {
           </button>
         </div>
 
-        {/* Widget grid - 3 per row */}
-        <div className="grid grid-cols-3 gap-3">
-          {PREFERENCE_CATEGORIES.map((cat, i) => (
+        {/* Widget grid */}
+        {isComplete ? (
+          <div className="flex flex-col gap-3">
+            {PREFERENCE_CATEGORIES.map((cat) => (
+              <LockedCategoryView
+                key={cat.key}
+                category={cat}
+                value={preferences[cat.key]}
+                fileCount={fileCounts[cat.key]}
+                onRequestAdd={handleRequestAdd}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3">
+            {PREFERENCE_CATEGORIES.map((cat, i) => (
               <PreferenceCategoryWidget
                 key={cat.key}
                 category={cat}
@@ -358,8 +371,9 @@ const ProcedurePreferences = () => {
                 onClick={() => openCategory(cat)}
                 index={i}
               />
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </motion.div>
 
       <PreferenceDetailDrawer
