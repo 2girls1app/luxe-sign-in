@@ -220,7 +220,11 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
 
         {mode === "new" && (
           <div className="flex flex-col gap-3 mt-2">
-            <Input placeholder="Procedure name *" value={name} onChange={(e) => setName(e.target.value)} className="bg-secondary border-border text-foreground placeholder:text-muted-foreground" />
+            <ProcedureNameAutocomplete
+              value={name}
+              onChange={setName}
+              specialty={defaultSpecialty}
+            />
             {defaultSpecialty && (
               <div className="bg-secondary border border-border rounded-md px-3 py-2 text-sm text-muted-foreground">
                 Specialty: <span className="text-foreground font-medium">{defaultSpecialty}</span>
