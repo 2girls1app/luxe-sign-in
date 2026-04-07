@@ -329,6 +329,12 @@ const DoctorWorkspace = () => {
                         <Building2 size={10} /> {facilityName}
                       </span>
                     )}
+                    {proc.is_complete && (
+                      <span className="flex items-center gap-1 text-[10px] font-medium text-green-400 mt-1">
+                        <CheckCircle2 size={12} className="text-green-400" />
+                        Card Complete
+                      </span>
+                    )}
                   </div>
                 </motion.div>
               );
