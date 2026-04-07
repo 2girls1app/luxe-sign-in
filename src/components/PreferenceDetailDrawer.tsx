@@ -38,10 +38,11 @@ interface PreferenceDetailDrawerProps {
   currentValue: string;
   onSave: (category: string, value: string) => void;
   saving: boolean;
+  submitLabel?: string;
 }
 
 const PreferenceDetailDrawer = ({
-  open, onOpenChange, category, currentValue, onSave, saving,
+  open, onOpenChange, category, currentValue, onSave, saving, submitLabel,
 }: PreferenceDetailDrawerProps) => {
   const [value, setValue] = useState(currentValue);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -149,7 +150,7 @@ const PreferenceDetailDrawer = ({
             disabled={saving}
             className="w-full"
           >
-            {saving ? "Saving..." : "Save Preference"}
+            {saving ? "Saving..." : (submitLabel || "Save Preference")}
           </Button>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
             Cancel

@@ -10,6 +10,7 @@ import PreferenceCategoryWidget, {
   PREFERENCE_CATEGORIES,
   type PreferenceCategory,
 } from "@/components/PreferenceCategoryWidget";
+import LockedCategoryView from "@/components/LockedCategoryView";
 import PreferenceDetailDrawer from "@/components/PreferenceDetailDrawer";
 import FileUploadDrawer from "@/components/FileUploadDrawer";
 import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
@@ -162,6 +163,40 @@ const ProcedurePreferences = () => {
     }
   };
 
+  // For locked cards, handle save as a pending change request instead of direct save
+  const handleLockedSave = async (category: string, value: string) => {
+    if (!procedureId || !user) return;
+    setSaving(true);
+    const trimmed = value.trim();
+    if (!trimmed) { setSaving(false); return; }
+
+    const { error } = await supabase
+      .from("pending_preference_changes")
+      .insert({
+        procedure_id: procedureId,
+        submitted_by: user.id,
+        category,
+        new_value: trimmed,
+        old_value: preferences[category] || "",
+        status: "pending",
+      });
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Change requested", description: "Submitted for doctor approval" });
+    }
+    setSaving(false);
+    setDrawerOpen(false);
+    setMedicationOpen(false);
+    setFileDrawerOpen(false);
+    setStepsOpen(false);
+  };
+
+  const handleRequestAdd = (cat: PreferenceCategory) => {
+    openCategory(cat);
+  };
+
   const toggleComplete = async () => {
     if (!procedureId || !user || !isOwner) return;
     setTogglingComplete(true);
@@ -311,9 +346,22 @@ const ProcedurePreferences = () => {
           </button>
         </div>
 
-        {/* Widget grid - 3 per row */}
-        <div className="grid grid-cols-3 gap-3">
-          {PREFERENCE_CATEGORIES.map((cat, i) => (
+        {/* Widget grid */}
+        {isComplete ? (
+          <div className="flex flex-col gap-3">
+            {PREFERENCE_CATEGORIES.map((cat) => (
+              <LockedCategoryView
+                key={cat.key}
+                category={cat}
+                value={preferences[cat.key]}
+                fileCount={fileCounts[cat.key]}
+                onRequestAdd={handleRequestAdd}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3">
+            {PREFERENCE_CATEGORIES.map((cat, i) => (
               <PreferenceCategoryWidget
                 key={cat.key}
                 category={cat}
@@ -323,17 +371,19 @@ const ProcedurePreferences = () => {
                 onClick={() => openCategory(cat)}
                 index={i}
               />
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </motion.div>
 
       <PreferenceDetailDrawer
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         category={selectedCategory}
-        currentValue={selectedCategory ? (preferences[selectedCategory.key] || "") : ""}
-        onSave={handleSave}
+        currentValue={isComplete ? "" : (selectedCategory ? (preferences[selectedCategory.key] || "") : "")}
+        onSave={isComplete ? handleLockedSave : handleSave}
         saving={saving}
+        submitLabel={isComplete ? "Submit for Approval" : undefined}
       />
 
       <FileUploadDrawer
@@ -347,16 +397,16 @@ const ProcedurePreferences = () => {
       <MedicationSelector
         open={medicationOpen}
         onOpenChange={setMedicationOpen}
-        currentValue={preferences["medication"] || ""}
-        onSave={handleSave}
+        currentValue={isComplete ? "" : (preferences["medication"] || "")}
+        onSave={isComplete ? handleLockedSave : handleSave}
         saving={saving}
       />
 
       <StepsDrawer
         open={stepsOpen}
         onOpenChange={setStepsOpen}
-        currentValue={preferences["steps"] || ""}
-        onSave={handleSave}
+        currentValue={isComplete ? "" : (preferences["steps"] || "")}
+        onSave={isComplete ? handleLockedSave : handleSave}
         saving={saving}
       />
 
