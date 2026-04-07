@@ -40,6 +40,9 @@ const ProcedurePreferences = () => {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+  const [togglingComplete, setTogglingComplete] = useState(false);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
