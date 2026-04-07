@@ -150,7 +150,7 @@ const PreferenceDetailDrawer = ({
             disabled={saving}
             className="w-full"
           >
-            {saving ? "Saving..." : "Save Preference"}
+            {saving ? "Saving..." : (submitLabel || "Save Preference")}
           </Button>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
             Cancel
