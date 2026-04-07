@@ -369,6 +369,7 @@ const ProcedurePreferences = () => {
         preferences={preferences}
         fileCounts={fileCounts}
         procedureId={procedureId || ""}
+        isComplete={isComplete}
       />
 
       <SharePreferenceCardDrawer
