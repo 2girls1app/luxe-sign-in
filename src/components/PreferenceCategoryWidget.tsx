@@ -39,9 +39,10 @@ interface PreferenceCategoryWidgetProps {
   onClick: () => void;
   index: number;
   pendingCount?: number;
+  isCardComplete?: boolean;
 }
 
-const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, pendingCount }: PreferenceCategoryWidgetProps) => {
+const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, pendingCount, isCardComplete }: PreferenceCategoryWidgetProps) => {
   const Icon = category.icon;
   const isFile = category.type === "file";
   const isMedication = category.key === "medication";
