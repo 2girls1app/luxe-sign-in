@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, CheckCircle2 } from "lucide-react";
+import { Check } from "lucide-react";
 import {
   Pill, Hand, RotateCcw, Droplets, Wrench, Scissors, LayoutGrid, Package, Ribbon,
   Image, Video, FileText, ListOrdered, Bot,
@@ -39,10 +39,9 @@ interface PreferenceCategoryWidgetProps {
   onClick: () => void;
   index: number;
   pendingCount?: number;
-  isCardComplete?: boolean;
 }
 
-const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, pendingCount, isCardComplete }: PreferenceCategoryWidgetProps) => {
+const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, pendingCount }: PreferenceCategoryWidgetProps) => {
   const Icon = category.icon;
   const isFile = category.type === "file";
   const isMedication = category.key === "medication";
@@ -150,12 +149,6 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
         <span className="text-[10px] text-muted-foreground truncate max-w-full px-1 leading-tight">
           {previewText}
         </span>
-        {isCardComplete && (
-          <span className="flex items-center gap-0.5 text-[8px] font-medium text-green-400 mt-0.5">
-            <CheckCircle2 size={8} />
-            Complete
-          </span>
-        )}
       </div>
     </motion.button>
   );
