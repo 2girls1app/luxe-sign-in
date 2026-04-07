@@ -380,9 +380,10 @@ const ProcedurePreferences = () => {
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         category={selectedCategory}
-        currentValue={selectedCategory ? (preferences[selectedCategory.key] || "") : ""}
-        onSave={handleSave}
+        currentValue={isComplete ? "" : (selectedCategory ? (preferences[selectedCategory.key] || "") : "")}
+        onSave={isComplete ? handleLockedSave : handleSave}
         saving={saving}
+        submitLabel={isComplete ? "Submit for Approval" : undefined}
       />
 
       <FileUploadDrawer
@@ -396,16 +397,16 @@ const ProcedurePreferences = () => {
       <MedicationSelector
         open={medicationOpen}
         onOpenChange={setMedicationOpen}
-        currentValue={preferences["medication"] || ""}
-        onSave={handleSave}
+        currentValue={isComplete ? "" : (preferences["medication"] || "")}
+        onSave={isComplete ? handleLockedSave : handleSave}
         saving={saving}
       />
 
       <StepsDrawer
         open={stepsOpen}
         onOpenChange={setStepsOpen}
-        currentValue={preferences["steps"] || ""}
-        onSave={handleSave}
+        currentValue={isComplete ? "" : (preferences["steps"] || "")}
+        onSave={isComplete ? handleLockedSave : handleSave}
         saving={saving}
       />
 
