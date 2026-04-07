@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ClipboardList, ListOrdered, Share2, User, MessageSquare } from "lucide-react";
+import { ArrowLeft, ClipboardList, ListOrdered, Share2, User, MessageSquare, CheckCircle2 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -40,18 +40,22 @@ const ProcedurePreferences = () => {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+  const [togglingComplete, setTogglingComplete] = useState(false);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
     const { data } = await supabase
       .from("procedures")
-      .select("name, facility_id, facilities(name)")
+      .select("name, facility_id, user_id, is_complete, facilities(name)")
       .eq("id", procedureId)
-      .eq("user_id", user.id)
       .single();
     if (data) {
       setProcedureName(data.name);
       setFacilityName((data.facilities as any)?.name || "");
+      setIsComplete(data.is_complete);
+      setIsOwner(data.user_id === user.id);
     } else navigate("/profile");
   }, [procedureId, user, navigate]);
 
@@ -158,6 +162,36 @@ const ProcedurePreferences = () => {
     }
   };
 
+  const toggleComplete = async () => {
+    if (!procedureId || !user || !isOwner) return;
+    setTogglingComplete(true);
+    const newVal = !isComplete;
+    const { error } = await supabase
+      .from("procedures")
+      .update({
+        is_complete: newVal,
+        completed_at: newVal ? new Date().toISOString() : null,
+        completed_by: newVal ? user.id : null,
+      })
+      .eq("id", procedureId)
+      .eq("user_id", user.id);
+    if (!error) {
+      setIsComplete(newVal);
+      toast({ title: newVal ? "Card marked complete" : "Card marked incomplete" });
+      // Audit log
+      await supabase.from("audit_logs" as any).insert({
+        user_id: user.id,
+        user_email: user.email || "",
+        user_name: providerName,
+        action: newVal ? "marked_card_complete" : "marked_card_incomplete",
+        entity_type: "procedure",
+        entity_id: procedureId,
+        details: { procedure_name: procedureName },
+      });
+    }
+    setTogglingComplete(false);
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pt-8 pb-8">
       <motion.div
@@ -220,6 +254,29 @@ const ProcedurePreferences = () => {
             <Share2 size={20} />
           </button>
         </div>
+
+        {/* Complete status */}
+        {isComplete && (
+          <div
+            onClick={isOwner ? toggleComplete : undefined}
+            className={`flex items-center justify-center gap-2 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-2.5 ${isOwner ? "cursor-pointer hover:bg-green-500/20 transition-colors" : ""}`}
+          >
+            <CheckCircle2 size={16} className="text-green-400" />
+            <span className="text-xs font-medium text-green-400">Card Complete</span>
+            {isOwner && <span className="text-[10px] text-green-400/60 ml-1">(click to undo)</span>}
+          </div>
+        )}
+
+        {isOwner && !isComplete && (
+          <button
+            onClick={toggleComplete}
+            disabled={togglingComplete}
+            className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-xs font-medium text-muted-foreground hover:border-green-500/50 hover:text-green-400 transition-all active:scale-[0.98]"
+          >
+            <CheckCircle2 size={16} />
+            Mark Card Complete
+          </button>
+        )}
 
         {/* Action bars */}
         <div className="flex flex-col gap-2">
@@ -312,6 +369,7 @@ const ProcedurePreferences = () => {
         preferences={preferences}
         fileCounts={fileCounts}
         procedureId={procedureId || ""}
+        isComplete={isComplete}
       />
 
       <SharePreferenceCardDrawer

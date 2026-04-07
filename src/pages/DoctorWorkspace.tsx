@@ -5,7 +5,7 @@ import {
   ArrowLeft, MapPin, Search, Plus, Stethoscope, User, Bot,
   Heart, Activity, Brain, Bone, Eye, Baby, Scissors, HandMetal, Ear,
   Waypoints, Shield, Flame, Zap, Ribbon, Footprints, Syringe, Cross,
-  Building2,
+  Building2, CheckCircle2,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ interface Procedure {
   category: string | null;
   facility_id: string | null;
   created_at: string;
+  is_complete: boolean;
 }
 
 const PROCEDURE_ICON_MAP: Record<string, React.ElementType> = {
@@ -326,6 +327,12 @@ const DoctorWorkspace = () => {
                     {facilityName && (
                       <span className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
                         <Building2 size={10} /> {facilityName}
+                      </span>
+                    )}
+                    {proc.is_complete && (
+                      <span className="flex items-center gap-1 text-[10px] font-medium text-green-400 mt-1">
+                        <CheckCircle2 size={12} className="text-green-400" />
+                        Card Complete
                       </span>
                     )}
                   </div>

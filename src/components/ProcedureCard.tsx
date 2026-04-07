@@ -1,4 +1,4 @@
-import { Trash2, Building2, Heart, Brain, Bone, Eye, Baby, Scissors, Stethoscope, Activity, Syringe, Shield, Waypoints, Cross, HandMetal, Ear, Pill, Footprints, Ribbon, Flame, Zap, Bot } from "lucide-react";
+import { Trash2, Building2, Heart, Brain, Bone, Eye, Baby, Scissors, Stethoscope, Activity, Syringe, Shield, Waypoints, Cross, HandMetal, Ear, Pill, Footprints, Ribbon, Flame, Zap, Bot, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +11,7 @@ interface ProcedureCardProps {
   notes: string | null;
   isFavorite: boolean;
   hasRoboticItems?: boolean;
+  isComplete?: boolean;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, current: boolean) => void;
 }
@@ -82,7 +83,7 @@ function getIconForProcedure(name: string, category: string | null): React.Eleme
   return Stethoscope;
 }
 
-const ProcedureCard = ({ id, name, category, facilityName, notes, isFavorite, hasRoboticItems, onDelete, onToggleFavorite }: ProcedureCardProps) => {
+const ProcedureCard = ({ id, name, category, facilityName, notes, isFavorite, hasRoboticItems, isComplete, onDelete, onToggleFavorite }: ProcedureCardProps) => {
   const Icon = getIconForProcedure(name, category);
   const navigate = useNavigate();
 
@@ -116,6 +117,13 @@ const ProcedureCard = ({ id, name, category, facilityName, notes, isFavorite, ha
 
         {notes && (
           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{notes}</p>
+        )}
+
+        {isComplete && (
+          <span className="flex items-center gap-1 text-[10px] font-medium text-green-400 mt-1">
+            <CheckCircle2 size={12} className="text-green-400" />
+            Card Complete
+          </span>
         )}
       </div>
 

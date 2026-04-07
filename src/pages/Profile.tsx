@@ -30,6 +30,7 @@ interface Procedure {
   facility_id: string | null;
   notes: string | null;
   is_favorite: boolean;
+  is_complete: boolean;
 }
 
 const CLINICAL_ROLES = ["first-assist", "first assist", "nurse", "physician-assist", "physician assist", "physician assistant", "anesthesia"];
@@ -429,6 +430,7 @@ const Profile = () => {
                     notes={p.notes}
                     isFavorite={p.is_favorite}
                     hasRoboticItems={roboticProcedureIds.has(p.id)}
+                    isComplete={p.is_complete}
                     onDelete={deleteProcedure}
                     onToggleFavorite={toggleFavorite}
                   />

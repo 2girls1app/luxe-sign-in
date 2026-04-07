@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, Image, CheckSquare, Square, X } from "lucide-react";
+import { Download, Printer, Image, CheckSquare, Square, X, CheckCircle2 } from "lucide-react";
 import { PREFERENCE_CATEGORIES } from "@/components/PreferenceCategoryWidget";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,6 +24,7 @@ interface PreferenceSummaryDrawerProps {
   fileCounts: Record<string, number>;
   procedureId: string;
   ownerUserId?: string;
+  isComplete?: boolean;
 }
 
 const PreferenceSummaryDrawer = ({
@@ -36,6 +37,7 @@ const PreferenceSummaryDrawer = ({
   fileCounts,
   procedureId,
   ownerUserId,
+  isComplete,
 }: PreferenceSummaryDrawerProps) => {
   const { user } = useAuth();
   const [generating, setGenerating] = useState(false);
@@ -426,9 +428,17 @@ const PreferenceSummaryDrawer = ({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-h-[90vh] bg-background">
         <DrawerHeader className="flex flex-row items-center justify-between pb-2">
-          <DrawerTitle className="text-base font-semibold text-foreground">
-            Full Preference Card
-          </DrawerTitle>
+          <div className="flex items-center gap-2">
+            <DrawerTitle className="text-base font-semibold text-foreground">
+              Full Preference Card
+            </DrawerTitle>
+            {isComplete && (
+              <span className="flex items-center gap-1 rounded-full bg-green-500/10 border border-green-500/30 px-2 py-0.5 text-[10px] font-medium text-green-400">
+                <CheckCircle2 size={10} />
+                Complete
+              </span>
+            )}
+          </div>
           <div className="flex gap-2">
             <Button
               size="sm"
