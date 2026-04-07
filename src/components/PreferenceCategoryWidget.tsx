@@ -39,10 +39,9 @@ interface PreferenceCategoryWidgetProps {
   onClick: () => void;
   index: number;
   pendingCount?: number;
-  isComplete?: boolean;
 }
 
-const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, pendingCount, isComplete }: PreferenceCategoryWidgetProps) => {
+const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, pendingCount }: PreferenceCategoryWidgetProps) => {
   const Icon = category.icon;
   const isFile = category.type === "file";
   const isMedication = category.key === "medication";
@@ -150,12 +149,6 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
         <span className="text-[10px] text-muted-foreground truncate max-w-full px-1 leading-tight">
           {previewText}
         </span>
-        {isComplete && (
-          <span className="flex items-center gap-0.5 text-[9px] font-medium text-green-400 mt-0.5">
-            <Check size={10} className="text-green-400" />
-            Card Complete
-          </span>
-        )}
       </div>
     </motion.button>
   );
