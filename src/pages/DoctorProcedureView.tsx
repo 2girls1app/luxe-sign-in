@@ -155,6 +155,7 @@ const DoctorProcedureView = () => {
       setProcedureName(procRes.data.name);
       setProcedureCategory(procRes.data.category || "");
       setFacilityName((procRes.data.facilities as any)?.name || "");
+      setIsComplete(procRes.data.is_complete);
     }
     if (profileRes.data) {
       setDoctorName(profileRes.data.display_name || "");
