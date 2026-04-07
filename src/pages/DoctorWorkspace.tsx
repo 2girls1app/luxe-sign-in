@@ -5,7 +5,7 @@ import {
   ArrowLeft, MapPin, Search, Plus, Stethoscope, User, Bot,
   Heart, Activity, Brain, Bone, Eye, Baby, Scissors, HandMetal, Ear,
   Waypoints, Shield, Flame, Zap, Ribbon, Footprints, Syringe, Cross,
-  Building2,
+  Building2, CheckCircle2,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
