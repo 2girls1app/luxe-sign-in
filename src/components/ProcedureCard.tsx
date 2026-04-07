@@ -119,12 +119,7 @@ const ProcedureCard = ({ id, name, category, facilityName, notes, isFavorite, ha
           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{notes}</p>
         )}
 
-        {isComplete && (
-          <span className="flex items-center gap-1 text-[10px] font-medium text-green-400 mt-1">
-            <CheckCircle2 size={12} className="text-green-400" />
-            Card Complete
-          </span>
-        )}
+        
       </div>
 
       {/* Favorite button */}
