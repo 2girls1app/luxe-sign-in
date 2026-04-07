@@ -10,6 +10,7 @@ import PreferenceCategoryWidget, {
   PREFERENCE_CATEGORIES,
   type PreferenceCategory,
 } from "@/components/PreferenceCategoryWidget";
+import LockedCategoryView from "@/components/LockedCategoryView";
 import PreferenceDetailDrawer from "@/components/PreferenceDetailDrawer";
 import FileUploadDrawer from "@/components/FileUploadDrawer";
 import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
