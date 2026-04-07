@@ -529,9 +529,12 @@ export type Database = {
       procedures: {
         Row: {
           category: string | null
+          completed_at: string | null
+          completed_by: string | null
           created_at: string
           facility_id: string | null
           id: string
+          is_complete: boolean
           is_favorite: boolean
           name: string
           notes: string | null
@@ -540,9 +543,12 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
           created_at?: string
           facility_id?: string | null
           id?: string
+          is_complete?: boolean
           is_favorite?: boolean
           name: string
           notes?: string | null
@@ -551,9 +557,12 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
           created_at?: string
           facility_id?: string | null
           id?: string
+          is_complete?: boolean
           is_favorite?: boolean
           name?: string
           notes?: string | null
