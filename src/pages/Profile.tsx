@@ -429,6 +429,7 @@ const Profile = () => {
                     notes={p.notes}
                     isFavorite={p.is_favorite}
                     hasRoboticItems={roboticProcedureIds.has(p.id)}
+                    isComplete={p.is_complete}
                     onDelete={deleteProcedure}
                     onToggleFavorite={toggleFavorite}
                   />
