@@ -423,6 +423,7 @@ const DoctorProcedureView = () => {
                 onClick={() => handleWidgetClick(cat)}
                 index={i}
                 pendingCount={cat.pendingCount}
+                isCardComplete={isComplete}
               />
             ))}
           </div>

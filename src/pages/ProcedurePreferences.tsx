@@ -322,6 +322,7 @@ const ProcedurePreferences = () => {
                 updatedAt={updatedDates[cat.key]}
                 onClick={() => openCategory(cat)}
                 index={i}
+                isCardComplete={isComplete}
               />
           ))}
         </div>
