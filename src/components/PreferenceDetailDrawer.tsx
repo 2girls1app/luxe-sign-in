@@ -38,6 +38,7 @@ interface PreferenceDetailDrawerProps {
   currentValue: string;
   onSave: (category: string, value: string) => void;
   saving: boolean;
+  submitLabel?: string;
 }
 
 const PreferenceDetailDrawer = ({
