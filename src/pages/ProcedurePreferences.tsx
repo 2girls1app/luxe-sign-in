@@ -162,6 +162,36 @@ const ProcedurePreferences = () => {
     }
   };
 
+  const toggleComplete = async () => {
+    if (!procedureId || !user || !isOwner) return;
+    setTogglingComplete(true);
+    const newVal = !isComplete;
+    const { error } = await supabase
+      .from("procedures")
+      .update({
+        is_complete: newVal,
+        completed_at: newVal ? new Date().toISOString() : null,
+        completed_by: newVal ? user.id : null,
+      })
+      .eq("id", procedureId)
+      .eq("user_id", user.id);
+    if (!error) {
+      setIsComplete(newVal);
+      toast({ title: newVal ? "Card marked complete" : "Card marked incomplete" });
+      // Audit log
+      await supabase.from("audit_logs" as any).insert({
+        user_id: user.id,
+        user_email: user.email || "",
+        user_name: providerName,
+        action: newVal ? "marked_card_complete" : "marked_card_incomplete",
+        entity_type: "procedure",
+        entity_id: procedureId,
+        details: { procedure_name: procedureName },
+      });
+    }
+    setTogglingComplete(false);
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pt-8 pb-8">
       <motion.div
