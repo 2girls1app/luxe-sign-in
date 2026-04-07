@@ -428,9 +428,17 @@ const PreferenceSummaryDrawer = ({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-h-[90vh] bg-background">
         <DrawerHeader className="flex flex-row items-center justify-between pb-2">
-          <DrawerTitle className="text-base font-semibold text-foreground">
-            Full Preference Card
-          </DrawerTitle>
+          <div className="flex items-center gap-2">
+            <DrawerTitle className="text-base font-semibold text-foreground">
+              Full Preference Card
+            </DrawerTitle>
+            {isComplete && (
+              <span className="flex items-center gap-1 rounded-full bg-green-500/10 border border-green-500/30 px-2 py-0.5 text-[10px] font-medium text-green-400">
+                <CheckCircle2 size={10} />
+                Complete
+              </span>
+            )}
+          </div>
           <div className="flex gap-2">
             <Button
               size="sm"
