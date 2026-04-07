@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, Image, CheckSquare, Square, X } from "lucide-react";
+import { Download, Printer, Image, CheckSquare, Square, X, CheckCircle2 } from "lucide-react";
 import { PREFERENCE_CATEGORIES } from "@/components/PreferenceCategoryWidget";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
