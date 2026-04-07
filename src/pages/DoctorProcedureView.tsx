@@ -109,6 +109,7 @@ const DoctorProcedureView = () => {
   const [allChanges, setAllChanges] = useState<PendingChange[]>([]);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
 
   // View drawer
   const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
@@ -142,7 +143,7 @@ const DoctorProcedureView = () => {
     if (!procedureId || !userId) return;
 
     const [procRes, profileRes, prefsRes, filesRes, pendingRes, allRes] = await Promise.all([
-      supabase.from("procedures").select("name, category, facility_id, facilities(name)").eq("id", procedureId).single(),
+      supabase.from("procedures").select("name, category, facility_id, is_complete, facilities(name)").eq("id", procedureId).single(),
       supabase.from("profiles").select("display_name, avatar_url").eq("user_id", userId).single(),
       supabase.from("procedure_preferences").select("category, value, updated_at").eq("procedure_id", procedureId),
       supabase.from("procedure_files").select("category").eq("procedure_id", procedureId),
@@ -154,6 +155,7 @@ const DoctorProcedureView = () => {
       setProcedureName(procRes.data.name);
       setProcedureCategory(procRes.data.category || "");
       setFacilityName((procRes.data.facilities as any)?.name || "");
+      setIsComplete(procRes.data.is_complete);
     }
     if (profileRes.data) {
       setDoctorName(profileRes.data.display_name || "");
@@ -421,6 +423,7 @@ const DoctorProcedureView = () => {
                 onClick={() => handleWidgetClick(cat)}
                 index={i}
                 pendingCount={cat.pendingCount}
+                isCardComplete={isComplete}
               />
             ))}
           </div>
