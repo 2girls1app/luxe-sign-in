@@ -109,6 +109,7 @@ const DoctorProcedureView = () => {
   const [allChanges, setAllChanges] = useState<PendingChange[]>([]);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
 
   // View drawer
   const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
