@@ -160,9 +160,12 @@ const DoctorWorkspace = () => {
     }
   };
 
-  const filtered = procedures.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filtered = procedures.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+    // Filter by doctor's specialty if set
+    const matchesSpecialty = !doctor?.specialty || !p.category || p.category === doctor.specialty;
+    return matchesSearch && matchesSpecialty;
+  });
 
   if (!doctor) {
     return (

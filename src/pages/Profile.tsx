@@ -185,6 +185,8 @@ const Profile = () => {
   const filteredProcedures = procedures
     .filter((p) => {
       if (facilityFilter && p.facility_id !== facilityFilter) return false;
+      // Filter by surgeon specialty if set
+      if (specialty && p.category && p.category !== specialty) return false;
       return p.name.toLowerCase().includes(searchProcedures.toLowerCase()) ||
         (p.category && p.category.toLowerCase().includes(searchProcedures.toLowerCase()));
     })

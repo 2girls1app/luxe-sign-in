@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Plus, FilePlus, Copy, ArrowLeft, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { getProceduresBySpecialty } from "@/data/specialtyProcedures";
 
 const SURGERY_SPECIALTIES = [
   "General Surgery",
@@ -50,6 +51,64 @@ interface AddProcedureDialogProps {
 }
 
 type DialogMode = "choose" | "new" | "existing";
+
+/** Autocomplete input for procedure names filtered by specialty */
+const ProcedureNameAutocomplete = ({
+  value,
+  onChange,
+  specialty,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  specialty?: string;
+}) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const suggestions = getProceduresBySpecialty(specialty);
+  const filtered = value.trim()
+    ? suggestions.filter((s) => s.toLowerCase().includes(value.toLowerCase()))
+    : suggestions;
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <Input
+        placeholder="Procedure name *"
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+      />
+      {open && filtered.length > 0 && (
+        <div className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-lg border border-border bg-card shadow-lg">
+          {filtered.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => {
+                onChange(s);
+                setOpen(false);
+              }}
+              className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-primary/10 transition-colors"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, triggerVariant = "default", forUserId, defaultSpecialty }: AddProcedureDialogProps) => {
   const [open, setOpen] = useState(false);
@@ -219,7 +278,11 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
 
         {mode === "new" && (
           <div className="flex flex-col gap-3 mt-2">
-            <Input placeholder="Procedure name *" value={name} onChange={(e) => setName(e.target.value)} className="bg-secondary border-border text-foreground placeholder:text-muted-foreground" />
+            <ProcedureNameAutocomplete
+              value={name}
+              onChange={setName}
+              specialty={defaultSpecialty}
+            />
             {defaultSpecialty && (
               <div className="bg-secondary border border-border rounded-md px-3 py-2 text-sm text-muted-foreground">
                 Specialty: <span className="text-foreground font-medium">{defaultSpecialty}</span>
