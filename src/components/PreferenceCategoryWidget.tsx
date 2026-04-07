@@ -39,6 +39,7 @@ interface PreferenceCategoryWidgetProps {
   onClick: () => void;
   index: number;
   pendingCount?: number;
+  isComplete?: boolean;
 }
 
 const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, pendingCount }: PreferenceCategoryWidgetProps) => {
