@@ -150,6 +150,12 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
         <span className="text-[10px] text-muted-foreground truncate max-w-full px-1 leading-tight">
           {previewText}
         </span>
+        {isCardComplete && (
+          <span className="flex items-center gap-0.5 text-[8px] font-medium text-green-400 mt-0.5">
+            <CheckCircle2 size={8} />
+            Complete
+          </span>
+        )}
       </div>
     </motion.button>
   );
