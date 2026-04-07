@@ -42,7 +42,7 @@ interface PreferenceDetailDrawerProps {
 }
 
 const PreferenceDetailDrawer = ({
-  open, onOpenChange, category, currentValue, onSave, saving,
+  open, onOpenChange, category, currentValue, onSave, saving, submitLabel,
 }: PreferenceDetailDrawerProps) => {
   const [value, setValue] = useState(currentValue);
   const scrollRef = useRef<HTMLDivElement>(null);
