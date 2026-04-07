@@ -30,6 +30,7 @@ interface Procedure {
   category: string | null;
   facility_id: string | null;
   created_at: string;
+  is_complete: boolean;
 }
 
 const PROCEDURE_ICON_MAP: Record<string, React.ElementType> = {
