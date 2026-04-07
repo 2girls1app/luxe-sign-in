@@ -48,13 +48,14 @@ const ProcedurePreferences = () => {
     if (!procedureId || !user) return;
     const { data } = await supabase
       .from("procedures")
-      .select("name, facility_id, facilities(name)")
+      .select("name, facility_id, user_id, is_complete, facilities(name)")
       .eq("id", procedureId)
-      .eq("user_id", user.id)
       .single();
     if (data) {
       setProcedureName(data.name);
       setFacilityName((data.facilities as any)?.name || "");
+      setIsComplete(data.is_complete);
+      setIsOwner(data.user_id === user.id);
     } else navigate("/profile");
   }, [procedureId, user, navigate]);
 

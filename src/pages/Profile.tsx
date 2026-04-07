@@ -30,6 +30,7 @@ interface Procedure {
   facility_id: string | null;
   notes: string | null;
   is_favorite: boolean;
+  is_complete: boolean;
 }
 
 const CLINICAL_ROLES = ["first-assist", "first assist", "nurse", "physician-assist", "physician assist", "physician assistant", "anesthesia"];
