@@ -305,6 +305,14 @@ const DoctorWorkspace = () => {
                     </TooltipProvider>
                   )}
 
+                  {/* Card Complete badge */}
+                  {proc.is_complete && (
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/15 border border-green-500/30">
+                      <CheckCircle2 size={10} className="text-green-400" />
+                      <span className="text-[9px] font-semibold text-green-400 whitespace-nowrap">Card Complete</span>
+                    </div>
+                  )}
+
                   {/* Icon area */}
                   <div className="flex items-center justify-center bg-primary/5 py-6">
                     <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
@@ -327,12 +335,6 @@ const DoctorWorkspace = () => {
                     {facilityName && (
                       <span className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
                         <Building2 size={10} /> {facilityName}
-                      </span>
-                    )}
-                    {proc.is_complete && (
-                      <span className="flex items-center gap-1 text-[10px] font-medium text-green-400 mt-1">
-                        <CheckCircle2 size={12} className="text-green-400" />
-                        Card Complete
                       </span>
                     )}
                   </div>
