@@ -94,6 +94,14 @@ const ProcedureCard = ({ id, name, category, facilityName, notes, isFavorite, ha
       onClick={() => navigate(`/procedure/${id}/preferences`)}
       className="group relative flex flex-col rounded-2xl bg-card border border-border overflow-hidden transition-shadow hover:shadow-lg hover:shadow-primary/5 cursor-pointer"
     >
+      {/* Card Complete badge */}
+      {isComplete && (
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/15 border border-green-500/30">
+          <CheckCircle2 size={10} className="text-green-400" />
+          <span className="text-[9px] font-semibold text-green-400 whitespace-nowrap">Card Complete</span>
+        </div>
+      )}
+
       {/* Icon area */}
       <div className="flex items-center justify-center bg-primary/5 py-6">
         <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
