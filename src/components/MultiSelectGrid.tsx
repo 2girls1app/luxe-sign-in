@@ -34,6 +34,7 @@ const parseItems = (value: string): ItemData[] => {
       qty: item.qty ?? 1,
       hold: item.hold ?? false,
       holdQty: item.holdQty ?? 1,
+      notes: item.notes ?? "",
     }));
   } catch {}
   return value.split(", ").filter(Boolean).map((name) => ({ name, qty: 1, hold: false, holdQty: 1 }));
