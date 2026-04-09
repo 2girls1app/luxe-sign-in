@@ -175,6 +175,17 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
           </div>
         </div>
       )}
+
+      {/* Notes */}
+      <div className="pl-7">
+        <textarea
+          value={item.notes || ""}
+          onChange={(e) => updateNotes(item.name, e.target.value)}
+          placeholder="Add notes..."
+          rows={1}
+          className="w-full text-xs bg-secondary border border-border rounded-lg px-2 py-1.5 text-foreground placeholder:text-muted-foreground resize-none focus:border-primary/50 focus:outline-none transition-colors"
+        />
+      </div>
     </div>
   );
 
