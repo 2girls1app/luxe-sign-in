@@ -482,6 +482,13 @@ const DoctorWorkspace = () => {
         />
       )}
 
+      {/* Doctor Music Preferences */}
+      <MusicPreferencesDrawer
+        open={musicOpen}
+        onOpenChange={(open) => { setMusicOpen(open); if (!open) fetchMusicCount(); }}
+        doctorUserId={userId}
+      />
+
       {/* Delete confirmation dialog */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
         <AlertDialogContent className="bg-card border-border">
