@@ -92,14 +92,16 @@ const DoctorWorkspace = () => {
 
     if (profileRes.data) {
       setDoctor(profileRes.data as unknown as DoctorProfile);
-      const fac = (profileRes.data as any).facilities;
-      if (fac) {
-        setFacilityName(fac.name || "");
-        setFacilityLocation(fac.location || "");
+      const fId = profileRes.data.facility_id;
+      if (fId) {
+        setFacilityId(fId);
+        // Fetch facility details separately
+        const { data: facData } = await supabase.from("facilities").select("name, location").eq("id", fId).maybeSingle();
+        if (facData) {
+          setFacilityName(facData.name || "");
+          setFacilityLocation(facData.location || "");
+        }
       }
-      // Get facility_id for adding procedures
-      const fId = (profileRes.data as any).facility_id;
-      if (fId) setFacilityId(fId);
     }
 
     // For individual users, fetch facilities linked to this doctor
