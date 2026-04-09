@@ -741,6 +741,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_linked_doctor: {
+        Args: { _doctor_user_id: string; _viewer_id: string }
+        Returns: boolean
+      }
       owns_procedure: {
         Args: { _procedure_id: string; _user_id: string }
         Returns: boolean
