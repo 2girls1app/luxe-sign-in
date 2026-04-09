@@ -169,8 +169,10 @@ const ProcedurePreferences = () => {
     }
   };
 
+  const canManageCard = isOwner || isIndividual;
+
   const toggleComplete = async () => {
-    if (!procedureId || !user || !isOwner) return;
+    if (!procedureId || !user || !canManageCard || !effectiveUserId) return;
     setTogglingComplete(true);
     const newVal = !isComplete;
     const { error } = await supabase
@@ -181,7 +183,7 @@ const ProcedurePreferences = () => {
         completed_by: newVal ? user.id : null,
       })
       .eq("id", procedureId)
-      .eq("user_id", user.id);
+      .eq("user_id", effectiveUserId);
     if (!error) {
       setIsComplete(newVal);
       toast({ title: newVal ? "Card marked complete" : "Card marked incomplete" });
