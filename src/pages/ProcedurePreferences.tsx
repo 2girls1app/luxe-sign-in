@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ClipboardList, ListOrdered, Share2, User, MessageSquare, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ClipboardList, ListOrdered, Share2, User, MessageSquare, CheckCircle2, Upload } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +17,7 @@ import MedicationSelector from "@/components/MedicationSelector";
 import StepsDrawer from "@/components/StepsDrawer";
 import SharePreferenceCardDrawer from "@/components/SharePreferenceCardDrawer";
 import TeamChatDrawer from "@/components/TeamChatDrawer";
+import ImportPreferenceCardDrawer from "@/components/ImportPreferenceCardDrawer";
 
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
@@ -50,6 +51,7 @@ const ProcedurePreferences = () => {
   const [isComplete, setIsComplete] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [togglingComplete, setTogglingComplete] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
@@ -295,6 +297,15 @@ const ProcedurePreferences = () => {
             <ClipboardList size={16} className="text-primary" />
             View Full Preference Card
           </button>
+          {isIndividual && (
+            <button
+              onClick={() => setImportOpen(true)}
+              className="flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-xs font-medium text-primary hover:bg-primary/10 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all active:scale-[0.98]"
+            >
+              <Upload size={16} />
+              Import Preference Card
+            </button>
+          )}
           <button
             onClick={() => setStepsOpen(true)}
             className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-xs font-medium text-foreground hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-[0.98]"
@@ -395,6 +406,18 @@ const ProcedurePreferences = () => {
         procedureId={procedureId || ""}
         procedureName={procedureName}
       />
+
+      {isIndividual && effectiveUserId && (
+        <ImportPreferenceCardDrawer
+          open={importOpen}
+          onOpenChange={setImportOpen}
+          procedureId={procedureId || ""}
+          effectiveUserId={effectiveUserId}
+          onComplete={() => {
+            fetchPreferences();
+          }}
+        />
+      )}
     </div>
   );
 };
