@@ -297,7 +297,28 @@ const DoctorWorkspace = () => {
           </div>
         )}
 
-        {/* Section header */}
+        {/* Music Preference */}
+        <button
+          onClick={() => setMusicOpen(true)}
+          className="flex items-center gap-3 rounded-xl bg-card border border-border px-4 py-3 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 transition-all active:scale-[0.98]"
+        >
+          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <Music size={16} className="text-primary" />
+          </div>
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-sm font-medium text-foreground">Music Preference</p>
+            <p className="text-[10px] text-muted-foreground">
+              {musicCount > 0 ? `${musicCount} preference${musicCount !== 1 ? "s" : ""} saved` : "Not set"}
+            </p>
+          </div>
+          {musicCount > 0 && (
+            <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+              {musicCount}
+            </span>
+          )}
+        </button>
+
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Stethoscope size={16} className="text-primary" />
