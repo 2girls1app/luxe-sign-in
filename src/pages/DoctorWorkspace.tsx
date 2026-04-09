@@ -87,7 +87,7 @@ const DoctorWorkspace = () => {
   const [facilityId, setFacilityId] = useState<string | null>(null);
   const [facilities, setFacilities] = useState<{ id: string; name: string }[]>([]);
   const [facilitiesLoaded, setFacilitiesLoaded] = useState(false);
-  const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!userId || !user) return;
