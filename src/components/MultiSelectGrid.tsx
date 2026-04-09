@@ -13,6 +13,7 @@ interface ItemData {
   qty: number;
   hold?: boolean;
   holdQty?: number;
+  notes?: string;
 }
 
 interface MultiSelectGridProps {
@@ -33,9 +34,10 @@ const parseItems = (value: string): ItemData[] => {
       qty: item.qty ?? 1,
       hold: item.hold ?? false,
       holdQty: item.holdQty ?? 1,
+      notes: item.notes ?? "",
     }));
   } catch {}
-  return value.split(", ").filter(Boolean).map((name) => ({ name, qty: 1, hold: false, holdQty: 1 }));
+  return value.split(", ").filter(Boolean).map((name) => ({ name, qty: 1, hold: false, holdQty: 1, notes: "" }));
 };
 
 const serializeItems = (items: ItemData[]): string => {
@@ -66,7 +68,7 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
     if (existing) {
       updateItems(items.filter((i) => i.name !== name));
     } else {
-      updateItems([...items, { name, qty: 1, hold: false, holdQty: 1 }]);
+      updateItems([...items, { name, qty: 1, hold: false, holdQty: 1, notes: "" }]);
     }
   };
 
@@ -82,6 +84,10 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
     updateItems(items.map((i) => i.name === name ? { ...i, holdQty: Math.max(1, (i.holdQty ?? 1) + delta) } : i));
   };
 
+  const updateNotes = (name: string, notes: string) => {
+    updateItems(items.map((i) => i.name === name ? { ...i, notes } : i));
+  };
+
   const addCustomItem = () => {
     const trimmed = customName.trim();
     if (!trimmed || selectedNames.includes(trimmed)) {
@@ -89,7 +95,7 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
       setShowInput(false);
       return;
     }
-    updateItems([...items, { name: trimmed, qty: 1, hold: false, holdQty: 1 }]);
+    updateItems([...items, { name: trimmed, qty: 1, hold: false, holdQty: 1, notes: "" }]);
     setCustomName("");
     setShowInput(false);
   };
@@ -169,6 +175,17 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
           </div>
         </div>
       )}
+
+      {/* Notes */}
+      <div className="pl-7">
+        <textarea
+          value={item.notes || ""}
+          onChange={(e) => updateNotes(item.name, e.target.value)}
+          placeholder="Add notes..."
+          rows={1}
+          className="w-full text-xs bg-secondary border border-border rounded-lg px-2 py-1.5 text-foreground placeholder:text-muted-foreground resize-none focus:border-primary/50 focus:outline-none transition-colors"
+        />
+      </div>
     </div>
   );
 
