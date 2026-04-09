@@ -5,7 +5,7 @@ import {
   ArrowLeft, MapPin, Search, Plus, Stethoscope, User, Bot, Upload, Trash2,
   Heart, Activity, Brain, Bone, Eye, Baby, Scissors, HandMetal, Ear,
   Waypoints, Shield, Flame, Zap, Ribbon, Footprints, Syringe, Cross,
-  Building2, CheckCircle2,
+  Building2, CheckCircle2, Music,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import NavHeader from "@/components/NavHeader";
 import AddProcedureDialog from "@/components/AddProcedureDialog";
 import UploadPreferenceCardDrawer from "@/components/UploadPreferenceCardDrawer";
+import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -89,9 +90,21 @@ const DoctorWorkspace = () => {
   const [facilitiesLoaded, setFacilitiesLoaded] = useState(false);
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [musicOpen, setMusicOpen] = useState(false);
+  const [musicCount, setMusicCount] = useState(0);
+
+  const fetchMusicCount = useCallback(async () => {
+    if (!userId) return;
+    const { count } = await supabase
+      .from("music_preferences")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId);
+    setMusicCount(count || 0);
+  }, [userId]);
 
   const fetchData = useCallback(async () => {
     if (!userId || !user) return;
+    fetchMusicCount();
 
     const [profileRes, procsRes] = await Promise.all([
       supabase.from("profiles").select("user_id, display_name, avatar_url, role, specialty, facility_id").eq("user_id", userId).maybeSingle(),
@@ -284,7 +297,28 @@ const DoctorWorkspace = () => {
           </div>
         )}
 
-        {/* Section header */}
+        {/* Music Preference */}
+        <button
+          onClick={() => setMusicOpen(true)}
+          className="flex items-center gap-3 rounded-xl bg-card border border-border px-4 py-3 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 transition-all active:scale-[0.98]"
+        >
+          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <Music size={16} className="text-primary" />
+          </div>
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-sm font-medium text-foreground">Music Preference</p>
+            <p className="text-[10px] text-muted-foreground">
+              {musicCount > 0 ? `${musicCount} preference${musicCount !== 1 ? "s" : ""} saved` : "Not set"}
+            </p>
+          </div>
+          {musicCount > 0 && (
+            <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+              {musicCount}
+            </span>
+          )}
+        </button>
+
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Stethoscope size={16} className="text-primary" />
@@ -447,6 +481,13 @@ const DoctorWorkspace = () => {
           forUserId={userId}
         />
       )}
+
+      {/* Doctor Music Preferences */}
+      <MusicPreferencesDrawer
+        open={musicOpen}
+        onOpenChange={(open) => { setMusicOpen(open); if (!open) fetchMusicCount(); }}
+        doctorUserId={userId}
+      />
 
       {/* Delete confirmation dialog */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>

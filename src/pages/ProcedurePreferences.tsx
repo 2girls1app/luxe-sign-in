@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ClipboardList, ListOrdered, Share2, User, MessageSquare, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ClipboardList, ListOrdered, Share2, User, MessageSquare, CheckCircle2, Music } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +17,7 @@ import MedicationSelector from "@/components/MedicationSelector";
 import StepsDrawer from "@/components/StepsDrawer";
 import SharePreferenceCardDrawer from "@/components/SharePreferenceCardDrawer";
 import TeamChatDrawer from "@/components/TeamChatDrawer";
+import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
@@ -50,6 +51,8 @@ const ProcedurePreferences = () => {
   const [isComplete, setIsComplete] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [togglingComplete, setTogglingComplete] = useState(false);
+  const [musicOpen, setMusicOpen] = useState(false);
+  const [musicCount, setMusicCount] = useState(0);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
@@ -109,12 +112,23 @@ const ProcedurePreferences = () => {
     if (data?.avatar_url) setProviderAvatar(data.avatar_url);
   }, [effectiveUserId, user]);
 
+  const fetchMusicCount = useCallback(async () => {
+    const targetId = effectiveUserId || user?.id;
+    if (!targetId) return;
+    const { count } = await supabase
+      .from("music_preferences")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", targetId);
+    setMusicCount(count || 0);
+  }, [effectiveUserId, user]);
+
   useEffect(() => {
     fetchProcedure();
     fetchPreferences();
     fetchFileCounts();
     fetchProviderName();
-  }, [fetchProcedure, fetchPreferences, fetchFileCounts, fetchProviderName]);
+    fetchMusicCount();
+  }, [fetchProcedure, fetchPreferences, fetchFileCounts, fetchProviderName, fetchMusicCount]);
 
   const handleSave = async (category: string, value: string) => {
     if (!procedureId || !user || !effectiveUserId) return;
@@ -319,6 +333,18 @@ const ProcedurePreferences = () => {
               Team Chat
             </button>
           )}
+          <button
+            onClick={() => setMusicOpen(true)}
+            className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-xs font-medium text-foreground hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-[0.98]"
+          >
+            <Music size={16} className="text-primary" />
+            Music Preference
+            {musicCount > 0 && (
+              <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                {musicCount}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Widget grid - 3 per row */}
@@ -394,6 +420,12 @@ const ProcedurePreferences = () => {
         onOpenChange={setChatOpen}
         procedureId={procedureId || ""}
         procedureName={procedureName}
+      />
+
+      <MusicPreferencesDrawer
+        open={musicOpen}
+        onOpenChange={(open) => { setMusicOpen(open); if (!open) fetchMusicCount(); }}
+        doctorUserId={effectiveUserId}
       />
     </div>
   );

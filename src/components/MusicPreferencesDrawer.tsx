@@ -34,10 +34,13 @@ type TabType = "genre" | "artist" | "mood";
 interface MusicPreferencesDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** When set, manage music prefs for this doctor instead of the logged-in user */
+  doctorUserId?: string;
 }
 
-const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerProps) => {
+const MusicPreferencesDrawer = ({ open, onOpenChange, doctorUserId }: MusicPreferencesDrawerProps) => {
   const { user } = useAuth();
+  const targetUserId = doctorUserId || user?.id;
   const { toast } = useToast();
   const [preferences, setPreferences] = useState<MusicPreference[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>("genre");
@@ -46,24 +49,24 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
   const [pandoraConnected, setPandoraConnected] = useState(false);
 
   const fetchPreferences = useCallback(async () => {
-    if (!user) return;
+    if (!targetUserId) return;
     const { data } = await supabase
       .from("music_preferences")
       .select("id, type, value")
-      .eq("user_id", user.id)
+      .eq("user_id", targetUserId)
       .order("created_at", { ascending: true });
     if (data) setPreferences(data as MusicPreference[]);
-  }, [user]);
+  }, [targetUserId]);
 
   const fetchPandoraStatus = useCallback(async () => {
-    if (!user) return;
+    if (!targetUserId) return;
     const { data } = await supabase
       .from("profiles")
       .select("pandora_connected")
-      .eq("user_id", user.id)
+      .eq("user_id", targetUserId)
       .single();
     if (data) setPandoraConnected(!!(data as any).pandora_connected);
-  }, [user]);
+  }, [targetUserId]);
 
   useEffect(() => {
     if (open) {
@@ -76,13 +79,13 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
     preferences.some((p) => p.type === type && p.value === value);
 
   const togglePreference = async (type: TabType, value: string) => {
-    if (!user) return;
+    if (!targetUserId) return;
     const existing = preferences.find((p) => p.type === type && p.value === value);
     if (existing) {
       await supabase.from("music_preferences").delete().eq("id", existing.id);
     } else {
       await supabase.from("music_preferences").insert({
-        user_id: user.id,
+        user_id: targetUserId,
         type,
         value,
       } as any);
@@ -91,14 +94,14 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
   };
 
   const addCustom = async () => {
-    if (!customInput.trim() || !user) return;
+    if (!customInput.trim() || !targetUserId) return;
     const trimmed = customInput.trim();
     if (isSelected(activeTab, trimmed)) {
       toast({ title: "Already added" });
       return;
     }
     await supabase.from("music_preferences").insert({
-      user_id: user.id,
+      user_id: targetUserId,
       type: activeTab,
       value: trimmed,
     } as any);
@@ -115,11 +118,11 @@ const MusicPreferencesDrawer = ({ open, onOpenChange }: MusicPreferencesDrawerPr
 
   const handlePandoraConnect = async () => {
     window.open(buildPandoraUrl(), "_blank", "noopener,noreferrer");
-    if (!user) return;
+    if (!targetUserId) return;
     await supabase
       .from("profiles")
       .update({ pandora_connected: true } as any)
-      .eq("user_id", user.id);
+      .eq("user_id", targetUserId);
     setPandoraConnected(true);
     toast({ title: "Pandora opened with your preferences!" });
   };
