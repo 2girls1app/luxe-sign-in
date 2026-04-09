@@ -86,8 +86,8 @@ const DoctorWorkspace = () => {
     if (!userId || !user) return;
 
     const [profileRes, procsRes] = await Promise.all([
-      supabase.from("profiles").select("user_id, display_name, avatar_url, role, specialty, facility_id, facilities(name, location)").eq("user_id", userId).single(),
-      supabase.from("procedures").select("id, name, category, facility_id, created_at").eq("user_id", userId).order("name"),
+      supabase.from("profiles").select("user_id, display_name, avatar_url, role, specialty, facility_id").eq("user_id", userId).maybeSingle(),
+      supabase.from("procedures").select("id, name, category, facility_id, created_at, is_complete").eq("user_id", userId).order("name"),
     ]);
 
     if (profileRes.data) {
