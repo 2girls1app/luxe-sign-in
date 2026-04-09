@@ -112,12 +112,23 @@ const ProcedurePreferences = () => {
     if (data?.avatar_url) setProviderAvatar(data.avatar_url);
   }, [effectiveUserId, user]);
 
+  const fetchMusicCount = useCallback(async () => {
+    const targetId = effectiveUserId || user?.id;
+    if (!targetId) return;
+    const { count } = await supabase
+      .from("music_preferences")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", targetId);
+    setMusicCount(count || 0);
+  }, [effectiveUserId, user]);
+
   useEffect(() => {
     fetchProcedure();
     fetchPreferences();
     fetchFileCounts();
     fetchProviderName();
-  }, [fetchProcedure, fetchPreferences, fetchFileCounts, fetchProviderName]);
+    fetchMusicCount();
+  }, [fetchProcedure, fetchPreferences, fetchFileCounts, fetchProviderName, fetchMusicCount]);
 
   const handleSave = async (category: string, value: string) => {
     if (!procedureId || !user || !effectiveUserId) return;
