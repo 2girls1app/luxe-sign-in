@@ -21,8 +21,15 @@ import TeamChatDrawer from "@/components/TeamChatDrawer";
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
+
+  // Track procedure owner for individual users editing doctor's procedures
+  const [ownerId, setOwnerId] = useState<string | null>(null);
+  const accountType = user?.user_metadata?.account_type;
+  const isIndividual = accountType === "individual" || (!profile?.facility_id && !accountType);
+  // effectiveUserId: for individual users editing another user's procedure, use the owner's id
+  const effectiveUserId = (isIndividual && ownerId && ownerId !== user?.id) ? ownerId : user?.id;
 
   const [procedureName, setProcedureName] = useState("");
   const [preferences, setPreferences] = useState<Record<string, string>>({});
@@ -56,16 +63,17 @@ const ProcedurePreferences = () => {
       setFacilityName((data.facilities as any)?.name || "");
       setIsComplete(data.is_complete);
       setIsOwner(data.user_id === user.id);
+      setOwnerId(data.user_id);
     } else navigate("/profile");
   }, [procedureId, user, navigate]);
 
   const fetchPreferences = useCallback(async () => {
-    if (!procedureId || !user) return;
+    if (!procedureId || !effectiveUserId) return;
     const { data } = await supabase
       .from("procedure_preferences")
       .select("category, value, updated_at")
       .eq("procedure_id", procedureId)
-      .eq("user_id", user.id);
+      .eq("user_id", effectiveUserId);
     if (data) {
       const map: Record<string, string> = {};
       const dates: Record<string, string> = {};
@@ -73,32 +81,33 @@ const ProcedurePreferences = () => {
       setPreferences(map);
       setUpdatedDates(dates);
     }
-  }, [procedureId, user]);
+  }, [procedureId, effectiveUserId]);
 
   const fetchFileCounts = useCallback(async () => {
-    if (!procedureId || !user) return;
+    if (!procedureId || !effectiveUserId) return;
     const { data } = await supabase
       .from("procedure_files")
       .select("category")
       .eq("procedure_id", procedureId)
-      .eq("user_id", user.id);
+      .eq("user_id", effectiveUserId);
     if (data) {
       const counts: Record<string, number> = {};
       data.forEach((d: any) => { counts[d.category] = (counts[d.category] || 0) + 1; });
       setFileCounts(counts);
     }
-  }, [procedureId, user]);
+  }, [procedureId, effectiveUserId]);
 
   const fetchProviderName = useCallback(async () => {
-    if (!user) return;
+    const targetId = effectiveUserId || user?.id;
+    if (!targetId) return;
     const { data } = await supabase
       .from("profiles")
       .select("display_name, avatar_url")
-      .eq("user_id", user.id)
+      .eq("user_id", targetId)
       .single();
     if (data?.display_name) setProviderName(data.display_name);
     if (data?.avatar_url) setProviderAvatar(data.avatar_url);
-  }, [user]);
+  }, [effectiveUserId, user]);
 
   useEffect(() => {
     fetchProcedure();
@@ -108,27 +117,25 @@ const ProcedurePreferences = () => {
   }, [fetchProcedure, fetchPreferences, fetchFileCounts, fetchProviderName]);
 
   const handleSave = async (category: string, value: string) => {
-    if (!procedureId || !user) return;
+    if (!procedureId || !user || !effectiveUserId) return;
     setSaving(true);
     
     const trimmed = value.trim();
     
     if (!trimmed) {
-      // Delete if empty
       await supabase
         .from("procedure_preferences")
         .delete()
         .eq("procedure_id", procedureId)
         .eq("category", category)
-        .eq("user_id", user.id);
+        .eq("user_id", effectiveUserId);
     } else {
-      // Upsert
       const { error } = await supabase
         .from("procedure_preferences")
         .upsert(
           {
             procedure_id: procedureId,
-            user_id: user.id,
+            user_id: effectiveUserId,
             category,
             value: trimmed,
             updated_at: new Date().toISOString(),
@@ -162,8 +169,10 @@ const ProcedurePreferences = () => {
     }
   };
 
+  const canManageCard = isOwner || isIndividual;
+
   const toggleComplete = async () => {
-    if (!procedureId || !user || !isOwner) return;
+    if (!procedureId || !user || !canManageCard || !effectiveUserId) return;
     setTogglingComplete(true);
     const newVal = !isComplete;
     const { error } = await supabase
@@ -174,7 +183,7 @@ const ProcedurePreferences = () => {
         completed_by: newVal ? user.id : null,
       })
       .eq("id", procedureId)
-      .eq("user_id", user.id);
+      .eq("user_id", effectiveUserId);
     if (!error) {
       setIsComplete(newVal);
       toast({ title: newVal ? "Card marked complete" : "Card marked incomplete" });
@@ -258,16 +267,16 @@ const ProcedurePreferences = () => {
         {/* Complete status */}
         {isComplete && (
           <div
-            onClick={isOwner ? toggleComplete : undefined}
-            className={`flex items-center justify-center gap-2 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-2.5 ${isOwner ? "cursor-pointer hover:bg-green-500/20 transition-colors" : ""}`}
+            onClick={canManageCard ? toggleComplete : undefined}
+            className={`flex items-center justify-center gap-2 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-2.5 ${canManageCard ? "cursor-pointer hover:bg-green-500/20 transition-colors" : ""}`}
           >
             <CheckCircle2 size={16} className="text-green-400" />
             <span className="text-xs font-medium text-green-400">Card Complete</span>
-            {isOwner && <span className="text-[10px] text-green-400/60 ml-1">(click to undo)</span>}
+            {canManageCard && <span className="text-[10px] text-green-400/60 ml-1">(click to undo)</span>}
           </div>
         )}
 
-        {isOwner && !isComplete && (
+        {canManageCard && !isComplete && (
           <button
             onClick={toggleComplete}
             disabled={togglingComplete}

@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import NavHeader from "@/components/NavHeader";
+import AddProcedureDialog from "@/components/AddProcedureDialog";
 
 interface DoctorProfile {
   user_id: string;
@@ -72,8 +73,12 @@ const DoctorWorkspace = () => {
   const [roboticProcIds, setRoboticProcIds] = useState<Set<string>>(new Set());
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
+  const accountType = user?.user_metadata?.account_type;
+  const isIndividual = accountType === "individual" || (!profile?.facility_id && !accountType);
   const isDoctor = profile?.role === "doctor" || profile?.role === "surgeon";
-  const canAdd = isDoctor && user?.id === userId;
+  const canAdd = (isDoctor && user?.id === userId) || isIndividual;
+  const [facilityId, setFacilityId] = useState<string | null>(null);
+  const [facilities, setFacilities] = useState<{ id: string; name: string }[]>([]);
 
   const fetchData = useCallback(async () => {
     if (!userId || !user) return;
@@ -89,6 +94,25 @@ const DoctorWorkspace = () => {
       if (fac) {
         setFacilityName(fac.name || "");
         setFacilityLocation(fac.location || "");
+      }
+      // Get facility_id for adding procedures
+      const fId = (profileRes.data as any).facility_id;
+      if (fId) setFacilityId(fId);
+    }
+
+    // For individual users, fetch facilities linked to this doctor
+    if (isIndividual && userId) {
+      const { data: docFacs } = await supabase
+        .from("doctor_facilities")
+        .select("facility_id, facilities(id, name)")
+        .eq("user_id", userId);
+      if (docFacs) {
+        const facs = docFacs.map((df: any) => ({
+          id: df.facility_id,
+          name: df.facilities?.name || "Unknown",
+        }));
+        setFacilities(facs);
+        if (facs.length > 0 && !facilityId) setFacilityId(facs[0].id);
       }
     }
 
@@ -230,7 +254,16 @@ const DoctorWorkspace = () => {
             <Stethoscope size={16} className="text-primary" />
             <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Procedures</h2>
           </div>
-          {canAdd && (
+          {canAdd && isIndividual && (
+            <AddProcedureDialog
+              facilities={facilities}
+              onAdded={fetchData}
+              preselectedFacilityId={facilityId || undefined}
+              forUserId={userId}
+              defaultSpecialty={doctor?.specialty || undefined}
+            />
+          )}
+          {canAdd && !isIndividual && (
             <Button
               size="sm"
               className="gap-1.5 rounded-full text-xs"
@@ -271,7 +304,7 @@ const DoctorWorkspace = () => {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.03 }}
-                  onClick={() => navigate(`/doctor/${userId}/procedure/${proc.id}`)}
+                  onClick={() => navigate(isIndividual ? `/procedure/${proc.id}/preferences` : `/doctor/${userId}/procedure/${proc.id}`)}
                   className="group relative flex flex-col rounded-2xl bg-card border border-border overflow-hidden hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 cursor-pointer transition-all"
                 >
                   {/* Favorite button */}

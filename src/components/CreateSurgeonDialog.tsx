@@ -24,9 +24,10 @@ const SPECIALTIES = [
 
 interface CreateSurgeonDialogProps {
   onCreated: () => void;
+  facilityId?: string;
 }
 
-const CreateSurgeonDialog = ({ onCreated }: CreateSurgeonDialogProps) => {
+const CreateSurgeonDialog = ({ onCreated, facilityId }: CreateSurgeonDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -80,6 +81,7 @@ const CreateSurgeonDialog = ({ onCreated }: CreateSurgeonDialogProps) => {
           email: form.email.trim(),
           phone: form.phone.trim(),
           password: form.password,
+          facility_id: facilityId || undefined,
         },
       });
 

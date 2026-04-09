@@ -19,7 +19,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Verify the caller is an admin
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -35,24 +34,29 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check admin role
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
-    const { data: roleData } = await adminClient
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", caller.id)
-      .eq("role", "admin")
-      .maybeSingle();
 
-    if (!roleData) {
-      return new Response(JSON.stringify({ error: "Admin access required" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Allow admins OR individual account types
+    const isIndividual = caller.user_metadata?.account_type === "individual";
+
+    if (!isIndividual) {
+      const { data: roleData } = await adminClient
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", caller.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (!roleData) {
+        return new Response(JSON.stringify({ error: "Admin or Individual account access required" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     const body = await req.json();
-    const { first_name, last_name, credentials, specialty, email, phone, avatar_url, password } = body;
+    const { first_name, last_name, credentials, specialty, email, phone, avatar_url, password, facility_id } = body;
 
     if (!first_name || !last_name || !email || !password) {
       return new Response(JSON.stringify({ error: "First name, last name, email, and password are required" }), {
@@ -102,6 +106,19 @@ Deno.serve(async (req) => {
 
     if (profileError) {
       console.error("Profile update error:", profileError);
+    }
+
+    // If facility_id provided, link the doctor to the facility
+    if (facility_id) {
+      const { error: linkError } = await adminClient
+        .from("doctor_facilities")
+        .insert({
+          user_id: newUser.user.id,
+          facility_id: facility_id,
+        });
+      if (linkError) {
+        console.error("Facility link error:", linkError);
+      }
     }
 
     return new Response(
