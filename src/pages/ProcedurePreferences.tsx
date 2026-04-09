@@ -267,16 +267,16 @@ const ProcedurePreferences = () => {
         {/* Complete status */}
         {isComplete && (
           <div
-            onClick={isOwner ? toggleComplete : undefined}
-            className={`flex items-center justify-center gap-2 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-2.5 ${isOwner ? "cursor-pointer hover:bg-green-500/20 transition-colors" : ""}`}
+            onClick={canManageCard ? toggleComplete : undefined}
+            className={`flex items-center justify-center gap-2 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-2.5 ${canManageCard ? "cursor-pointer hover:bg-green-500/20 transition-colors" : ""}`}
           >
             <CheckCircle2 size={16} className="text-green-400" />
             <span className="text-xs font-medium text-green-400">Card Complete</span>
-            {isOwner && <span className="text-[10px] text-green-400/60 ml-1">(click to undo)</span>}
+            {canManageCard && <span className="text-[10px] text-green-400/60 ml-1">(click to undo)</span>}
           </div>
         )}
 
-        {isOwner && !isComplete && (
+        {canManageCard && !isComplete && (
           <button
             onClick={toggleComplete}
             disabled={togglingComplete}
