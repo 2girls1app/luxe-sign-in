@@ -113,7 +113,7 @@ const AdminDoctors = () => {
             >
               <Avatar className="h-10 w-10 border border-border">
                 {d.avatar_url ? <AvatarImage src={d.avatar_url} /> : null}
-                <AvatarFallback className="bg-secondary text-foreground text-sm">{(d.display_name || "D").charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarFallback className="bg-primary/15 text-primary text-sm font-semibold">{(d.display_name || "?").split(" ").map(n => n.charAt(0).toUpperCase()).slice(0, 2).join("")}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">{d.display_name}</p>
