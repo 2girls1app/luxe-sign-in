@@ -117,27 +117,25 @@ const ProcedurePreferences = () => {
   }, [fetchProcedure, fetchPreferences, fetchFileCounts, fetchProviderName]);
 
   const handleSave = async (category: string, value: string) => {
-    if (!procedureId || !user) return;
+    if (!procedureId || !user || !effectiveUserId) return;
     setSaving(true);
     
     const trimmed = value.trim();
     
     if (!trimmed) {
-      // Delete if empty
       await supabase
         .from("procedure_preferences")
         .delete()
         .eq("procedure_id", procedureId)
         .eq("category", category)
-        .eq("user_id", user.id);
+        .eq("user_id", effectiveUserId);
     } else {
-      // Upsert
       const { error } = await supabase
         .from("procedure_preferences")
         .upsert(
           {
             procedure_id: procedureId,
-            user_id: user.id,
+            user_id: effectiveUserId,
             category,
             value: trimmed,
             updated_at: new Date().toISOString(),
