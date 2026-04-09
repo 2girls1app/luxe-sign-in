@@ -201,6 +201,7 @@ const ClinicalDashboard = () => {
               <AddFacilityDialog
                 onAdded={fetchFacilities}
                 existingFacilityIds={facilities.map((f) => f.id)}
+                isIndividual={isIndividual}
               />
             )}
           </div>
