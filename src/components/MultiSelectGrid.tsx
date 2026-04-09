@@ -68,7 +68,7 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
     if (existing) {
       updateItems(items.filter((i) => i.name !== name));
     } else {
-      updateItems([...items, { name, qty: 1, hold: false, holdQty: 1 }]);
+      updateItems([...items, { name, qty: 1, hold: false, holdQty: 1, notes: "" }]);
     }
   };
 
