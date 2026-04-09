@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, MapPin, Search, Plus, Stethoscope, User, Bot,
@@ -62,6 +62,8 @@ function getIconForProcedure(name: string, category: string | null): React.Eleme
 const DoctorWorkspace = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const shouldAutoOpenProcedure = searchParams.get("addProcedure") === "true";
   const { user, profile } = useAuth();
   const { toast } = useToast();
 
@@ -261,6 +263,7 @@ const DoctorWorkspace = () => {
               preselectedFacilityId={facilityId || undefined}
               forUserId={userId}
               defaultSpecialty={doctor?.specialty || undefined}
+              autoOpen={shouldAutoOpenProcedure}
             />
           )}
           {canAdd && !isIndividual && (
