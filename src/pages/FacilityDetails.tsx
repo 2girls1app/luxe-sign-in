@@ -57,7 +57,9 @@ const FacilityDetails = () => {
       .select("user_id")
       .eq("facility_id", facilityId);
     if (!links || links.length === 0) { setDoctors([]); return; }
-    const userIds = links.map(l => l.user_id);
+    // Exclude the logged-in user from the doctors list
+    const userIds = links.map(l => l.user_id).filter(id => id !== user?.id);
+    if (userIds.length === 0) { setDoctors([]); return; }
     const { data } = await supabase
       .from("profiles")
       .select("user_id, display_name, avatar_url, specialty")
