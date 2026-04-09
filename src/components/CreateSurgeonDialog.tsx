@@ -124,9 +124,10 @@ const CreateSurgeonDialog = ({ onCreated, facilityId, isIndividual = false }: Cr
 
   const handleAddProcedures = () => {
     if (successState) {
+      const specialty = form.specialty;
       resetForm();
       setOpen(false);
-      navigate(`/doctor/${successState.userId}`);
+      navigate(`/doctor/${successState.userId}?addProcedure=true${specialty ? `&specialty=${encodeURIComponent(specialty)}` : ''}`);
     }
   };
 

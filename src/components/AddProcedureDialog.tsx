@@ -111,9 +111,18 @@ const ProcedureNameAutocomplete = ({
   );
 };
 
-const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, triggerVariant = "default", forUserId, defaultSpecialty }: AddProcedureDialogProps) => {
+const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, triggerVariant = "default", forUserId, defaultSpecialty, autoOpen = false }: AddProcedureDialogProps) => {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<DialogMode>("choose");
+  const [autoOpened, setAutoOpened] = useState(false);
+
+  useEffect(() => {
+    if (autoOpen && !autoOpened) {
+      setOpen(true);
+      setMode("new");
+      setAutoOpened(true);
+    }
+  }, [autoOpen, autoOpened]);
   const [name, setName] = useState("");
   const [facilityId, setFacilityId] = useState<string>("");
   const [category, setCategory] = useState<string>("");
