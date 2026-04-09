@@ -21,8 +21,15 @@ import TeamChatDrawer from "@/components/TeamChatDrawer";
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
+
+  // Track procedure owner for individual users editing doctor's procedures
+  const [ownerId, setOwnerId] = useState<string | null>(null);
+  const accountType = user?.user_metadata?.account_type;
+  const isIndividual = accountType === "individual" || (!profile?.facility_id && !accountType);
+  // effectiveUserId: for individual users editing another user's procedure, use the owner's id
+  const effectiveUserId = (isIndividual && ownerId && ownerId !== user?.id) ? ownerId : user?.id;
 
   const [procedureName, setProcedureName] = useState("");
   const [preferences, setPreferences] = useState<Record<string, string>>({});
