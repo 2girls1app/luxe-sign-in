@@ -81,6 +81,7 @@ const DoctorWorkspace = () => {
   const canAdd = (isDoctor && user?.id === userId) || isIndividual;
   const [facilityId, setFacilityId] = useState<string | null>(null);
   const [facilities, setFacilities] = useState<{ id: string; name: string }[]>([]);
+  const [facilitiesLoaded, setFacilitiesLoaded] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!userId || !user) return;
