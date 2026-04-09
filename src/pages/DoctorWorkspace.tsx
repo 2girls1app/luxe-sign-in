@@ -399,6 +399,17 @@ const DoctorWorkspace = () => {
           </div>
         )}
       </motion.div>
+
+      {/* Upload / AI Import drawer */}
+      {isIndividual && (
+        <UploadPreferenceCardDrawer
+          open={uploadDrawerOpen}
+          onOpenChange={setUploadDrawerOpen}
+          facilities={facilities}
+          onComplete={fetchData}
+          forUserId={userId}
+        />
+      )}
     </div>
   );
 };
