@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, MapPin, Search, Plus, Stethoscope, User, Bot,
+  ArrowLeft, MapPin, Search, Plus, Stethoscope, User, Bot, Upload,
   Heart, Activity, Brain, Bone, Eye, Baby, Scissors, HandMetal, Ear,
   Waypoints, Shield, Flame, Zap, Ribbon, Footprints, Syringe, Cross,
   Building2, CheckCircle2,
