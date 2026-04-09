@@ -263,6 +263,7 @@ const DoctorWorkspace = () => {
               preselectedFacilityId={facilityId || undefined}
               forUserId={userId}
               defaultSpecialty={doctor?.specialty || undefined}
+              autoOpen={shouldAutoOpenProcedure}
             />
           )}
           {canAdd && !isIndividual && (
