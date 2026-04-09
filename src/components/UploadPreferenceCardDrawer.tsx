@@ -117,7 +117,7 @@ const UploadPreferenceCardDrawer = ({
     try {
       // Upload file to storage
       const ext = file.name.split(".").pop() || "jpg";
-      const path = `${targetUserId}/preference-card-uploads/${crypto.randomUUID()}.${ext}`;
+      const path = `${user.id}/preference-card-uploads/${crypto.randomUUID()}.${ext}`;
       setProgress(20);
 
       const { error: uploadError } = await supabase.storage
