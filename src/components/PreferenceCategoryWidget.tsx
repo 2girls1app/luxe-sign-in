@@ -124,22 +124,9 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
       onClick={onClick}
       className="relative flex flex-col items-center justify-center gap-2.5 rounded-2xl bg-card border border-border p-4 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-0.5 transition-all duration-200 active:scale-95 aspect-square"
     >
-      {hasValue && !canShowAdd && (
+      {hasValue && (
         <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-md shadow-primary/30">
           <Check size={12} className="text-primary-foreground" />
-        </span>
-      )}
-
-      {canShowAdd && (
-        <span className="absolute top-2 right-2 flex items-center gap-0.5 rounded-full bg-primary/15 border border-primary/30 px-1.5 py-0.5">
-          <Plus size={10} className="text-primary" />
-          <span className="text-[8px] font-semibold text-primary">Add</span>
-        </span>
-      )}
-
-      {hasValue && canShowAdd && (
-        <span className="absolute top-2 left-2 w-4 h-4 rounded-full bg-primary flex items-center justify-center shadow-sm shadow-primary/30">
-          <Check size={10} className="text-primary-foreground" />
         </span>
       )}
 
@@ -168,6 +155,13 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
           {previewText}
         </span>
       </div>
+
+      {canShowAdd && (
+        <span className="flex items-center gap-0.5 rounded-full bg-primary/15 border border-primary/30 px-2 py-0.5 mt-auto">
+          <Plus size={10} className="text-primary" />
+          <span className="text-[9px] font-semibold text-primary">Add</span>
+        </span>
+      )}
     </motion.button>
   );
 };
