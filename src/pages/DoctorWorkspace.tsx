@@ -200,9 +200,30 @@ const DoctorWorkspace = () => {
     }
   };
 
+  const deleteProcedure = async () => {
+    if (!deleteTarget || !user) return;
+    const id = deleteTarget.id;
+
+    // Delete related data first, then the procedure
+    await Promise.all([
+      supabase.from("procedure_preferences").delete().eq("procedure_id", id),
+      supabase.from("procedure_files").delete().eq("procedure_id", id),
+      supabase.from("procedure_favorites").delete().eq("procedure_id", id),
+      supabase.from("pending_preference_changes").delete().eq("procedure_id", id),
+    ]);
+
+    const { error } = await supabase.from("procedures").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Error", description: "Failed to delete procedure.", variant: "destructive" });
+    } else {
+      toast({ title: "Procedure deleted", description: `"${deleteTarget.name}" has been removed.` });
+      setProcedures(prev => prev.filter(p => p.id !== id));
+    }
+    setDeleteTarget(null);
+  };
+
   const filtered = procedures.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    // Filter by doctor's specialty if set
     const matchesSpecialty = !doctor?.specialty || !p.category || p.category === doctor.specialty;
     return matchesSearch && matchesSpecialty;
   });
