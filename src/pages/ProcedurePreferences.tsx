@@ -68,12 +68,12 @@ const ProcedurePreferences = () => {
   }, [procedureId, user, navigate]);
 
   const fetchPreferences = useCallback(async () => {
-    if (!procedureId || !user) return;
+    if (!procedureId || !effectiveUserId) return;
     const { data } = await supabase
       .from("procedure_preferences")
       .select("category, value, updated_at")
       .eq("procedure_id", procedureId)
-      .eq("user_id", user.id);
+      .eq("user_id", effectiveUserId);
     if (data) {
       const map: Record<string, string> = {};
       const dates: Record<string, string> = {};
@@ -81,32 +81,33 @@ const ProcedurePreferences = () => {
       setPreferences(map);
       setUpdatedDates(dates);
     }
-  }, [procedureId, user]);
+  }, [procedureId, effectiveUserId]);
 
   const fetchFileCounts = useCallback(async () => {
-    if (!procedureId || !user) return;
+    if (!procedureId || !effectiveUserId) return;
     const { data } = await supabase
       .from("procedure_files")
       .select("category")
       .eq("procedure_id", procedureId)
-      .eq("user_id", user.id);
+      .eq("user_id", effectiveUserId);
     if (data) {
       const counts: Record<string, number> = {};
       data.forEach((d: any) => { counts[d.category] = (counts[d.category] || 0) + 1; });
       setFileCounts(counts);
     }
-  }, [procedureId, user]);
+  }, [procedureId, effectiveUserId]);
 
   const fetchProviderName = useCallback(async () => {
-    if (!user) return;
+    const targetId = effectiveUserId || user?.id;
+    if (!targetId) return;
     const { data } = await supabase
       .from("profiles")
       .select("display_name, avatar_url")
-      .eq("user_id", user.id)
+      .eq("user_id", targetId)
       .single();
     if (data?.display_name) setProviderName(data.display_name);
     if (data?.avatar_url) setProviderAvatar(data.avatar_url);
-  }, [user]);
+  }, [effectiveUserId, user]);
 
   useEffect(() => {
     fetchProcedure();
