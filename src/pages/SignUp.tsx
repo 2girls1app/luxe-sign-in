@@ -17,13 +17,16 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [facilityCode, setFacilityCode] = useState("");
   const [captcha, setCaptcha] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
+  const [requestingAccess, setRequestingAccess] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const profession = (location.state as any)?.profession || "";
+  const accountType = (location.state as any)?.accountType || "individual";
   const { user: authUser, profile, loading: authLoading } = useAuth();
 
   useEffect(() => {
@@ -34,6 +37,10 @@ const SignUp = () => {
 
   const handleSubmit = async () => {
     if (!firstName || !lastName || !email || !password || password !== confirmPassword || !captcha) return;
+    if (accountType === "facility" && !facilityCode && !requestingAccess) {
+      toast({ title: "Facility code required", description: "Enter a facility code or request access.", variant: "destructive" });
+      return;
+    }
     const fullName = `${firstName} ${lastName}`;
     setSigningUp(true);
     const { error } = await supabase.auth.signUp({
@@ -45,6 +52,9 @@ const SignUp = () => {
           first_name: firstName,
           last_name: lastName,
           profession: profession,
+          account_type: accountType,
+          facility_code: accountType === "facility" ? facilityCode : undefined,
+          access_requested: accountType === "facility" && requestingAccess ? true : undefined,
         },
       },
     });
@@ -52,7 +62,11 @@ const SignUp = () => {
     if (error) {
       toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Check your email", description: "We sent you a confirmation link." });
+      if (requestingAccess) {
+        toast({ title: "Request submitted", description: "Your access request has been sent to the facility admin." });
+      } else {
+        toast({ title: "Check your email", description: "We sent you a confirmation link." });
+      }
       navigate("/profile-picture");
     }
   };
