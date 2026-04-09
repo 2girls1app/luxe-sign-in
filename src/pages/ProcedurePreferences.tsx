@@ -51,6 +51,8 @@ const ProcedurePreferences = () => {
   const [isComplete, setIsComplete] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [togglingComplete, setTogglingComplete] = useState(false);
+  const [musicOpen, setMusicOpen] = useState(false);
+  const [musicCount, setMusicCount] = useState(0);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
