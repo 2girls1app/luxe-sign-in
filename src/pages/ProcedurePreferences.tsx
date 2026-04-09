@@ -421,6 +421,12 @@ const ProcedurePreferences = () => {
         procedureId={procedureId || ""}
         procedureName={procedureName}
       />
+
+      <MusicPreferencesDrawer
+        open={musicOpen}
+        onOpenChange={(open) => { setMusicOpen(open); if (!open) fetchMusicCount(); }}
+        doctorUserId={effectiveUserId}
+      />
     </div>
   );
 };
