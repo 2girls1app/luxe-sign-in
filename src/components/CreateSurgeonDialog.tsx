@@ -24,9 +24,10 @@ const SPECIALTIES = [
 
 interface CreateSurgeonDialogProps {
   onCreated: () => void;
+  facilityId?: string;
 }
 
-const CreateSurgeonDialog = ({ onCreated }: CreateSurgeonDialogProps) => {
+const CreateSurgeonDialog = ({ onCreated, facilityId }: CreateSurgeonDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
