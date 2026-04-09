@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, MapPin, Search, Plus, Stethoscope, User, Bot,
+  ArrowLeft, MapPin, Search, Plus, Stethoscope, User, Bot, Upload,
   Heart, Activity, Brain, Bone, Eye, Baby, Scissors, HandMetal, Ear,
   Waypoints, Shield, Flame, Zap, Ribbon, Footprints, Syringe, Cross,
   Building2, CheckCircle2,
@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import NavHeader from "@/components/NavHeader";
 import AddProcedureDialog from "@/components/AddProcedureDialog";
+import UploadPreferenceCardDrawer from "@/components/UploadPreferenceCardDrawer";
 
 interface DoctorProfile {
   user_id: string;
@@ -82,6 +83,7 @@ const DoctorWorkspace = () => {
   const [facilityId, setFacilityId] = useState<string | null>(null);
   const [facilities, setFacilities] = useState<{ id: string; name: string }[]>([]);
   const [facilitiesLoaded, setFacilitiesLoaded] = useState(false);
+  const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!userId || !user) return;
@@ -263,14 +265,25 @@ const DoctorWorkspace = () => {
             <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Procedures</h2>
           </div>
           {canAdd && isIndividual && (
-            <AddProcedureDialog
-              facilities={facilities}
-              onAdded={fetchData}
-              preselectedFacilityId={facilityId || undefined}
-              forUserId={userId}
-              defaultSpecialty={doctor?.specialty || undefined}
-              autoOpen={shouldAutoOpenProcedure && facilitiesLoaded && !!facilityId}
-            />
+            <div className="flex items-center gap-2">
+              <AddProcedureDialog
+                facilities={facilities}
+                onAdded={fetchData}
+                preselectedFacilityId={facilityId || undefined}
+                forUserId={userId}
+                defaultSpecialty={doctor?.specialty || undefined}
+                autoOpen={shouldAutoOpenProcedure && facilitiesLoaded && !!facilityId}
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 rounded-full text-xs border-primary/30 hover:border-primary/60"
+                onClick={() => setUploadDrawerOpen(true)}
+              >
+                <Upload size={14} />
+                Upload
+              </Button>
+            </div>
           )}
           {canAdd && !isIndividual && (
             <Button
@@ -386,6 +399,17 @@ const DoctorWorkspace = () => {
           </div>
         )}
       </motion.div>
+
+      {/* Upload / AI Import drawer */}
+      {isIndividual && (
+        <UploadPreferenceCardDrawer
+          open={uploadDrawerOpen}
+          onOpenChange={setUploadDrawerOpen}
+          facilities={facilities}
+          onComplete={fetchData}
+          forUserId={userId}
+        />
+      )}
     </div>
   );
 };
