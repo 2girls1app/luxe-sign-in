@@ -136,12 +136,12 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
   const { toast } = useToast();
 
   useEffect(() => {
-    if (open) {
+    if (open && !autoOpened) {
       setMode("choose");
       if (preselectedFacilityId) setFacilityId(preselectedFacilityId);
       if (defaultSpecialty) setCategory(defaultSpecialty);
     }
-  }, [open, preselectedFacilityId, defaultSpecialty]);
+  }, [open, preselectedFacilityId, defaultSpecialty, autoOpened]);
 
   const resetForm = () => {
     setName(""); setFacilityId(preselectedFacilityId || ""); setCategory(defaultSpecialty || ""); setNotes(""); setFacilityError(false); setExistingSearch("");
