@@ -498,30 +498,11 @@ const PreferenceSummaryDrawer = ({
               { key: "steps", label: "Procedure Steps" },
             ].map((section) => {
               const val = preferences[section.key];
-              const displayVal = val && val.trim() ? getDisplayValue(section.key, val) : null;
-
-              // For complete cards, show only selected items as read-only tags
-              if (isComplete && displayVal) {
-                const items = displayVal.split("\n").filter(Boolean);
-                return (
-                  <div key={section.key} className="border-b border-gray-200 py-2.5">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-black">{section.label}</p>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {items.map((item, i) => (
-                        <span key={i} className="inline-block bg-gray-100 border border-gray-300 rounded-full px-2 py-0.5 text-[10px] font-medium text-gray-700">
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                );
-              }
-
               return (
                 <div key={section.key} className="border-b border-gray-200 py-2.5">
                   <p className="text-[11px] font-bold uppercase tracking-wide text-black">{section.label}</p>
-                  {displayVal ? (
-                    <p className="text-sm text-gray-800 whitespace-pre-wrap mt-0.5">{displayVal}</p>
+                  {val && val.trim() ? (
+                    <p className="text-sm text-gray-800 whitespace-pre-wrap mt-0.5">{getDisplayValue(section.key, val)}</p>
                   ) : (
                     <p className="text-sm text-gray-400 italic mt-0.5">Not specified</p>
                   )}
