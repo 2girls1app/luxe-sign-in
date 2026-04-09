@@ -46,6 +46,7 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/select-account-type" element={<SelectAccountType />} />
               <Route path="/select-profession" element={<SelectProfession />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/profile-picture" element={<ProfilePicture />} />
