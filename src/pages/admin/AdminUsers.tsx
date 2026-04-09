@@ -183,7 +183,7 @@ const AdminUsers = () => {
               onClick={() => navigate(`/admin/users/${u.user_id}`)}>
               <Avatar className="h-10 w-10 border border-border shrink-0">
                 {u.avatar_url ? <AvatarImage src={u.avatar_url} /> : null}
-                <AvatarFallback className="bg-secondary text-foreground text-sm">{(u.display_name || "U").charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarFallback className="bg-primary/15 text-primary text-sm font-semibold">{(u.display_name || "?").split(" ").map(n => n.charAt(0).toUpperCase()).slice(0, 2).join("")}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">{u.display_name || "Unnamed"}</p>

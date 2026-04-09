@@ -220,8 +220,8 @@ const ProcedurePreferences = () => {
             </button>
             <Avatar className="h-9 w-9 shrink-0 border border-border">
               <AvatarImage src={providerAvatar} alt={providerName} />
-              <AvatarFallback className="bg-card text-muted-foreground">
-                <User size={16} />
+              <AvatarFallback className="bg-primary/15 text-primary text-sm font-semibold">
+                {(providerName || "?").split(" ").map(n => n.charAt(0).toUpperCase()).slice(0, 2).join("")}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">

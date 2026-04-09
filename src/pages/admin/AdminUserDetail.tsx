@@ -85,8 +85,8 @@ const AdminUserDetail = () => {
           <div className="rounded-xl bg-card border border-border p-4 flex items-center gap-4">
             <Avatar className="h-12 w-12 border border-border">
               {profile.avatar_url ? <AvatarImage src={profile.avatar_url} /> : null}
-              <AvatarFallback className="bg-secondary text-foreground">
-                {(profile.display_name || "U").charAt(0).toUpperCase()}
+              <AvatarFallback className="bg-primary/15 text-primary text-sm font-semibold">
+                {(profile.display_name || "?").split(" ").map(n => n.charAt(0).toUpperCase()).slice(0, 2).join("")}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">

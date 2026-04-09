@@ -226,8 +226,8 @@ const DoctorWorkspace = () => {
           </button>
           <Avatar className="h-12 w-12 border-2 border-primary/30 shrink-0">
             {doctor.avatar_url ? <AvatarImage src={doctor.avatar_url} alt={doctor.display_name || ""} /> : null}
-            <AvatarFallback className="bg-primary/10 text-primary text-base font-semibold">
-              {(doctor.display_name || "D").charAt(0).toUpperCase()}
+            <AvatarFallback className="bg-primary/15 text-primary text-base font-semibold">
+              {(doctor.display_name || "?").split(" ").map(n => n.charAt(0).toUpperCase()).slice(0, 2).join("")}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
