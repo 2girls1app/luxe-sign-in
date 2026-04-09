@@ -39,7 +39,23 @@ Deno.serve(async (req) => {
     // Allow admins OR individual account types
     const isIndividual = caller.user_metadata?.account_type === "individual";
 
-    if (!isIndividual) {
+    let authorized = isIndividual;
+
+    if (!authorized) {
+      // Check if user has no facility (treat as individual)
+      const { data: profileData } = await adminClient
+        .from("profiles")
+        .select("facility_id")
+        .eq("user_id", caller.id)
+        .maybeSingle();
+
+      if (profileData && !profileData.facility_id) {
+        authorized = true;
+      }
+    }
+
+    if (!authorized) {
+      // Check admin role
       const { data: roleData } = await adminClient
         .from("user_roles")
         .select("role")
@@ -47,12 +63,16 @@ Deno.serve(async (req) => {
         .eq("role", "admin")
         .maybeSingle();
 
-      if (!roleData) {
-        return new Response(JSON.stringify({ error: "Admin or Individual account access required" }), {
-          status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      if (roleData) {
+        authorized = true;
       }
+    }
+
+    if (!authorized) {
+      return new Response(JSON.stringify({ error: "Admin or Individual account access required" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const body = await req.json();
