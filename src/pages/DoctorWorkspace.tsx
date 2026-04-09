@@ -254,7 +254,16 @@ const DoctorWorkspace = () => {
             <Stethoscope size={16} className="text-primary" />
             <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Procedures</h2>
           </div>
-          {canAdd && (
+          {canAdd && isIndividual && (
+            <AddProcedureDialog
+              facilities={facilities}
+              onAdded={fetchData}
+              preselectedFacilityId={facilityId || undefined}
+              forUserId={userId}
+              defaultSpecialty={doctor?.specialty || undefined}
+            />
+          )}
+          {canAdd && !isIndividual && (
             <Button
               size="sm"
               className="gap-1.5 rounded-full text-xs"
