@@ -16,13 +16,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import NavHeader from "@/components/NavHeader";
 import AddProcedureDialog from "@/components/AddProcedureDialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import NavHeader from "@/components/NavHeader";
 
 interface DoctorProfile {
   user_id: string;
