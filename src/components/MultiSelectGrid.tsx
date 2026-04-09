@@ -95,7 +95,7 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
       setShowInput(false);
       return;
     }
-    updateItems([...items, { name: trimmed, qty: 1, hold: false, holdQty: 1 }]);
+    updateItems([...items, { name: trimmed, qty: 1, hold: false, holdQty: 1, notes: "" }]);
     setCustomName("");
     setShowInput(false);
   };
