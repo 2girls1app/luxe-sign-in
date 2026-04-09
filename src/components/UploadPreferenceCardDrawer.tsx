@@ -190,11 +190,13 @@ const UploadPreferenceCardDrawer = ({
 
     try {
       // Create the procedure
+      // Use the authenticated user's ID for inserts to satisfy RLS policies
+      const insertUserId = user.id;
       const { data: proc, error: procError } = await supabase
         .from("procedures")
         .insert({
           name: procedureName.trim(),
-          user_id: targetUserId,
+          user_id: insertUserId,
           facility_id: selectedFacility || null,
           notes: `Auto-generated from uploaded preference card: ${fileName}`,
         })
