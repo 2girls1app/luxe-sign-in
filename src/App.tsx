@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index.tsx";
 import SignUp from "./pages/SignUp.tsx";
 import SelectProfession from "./pages/SelectProfession.tsx";
+import SelectAccountType from "./pages/SelectAccountType.tsx";
 import ProfilePicture from "./pages/ProfilePicture.tsx";
 import ClinicalDashboard from "./pages/ClinicalDashboard.tsx";
 import Profile from "./pages/Profile.tsx";
@@ -45,6 +46,7 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/select-account-type" element={<SelectAccountType />} />
               <Route path="/select-profession" element={<SelectProfession />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/profile-picture" element={<ProfilePicture />} />

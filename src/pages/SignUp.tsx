@@ -17,13 +17,16 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [facilityCode, setFacilityCode] = useState("");
   const [captcha, setCaptcha] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
+  const [requestingAccess, setRequestingAccess] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const profession = (location.state as any)?.profession || "";
+  const accountType = (location.state as any)?.accountType || "individual";
   const { user: authUser, profile, loading: authLoading } = useAuth();
 
   useEffect(() => {
@@ -34,6 +37,10 @@ const SignUp = () => {
 
   const handleSubmit = async () => {
     if (!firstName || !lastName || !email || !password || password !== confirmPassword || !captcha) return;
+    if (accountType === "facility" && !facilityCode && !requestingAccess) {
+      toast({ title: "Facility code required", description: "Enter a facility code or request access.", variant: "destructive" });
+      return;
+    }
     const fullName = `${firstName} ${lastName}`;
     setSigningUp(true);
     const { error } = await supabase.auth.signUp({
@@ -45,6 +52,9 @@ const SignUp = () => {
           first_name: firstName,
           last_name: lastName,
           profession: profession,
+          account_type: accountType,
+          facility_code: accountType === "facility" ? facilityCode : undefined,
+          access_requested: accountType === "facility" && requestingAccess ? true : undefined,
         },
       },
     });
@@ -52,7 +62,11 @@ const SignUp = () => {
     if (error) {
       toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Check your email", description: "We sent you a confirmation link." });
+      if (requestingAccess) {
+        toast({ title: "Request submitted", description: "Your access request has been sent to the facility admin." });
+      } else {
+        toast({ title: "Check your email", description: "We sent you a confirmation link." });
+      }
       navigate("/profile-picture");
     }
   };
@@ -100,11 +114,18 @@ const SignUp = () => {
           <h2 className="text-2xl font-bold tracking-wide text-foreground">
             Create Account
           </h2>
-          {profession && (
-            <span className="text-sm font-light text-muted-foreground capitalize">
-              {profession.replace("-", " ")}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {profession && (
+              <span className="text-sm font-light text-muted-foreground capitalize">
+                {profession.replace("-", " ")}
+              </span>
+            )}
+            {accountType && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-primary/15 border border-primary/30 text-primary font-medium capitalize">
+                {accountType}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="w-full flex flex-col gap-4">
@@ -114,6 +135,36 @@ const SignUp = () => {
           <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} className="focus:ring-ring" />
           <PasswordInput value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm Password" className="focus:ring-ring" />
           <input type="tel" placeholder="Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
+
+          {accountType === "facility" && (
+            <div className="w-full flex flex-col gap-3 rounded-lg border border-border bg-secondary/50 p-4">
+              <p className="text-xs text-muted-foreground font-medium">Facility Connection</p>
+              <input
+                type="text"
+                placeholder="Enter Facility Code"
+                value={facilityCode}
+                onChange={(e) => { setFacilityCode(e.target.value); setRequestingAccess(false); }}
+                disabled={requestingAccess}
+                className={`${inputClass} ${requestingAccess ? "opacity-50" : ""}`}
+              />
+              <div className="flex items-center gap-2">
+                <div className="flex-1 border-t border-border" />
+                <span className="text-xs text-muted-foreground">or</span>
+                <div className="flex-1 border-t border-border" />
+              </div>
+              <button
+                type="button"
+                onClick={() => { setRequestingAccess(!requestingAccess); setFacilityCode(""); }}
+                className={`w-full rounded-lg border px-4 py-2.5 text-xs font-semibold transition-all ${
+                  requestingAccess
+                    ? "border-primary bg-primary/15 text-primary"
+                    : "border-border bg-card text-muted-foreground hover:border-primary hover:text-primary"
+                }`}
+              >
+                {requestingAccess ? "✓ Access Request Will Be Sent" : "Request Access to Facility"}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* CAPTCHA checkbox */}

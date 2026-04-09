@@ -173,7 +173,7 @@ const Index = () => {
 
         <p className="text-sm text-muted-foreground">
           Do not have an account,{" "}
-          <Link to="/select-profession" className="text-primary hover:text-gold-light underline">
+          <Link to="/select-account-type" className="text-primary hover:text-gold-light underline">
             Sign Up Here
           </Link>
         </p>
