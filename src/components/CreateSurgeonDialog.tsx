@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { UserPlus, Eye, EyeOff, Mail, Info } from "lucide-react";
+import { UserPlus, Eye, EyeOff, Mail, Info, CheckCircle2, ClipboardList, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -32,7 +33,9 @@ interface CreateSurgeonDialogProps {
 const CreateSurgeonDialog = ({ onCreated, facilityId, isIndividual = false }: CreateSurgeonDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [successState, setSuccessState] = useState<{ userId: string; name: string } | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [form, setForm] = useState({
@@ -54,6 +57,7 @@ const CreateSurgeonDialog = ({ onCreated, facilityId, isIndividual = false }: Cr
     setForm({ first_name: "", last_name: "", credentials: "", specialty: "", email: "", phone: "", password: "", confirm_password: "", notes: "" });
     setShowPassword(false);
     setShowConfirm(false);
+    setSuccessState(null);
   };
 
   const handleIndividualSubmit = async () => {
@@ -97,29 +101,42 @@ const CreateSurgeonDialog = ({ onCreated, facilityId, isIndividual = false }: Cr
             },
           });
         } catch (emailErr) {
-          // Don't block the flow if email fails
           console.warn("Invitation email could not be sent:", emailErr);
         }
-
-        toast({
-          title: "Doctor added and invitation sent",
-          description: `${form.first_name} ${form.last_name} has been added and an invite was sent to ${form.email}`,
-        });
-      } else {
-        toast({
-          title: "Doctor added successfully",
-          description: `${form.first_name} ${form.last_name} has been added to your workspace`,
-        });
       }
 
-      resetForm();
-      setOpen(false);
+      const doctorName = form.credentials.trim()
+        ? `${form.first_name.trim()} ${form.last_name.trim()}, ${form.credentials.trim()}`
+        : `${form.first_name.trim()} ${form.last_name.trim()}`;
+
+      setSuccessState({
+        userId: res.data.user_id,
+        name: doctorName,
+      });
+
       onCreated();
     } catch (err: any) {
       toast({ title: "Error adding doctor", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddProcedures = () => {
+    if (successState) {
+      resetForm();
+      setOpen(false);
+      navigate(`/doctor/${successState.userId}`);
+    }
+  };
+
+  const handleMaybeLater = () => {
+    toast({
+      title: "Doctor added successfully",
+      description: `${successState?.name} has been added to your workspace`,
+    });
+    resetForm();
+    setOpen(false);
   };
 
   const handleFacilitySubmit = async () => {
@@ -182,125 +199,165 @@ const CreateSurgeonDialog = ({ onCreated, facilityId, isIndividual = false }: Cr
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-card border-border text-foreground max-w-sm max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{isIndividual ? "Add Doctor" : "Create Surgeon Profile"}</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col gap-3 mt-2">
-          <div>
-            <Label className="text-xs text-muted-foreground">First Name *</Label>
-            <Input placeholder="First name" value={form.first_name} onChange={e => update("first_name", e.target.value)} className="bg-secondary border-border mt-1" />
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Last Name *</Label>
-            <Input placeholder="Last name" value={form.last_name} onChange={e => update("last_name", e.target.value)} className="bg-secondary border-border mt-1" />
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Credentials</Label>
-            <Input placeholder="e.g. MD, DO, FACS" value={form.credentials} onChange={e => update("credentials", e.target.value)} className="bg-secondary border-border mt-1" />
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Specialty</Label>
-            <Select value={form.specialty} onValueChange={v => update("specialty", v)}>
-              <SelectTrigger className="bg-secondary border-border mt-1"><SelectValue placeholder="Select specialty" /></SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                {SPECIALTIES.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">
-              Email {isIndividual ? "(optional)" : "*"}
-            </Label>
-            <Input type="email" placeholder="surgeon@example.com" value={form.email} onChange={e => update("email", e.target.value)} className="bg-secondary border-border mt-1" />
-            {isIndividual && (
-              <div className="flex items-start gap-1.5 mt-1.5">
-                <Mail size={12} className="text-primary mt-0.5 shrink-0" />
-                <p className="text-[10px] text-muted-foreground leading-tight">
-                  Adding an email will send the doctor an invite to view preference cards or join the app.
-                </p>
-              </div>
-            )}
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Phone Number</Label>
-            <Input type="tel" placeholder="(555) 123-4567" value={form.phone} onChange={e => update("phone", e.target.value)} className="bg-secondary border-border mt-1" />
-          </div>
-
-          {isIndividual && (
-            <div>
-              <Label className="text-xs text-muted-foreground">Notes</Label>
-              <Textarea
-                placeholder="Optional notes about this doctor"
-                value={form.notes}
-                onChange={e => update("notes", e.target.value)}
-                className="bg-secondary border-border mt-1 min-h-[60px] resize-none"
-              />
+        {isIndividual && successState ? (
+          <div className="flex flex-col items-center gap-5 py-4">
+            <div className="w-16 h-16 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+              <CheckCircle2 size={32} className="text-green-500" />
             </div>
-          )}
-
-          {!isIndividual && (
-            <div className="border-t border-border pt-3 mt-1">
-              <p className="text-xs font-medium text-foreground mb-2">Account Credentials</p>
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-xs text-muted-foreground">Password *</Label>
-                  <div className="relative mt-1">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Minimum 8 characters"
-                      value={form.password}
-                      onChange={e => update("password", e.target.value)}
-                      className="bg-secondary border-border pr-10"
-                    />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Confirm Password *</Label>
-                  <div className="relative mt-1">
-                    <Input
-                      type={showConfirm ? "text" : "password"}
-                      placeholder="Re-enter password"
-                      value={form.confirm_password}
-                      onChange={e => update("confirm_password", e.target.value)}
-                      className={`bg-secondary border-border pr-10 ${form.confirm_password && form.confirm_password !== form.password ? "border-destructive" : ""}`}
-                    />
-                    <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                      {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                  {form.confirm_password && form.confirm_password !== form.password && (
-                    <p className="text-[10px] text-destructive mt-1">Passwords do not match</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {isIndividual && (
-            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
-              <Info size={14} className="text-primary mt-0.5 shrink-0" />
-              <p className="text-[10px] text-muted-foreground leading-tight">
-                This doctor will be added to your personal workspace immediately. No approval required.
+            <div className="text-center space-y-1.5">
+              <h3 className="text-lg font-semibold text-foreground">Doctor Added</h3>
+              <p className="text-sm text-muted-foreground">
+                <span className="text-foreground font-medium">{successState.name}</span> has been added to your workspace.
               </p>
             </div>
-          )}
-        </div>
-        <DialogFooter className="mt-2">
-          {isIndividual ? (
-            <Button onClick={handleSubmit} disabled={loading || !form.first_name.trim() || !form.last_name.trim()} className="w-full gap-2">
-              <UserPlus size={14} />
-              {loading ? "Adding..." : "Add Doctor"}
-            </Button>
-          ) : (
-            <Button onClick={handleSubmit} disabled={loading || !form.password || form.password !== form.confirm_password} className="w-full gap-2">
-              <UserPlus size={14} />
-              {loading ? "Creating..." : "Create Surgeon"}
-            </Button>
-          )}
-        </DialogFooter>
+
+            <div className="w-full rounded-xl bg-primary/5 border border-primary/15 p-4">
+              <p className="text-xs text-muted-foreground leading-relaxed text-center">
+                Would you like to add procedures for this doctor now?
+              </p>
+            </div>
+
+            <div className="w-full flex flex-col gap-2.5">
+              <Button
+                onClick={handleAddProcedures}
+                className="w-full gap-2 rounded-xl py-3"
+              >
+                <ClipboardList size={16} />
+                Add Procedures
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleMaybeLater}
+                className="w-full gap-2 rounded-xl py-3 border-border text-muted-foreground hover:text-foreground"
+              >
+                <Clock size={16} />
+                Maybe Later
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>{isIndividual ? "Add Doctor" : "Create Surgeon Profile"}</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 mt-2">
+              <div>
+                <Label className="text-xs text-muted-foreground">First Name *</Label>
+                <Input placeholder="First name" value={form.first_name} onChange={e => update("first_name", e.target.value)} className="bg-secondary border-border mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Last Name *</Label>
+                <Input placeholder="Last name" value={form.last_name} onChange={e => update("last_name", e.target.value)} className="bg-secondary border-border mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Credentials</Label>
+                <Input placeholder="e.g. MD, DO, FACS" value={form.credentials} onChange={e => update("credentials", e.target.value)} className="bg-secondary border-border mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Specialty</Label>
+                <Select value={form.specialty} onValueChange={v => update("specialty", v)}>
+                  <SelectTrigger className="bg-secondary border-border mt-1"><SelectValue placeholder="Select specialty" /></SelectTrigger>
+                  <SelectContent className="bg-card border-border">
+                    {SPECIALTIES.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">
+                  Email {isIndividual ? "(optional)" : "*"}
+                </Label>
+                <Input type="email" placeholder="surgeon@example.com" value={form.email} onChange={e => update("email", e.target.value)} className="bg-secondary border-border mt-1" />
+                {isIndividual && (
+                  <div className="flex items-start gap-1.5 mt-1.5">
+                    <Mail size={12} className="text-primary mt-0.5 shrink-0" />
+                    <p className="text-[10px] text-muted-foreground leading-tight">
+                      Adding an email will send the doctor an invite to view preference cards or join the app.
+                    </p>
+                  </div>
+                )}
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Phone Number</Label>
+                <Input type="tel" placeholder="(555) 123-4567" value={form.phone} onChange={e => update("phone", e.target.value)} className="bg-secondary border-border mt-1" />
+              </div>
+
+              {isIndividual && (
+                <div>
+                  <Label className="text-xs text-muted-foreground">Notes</Label>
+                  <Textarea
+                    placeholder="Optional notes about this doctor"
+                    value={form.notes}
+                    onChange={e => update("notes", e.target.value)}
+                    className="bg-secondary border-border mt-1 min-h-[60px] resize-none"
+                  />
+                </div>
+              )}
+
+              {!isIndividual && (
+                <div className="border-t border-border pt-3 mt-1">
+                  <p className="text-xs font-medium text-foreground mb-2">Account Credentials</p>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Password *</Label>
+                      <div className="relative mt-1">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Minimum 8 characters"
+                          value={form.password}
+                          onChange={e => update("password", e.target.value)}
+                          className="bg-secondary border-border pr-10"
+                        />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Confirm Password *</Label>
+                      <div className="relative mt-1">
+                        <Input
+                          type={showConfirm ? "text" : "password"}
+                          placeholder="Re-enter password"
+                          value={form.confirm_password}
+                          onChange={e => update("confirm_password", e.target.value)}
+                          className={`bg-secondary border-border pr-10 ${form.confirm_password && form.confirm_password !== form.password ? "border-destructive" : ""}`}
+                        />
+                        <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                          {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                      {form.confirm_password && form.confirm_password !== form.password && (
+                        <p className="text-[10px] text-destructive mt-1">Passwords do not match</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {isIndividual && (
+                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+                  <Info size={14} className="text-primary mt-0.5 shrink-0" />
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    This doctor will be added to your personal workspace immediately. No approval required.
+                  </p>
+                </div>
+              )}
+            </div>
+            <DialogFooter className="mt-2">
+              {isIndividual ? (
+                <Button onClick={handleSubmit} disabled={loading || !form.first_name.trim() || !form.last_name.trim()} className="w-full gap-2">
+                  <UserPlus size={14} />
+                  {loading ? "Adding..." : "Add Doctor"}
+                </Button>
+              ) : (
+                <Button onClick={handleSubmit} disabled={loading || !form.password || form.password !== form.confirm_password} className="w-full gap-2">
+                  <UserPlus size={14} />
+                  {loading ? "Creating..." : "Create Surgeon"}
+                </Button>
+              )}
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
