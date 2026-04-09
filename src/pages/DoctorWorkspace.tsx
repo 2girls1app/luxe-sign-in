@@ -119,6 +119,9 @@ const DoctorWorkspace = () => {
         setFacilities(facs);
         if (facs.length > 0 && !facilityId) setFacilityId(facs[0].id);
       }
+      setFacilitiesLoaded(true);
+    } else {
+      setFacilitiesLoaded(true);
     }
 
     if (procsRes.data) {
