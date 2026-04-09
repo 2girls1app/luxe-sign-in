@@ -73,8 +73,12 @@ const DoctorWorkspace = () => {
   const [roboticProcIds, setRoboticProcIds] = useState<Set<string>>(new Set());
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
+  const accountType = user?.user_metadata?.account_type;
+  const isIndividual = accountType === "individual" || (!profile?.facility_id && !accountType);
   const isDoctor = profile?.role === "doctor" || profile?.role === "surgeon";
-  const canAdd = isDoctor && user?.id === userId;
+  const canAdd = (isDoctor && user?.id === userId) || isIndividual;
+  const [facilityId, setFacilityId] = useState<string | null>(null);
+  const [facilities, setFacilities] = useState<{ id: string; name: string }[]>([]);
 
   const fetchData = useCallback(async () => {
     if (!userId || !user) return;
