@@ -370,6 +370,17 @@ const DoctorWorkspace = () => {
                     />
                   </button>
 
+                  {/* Delete button (Individual users) */}
+                  {isIndividual && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: proc.id, name: proc.name }); }}
+                      className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-background/80 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
+                      aria-label="Delete procedure"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+
                   {/* Robotic indicator */}
                   {hasRobotic && (
                     <TooltipProvider>
