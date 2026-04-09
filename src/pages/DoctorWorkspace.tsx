@@ -304,7 +304,7 @@ const DoctorWorkspace = () => {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.03 }}
-                  onClick={() => navigate(`/doctor/${userId}/procedure/${proc.id}`)}
+                  onClick={() => navigate(isIndividual ? `/procedure/${proc.id}/preferences` : `/doctor/${userId}/procedure/${proc.id}`)}
                   className="group relative flex flex-col rounded-2xl bg-card border border-border overflow-hidden hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 cursor-pointer transition-all"
                 >
                   {/* Favorite button */}
