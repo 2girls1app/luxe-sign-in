@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
 import { useAuth } from "@/contexts/AuthContext";
 import physicianImg from "@/assets/physician.png";
@@ -22,6 +22,8 @@ const professions = [
 const SelectProfession = () => {
   const [selected, setSelected] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const accountType = (location.state as any)?.accountType || "individual";
   const { user, profile, loading } = useAuth();
 
   useEffect(() => {
@@ -32,7 +34,7 @@ const SelectProfession = () => {
 
   const handleSubmit = () => {
     if (selected) {
-      navigate("/signup", { state: { profession: selected } });
+      navigate("/signup", { state: { profession: selected, accountType } });
     }
   };
 
