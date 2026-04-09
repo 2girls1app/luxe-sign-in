@@ -84,6 +84,10 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
     updateItems(items.map((i) => i.name === name ? { ...i, holdQty: Math.max(1, (i.holdQty ?? 1) + delta) } : i));
   };
 
+  const updateNotes = (name: string, notes: string) => {
+    updateItems(items.map((i) => i.name === name ? { ...i, notes } : i));
+  };
+
   const addCustomItem = () => {
     const trimmed = customName.trim();
     if (!trimmed || selectedNames.includes(trimmed)) {
