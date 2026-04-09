@@ -233,8 +233,6 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
             </button>
           )}
         </div>
-      )}
-      </div>
     </div>
   );
 };
