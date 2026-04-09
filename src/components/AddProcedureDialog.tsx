@@ -48,6 +48,7 @@ interface AddProcedureDialogProps {
   triggerVariant?: "default" | "prominent";
   forUserId?: string;
   defaultSpecialty?: string;
+  autoOpen?: boolean;
 }
 
 type DialogMode = "choose" | "new" | "existing";
