@@ -81,6 +81,7 @@ const DoctorWorkspace = () => {
   const canAdd = (isDoctor && user?.id === userId) || isIndividual;
   const [facilityId, setFacilityId] = useState<string | null>(null);
   const [facilities, setFacilities] = useState<{ id: string; name: string }[]>([]);
+  const [facilitiesLoaded, setFacilitiesLoaded] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!userId || !user) return;
@@ -118,6 +119,9 @@ const DoctorWorkspace = () => {
         setFacilities(facs);
         if (facs.length > 0 && !facilityId) setFacilityId(facs[0].id);
       }
+      setFacilitiesLoaded(true);
+    } else {
+      setFacilitiesLoaded(true);
     }
 
     if (procsRes.data) {
@@ -265,7 +269,7 @@ const DoctorWorkspace = () => {
               preselectedFacilityId={facilityId || undefined}
               forUserId={userId}
               defaultSpecialty={doctor?.specialty || undefined}
-              autoOpen={shouldAutoOpenProcedure}
+              autoOpen={shouldAutoOpenProcedure && facilitiesLoaded && !!facilityId}
             />
           )}
           {canAdd && !isIndividual && (
