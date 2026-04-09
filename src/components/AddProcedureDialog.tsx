@@ -1,32 +1,13 @@
-import { useState, useEffect, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useState, useEffect, useRef, forwardRef } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, FilePlus, Copy, ArrowLeft, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { getProceduresBySpecialty } from "@/data/specialtyProcedures";
-
-const SURGERY_SPECIALTIES = [
-  "General Surgery",
-  "Orthopedic Surgery",
-  "Neurosurgery",
-  "ENT",
-  "Cardiothoracic Surgery",
-  "Plastic Surgery",
-  "OB/GYN",
-  "Urology",
-  "Vascular Surgery",
-  "Pediatric Surgery",
-  "Trauma Surgery",
-  "Bariatric Surgery",
-  "Ophthalmology",
-  "Podiatry",
-  "Oncologic Surgery",
-];
 
 interface Facility {
   id: string;
@@ -53,79 +34,88 @@ interface AddProcedureDialogProps {
 
 type DialogMode = "choose" | "new" | "existing";
 
-/** Autocomplete input for procedure names filtered by specialty */
-const ProcedureNameAutocomplete = ({
-  value,
-  onChange,
-  specialty,
-}: {
+interface ProcedureNameAutocompleteProps {
   value: string;
   onChange: (v: string) => void;
   specialty?: string;
-}) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const suggestions = getProceduresBySpecialty(specialty);
-  const filtered = value.trim()
-    ? suggestions.filter((s) => s.toLowerCase().includes(value.toLowerCase()))
-    : suggestions;
+}
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+const ProcedureNameAutocomplete = forwardRef<HTMLDivElement, ProcedureNameAutocompleteProps>(
+  ({ value, onChange, specialty }, forwardedRef) => {
+    const [open, setOpen] = useState(false);
+    const localRef = useRef<HTMLDivElement | null>(null);
+    const suggestions = getProceduresBySpecialty(specialty);
+    const filtered = value.trim()
+      ? suggestions.filter((s) => s.toLowerCase().includes(value.toLowerCase()))
+      : suggestions;
+
+    useEffect(() => {
+      const handler = (e: MouseEvent) => {
+        if (localRef.current && !localRef.current.contains(e.target as Node)) setOpen(false);
+      };
+      document.addEventListener("mousedown", handler);
+      return () => document.removeEventListener("mousedown", handler);
+    }, []);
+
+    const setRefs = (node: HTMLDivElement | null) => {
+      localRef.current = node;
+      if (typeof forwardedRef === "function") {
+        forwardedRef(node);
+      } else if (forwardedRef) {
+        forwardedRef.current = node;
+      }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
-  return (
-    <div className="relative" ref={ref}>
-      <Input
-        placeholder="Procedure name *"
-        value={value}
-        onChange={(e) => {
-          onChange(e.target.value);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(true)}
-        className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
-      />
-      {open && filtered.length > 0 && (
-        <div className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-lg border border-border bg-card shadow-lg">
-          {filtered.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => {
-                onChange(s);
-                setOpen(false);
-              }}
-              className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-primary/10 transition-colors"
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
+    return (
+      <div className="relative" ref={setRefs}>
+        <Input
+          placeholder="Procedure name *"
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+        />
+        {open && filtered.length > 0 && (
+          <div className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-border bg-card shadow-lg">
+            {filtered.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => {
+                  onChange(s);
+                  setOpen(false);
+                }}
+                className="w-full px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-primary/10"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+ProcedureNameAutocomplete.displayName = "ProcedureNameAutocomplete";
 
-const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, triggerVariant = "default", forUserId, defaultSpecialty, autoOpen = false }: AddProcedureDialogProps) => {
+const AddProcedureDialog = ({
+  facilities,
+  onAdded,
+  preselectedFacilityId,
+  triggerVariant = "default",
+  forUserId,
+  defaultSpecialty,
+  autoOpen = false,
+}: AddProcedureDialogProps) => {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<DialogMode>("choose");
   const [autoOpened, setAutoOpened] = useState(false);
-
-  useEffect(() => {
-    if (autoOpen && !autoOpened) {
-      setOpen(true);
-      setMode("new");
-      setAutoOpened(true);
-    }
-  }, [autoOpen, autoOpened]);
   const [name, setName] = useState("");
-  const [facilityId, setFacilityId] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
+  const [facilityId, setFacilityId] = useState<string>(preselectedFacilityId || "");
+  const [category, setCategory] = useState<string>(defaultSpecialty || "");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [facilityError, setFacilityError] = useState(false);
@@ -136,6 +126,25 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
   const { toast } = useToast();
 
   useEffect(() => {
+    if (autoOpen && !autoOpened) {
+      setOpen(true);
+      setMode("new");
+      setAutoOpened(true);
+    }
+  }, [autoOpen, autoOpened]);
+
+  useEffect(() => {
+    if (preselectedFacilityId) {
+      setFacilityId(preselectedFacilityId);
+      return;
+    }
+
+    if (!facilityId && facilities.length > 0) {
+      setFacilityId(facilities[0].id);
+    }
+  }, [preselectedFacilityId, facilities, facilityId]);
+
+  useEffect(() => {
     if (open && !autoOpened) {
       setMode("choose");
       if (preselectedFacilityId) setFacilityId(preselectedFacilityId);
@@ -143,8 +152,15 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
     }
   }, [open, preselectedFacilityId, defaultSpecialty, autoOpened]);
 
+  const getEffectiveFacilityId = () => preselectedFacilityId || facilityId || facilities[0]?.id || null;
+
   const resetForm = () => {
-    setName(""); setFacilityId(preselectedFacilityId || ""); setCategory(defaultSpecialty || ""); setNotes(""); setFacilityError(false); setExistingSearch("");
+    setName("");
+    setFacilityId(preselectedFacilityId || facilities[0]?.id || "");
+    setCategory(defaultSpecialty || "");
+    setNotes("");
+    setFacilityError(false);
+    setExistingSearch("");
   };
 
   const fetchExistingProcedures = async () => {
@@ -159,15 +175,28 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
 
   const handleSubmit = async () => {
     if (!name.trim() || !user) return;
+
+    const effectiveFacilityId = getEffectiveFacilityId();
+    if (forUserId && !effectiveFacilityId) {
+      setFacilityError(true);
+      toast({
+        title: "Doctor needs a facility link",
+        description: "Link this doctor to one of your facilities before adding a procedure.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     const { error } = await supabase.from("procedures").insert({
       user_id: forUserId || user.id,
       name: name.trim(),
-      category: defaultSpecialty || null,
-      facility_id: preselectedFacilityId || null,
+      category: defaultSpecialty || category || null,
+      facility_id: effectiveFacilityId,
       notes: notes.trim() || null,
     });
     setLoading(false);
+
     if (error) {
       toast({ title: "Error adding procedure", description: error.message, variant: "destructive" });
     } else {
@@ -180,21 +209,30 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
 
   const handleCloneFromExisting = async (source: ExistingProcedure) => {
     if (!user) return;
-    const targetFacility = preselectedFacilityId || source.facility_id;
+
+    const targetFacility = getEffectiveFacilityId() || source.facility_id;
     if (!targetFacility) {
-      toast({ title: "No facility available", description: "Please select a facility first.", variant: "destructive" });
+      setFacilityError(true);
+      toast({
+        title: "Doctor needs a facility link",
+        description: "Link this doctor to one of your facilities before creating a procedure card.",
+        variant: "destructive",
+      });
       return;
     }
-    setLoading(true);
 
-    // Create new procedure
-    const { data: newProc, error: procError } = await supabase.from("procedures").insert({
-      user_id: forUserId || user.id,
-      name: source.name,
-      category: source.category || defaultSpecialty || null,
-      facility_id: targetFacility,
-      notes: source.notes,
-    }).select("id").single();
+    setLoading(true);
+    const { data: newProc, error: procError } = await supabase
+      .from("procedures")
+      .insert({
+        user_id: forUserId || user.id,
+        name: source.name,
+        category: source.category || defaultSpecialty || category || null,
+        facility_id: targetFacility,
+        notes: source.notes,
+      })
+      .select("id")
+      .single();
 
     if (procError || !newProc) {
       toast({ title: "Error creating procedure", description: procError?.message, variant: "destructive" });
@@ -202,14 +240,13 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
       return;
     }
 
-    // Copy preferences from source
     const { data: prefs } = await supabase
       .from("procedure_preferences")
       .select("category, value")
       .eq("procedure_id", source.id);
 
     if (prefs && prefs.length > 0) {
-      const newPrefs = prefs.map(p => ({
+      const newPrefs = prefs.map((p) => ({
         procedure_id: newProc.id,
         user_id: forUserId || user.id,
         category: p.category,
@@ -225,13 +262,14 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
     onAdded();
   };
 
-  const filteredExisting = existingProcedures.filter(p =>
-    p.name.toLowerCase().includes(existingSearch.toLowerCase()) ||
-    (p.category || "").toLowerCase().includes(existingSearch.toLowerCase())
+  const filteredExisting = existingProcedures.filter(
+    (p) =>
+      p.name.toLowerCase().includes(existingSearch.toLowerCase()) ||
+      (p.category || "").toLowerCase().includes(existingSearch.toLowerCase()),
   );
 
   const triggerButton = triggerVariant === "prominent" ? (
-    <Button className="w-full gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 py-3">
+    <Button className="w-full gap-2 rounded-xl bg-primary py-3 text-primary-foreground hover:bg-primary/90">
       <Plus size={18} /> Add Procedure
     </Button>
   ) : (
@@ -241,27 +279,43 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
   );
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setFacilityError(false); setMode("choose"); } }}>
-      <DialogTrigger asChild>
-        {triggerButton}
-      </DialogTrigger>
-      <DialogContent className="bg-card border-border text-foreground max-w-sm">
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (!v) {
+          setFacilityError(false);
+          setMode("choose");
+        }
+      }}
+    >
+      <DialogTrigger asChild>{triggerButton}</DialogTrigger>
+      <DialogContent className="max-w-sm border-border bg-card text-foreground">
         <DialogHeader>
-          <DialogTitle className="text-foreground flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-foreground">
             {mode !== "choose" && (
-              <button onClick={() => { setMode("choose"); resetForm(); }} className="text-muted-foreground hover:text-foreground transition-colors">
+              <button
+                onClick={() => {
+                  setMode("choose");
+                  resetForm();
+                }}
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
                 <ArrowLeft size={18} />
               </button>
             )}
             {mode === "choose" ? "Add Procedure" : mode === "new" ? "New Procedure" : "Create from Existing"}
           </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Add a procedure card for this doctor using specialty-matched suggestions.
+          </DialogDescription>
         </DialogHeader>
 
         {mode === "choose" && (
-          <div className="flex flex-col gap-3 mt-2">
+          <div className="mt-2 flex flex-col gap-3">
             <button
               onClick={() => setMode("new")}
-              className="flex items-center gap-4 rounded-xl border border-border bg-secondary p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all text-left"
+              className="flex items-center gap-4 rounded-xl border border-border bg-secondary p-4 text-left transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                 <FilePlus size={20} className="text-primary" />
@@ -272,8 +326,11 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
               </div>
             </button>
             <button
-              onClick={() => { setMode("existing"); fetchExistingProcedures(); }}
-              className="flex items-center gap-4 rounded-xl border border-border bg-secondary p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all text-left"
+              onClick={() => {
+                setMode("existing");
+                fetchExistingProcedures();
+              }}
+              className="flex items-center gap-4 rounded-xl border border-border bg-secondary p-4 text-left transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                 <Copy size={20} className="text-primary" />
@@ -287,18 +344,25 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
         )}
 
         {mode === "new" && (
-          <div className="flex flex-col gap-3 mt-2">
-            <ProcedureNameAutocomplete
-              value={name}
-              onChange={setName}
-              specialty={defaultSpecialty}
-            />
-            {defaultSpecialty && (
-              <div className="bg-secondary border border-border rounded-md px-3 py-2 text-sm text-muted-foreground">
-                Specialty: <span className="text-foreground font-medium">{defaultSpecialty}</span>
+          <div className="mt-2 flex flex-col gap-3">
+            <ProcedureNameAutocomplete value={name} onChange={setName} specialty={defaultSpecialty || category} />
+            {(defaultSpecialty || category) && (
+              <div className="rounded-md border border-border bg-secondary px-3 py-2 text-sm text-muted-foreground">
+                Specialty: <span className="font-medium text-foreground">{defaultSpecialty || category}</span>
               </div>
             )}
-            <Textarea placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} className="bg-secondary border-border text-foreground placeholder:text-muted-foreground resize-none" rows={3} />
+            {facilityError && (
+              <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                This doctor must be linked to one of your facilities before a procedure can be created.
+              </div>
+            )}
+            <Textarea
+              placeholder="Notes (optional)"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="resize-none border-border bg-secondary text-foreground placeholder:text-muted-foreground"
+              rows={3}
+            />
             <Button onClick={handleSubmit} disabled={!name.trim() || loading} className="rounded-full">
               {loading ? "Adding..." : "Save Procedure"}
             </Button>
@@ -306,28 +370,28 @@ const AddProcedureDialog = ({ facilities, onAdded, preselectedFacilityId, trigge
         )}
 
         {mode === "existing" && (
-          <div className="flex flex-col gap-3 mt-2">
+          <div className="mt-2 flex flex-col gap-3">
             <div className="relative">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search existing procedures..."
                 value={existingSearch}
                 onChange={(e) => setExistingSearch(e.target.value)}
-                className="bg-secondary border-border text-foreground placeholder:text-muted-foreground pl-9"
+                className="border-border bg-secondary pl-9 text-foreground placeholder:text-muted-foreground"
               />
             </div>
-            <div className="max-h-64 overflow-y-auto space-y-2">
+            <div className="max-h-64 space-y-2 overflow-y-auto">
               {loadingExisting ? (
-                <p className="text-sm text-muted-foreground text-center py-6">Loading...</p>
+                <p className="py-6 text-center text-sm text-muted-foreground">Loading...</p>
               ) : filteredExisting.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-6">No existing procedures found</p>
+                <p className="py-6 text-center text-sm text-muted-foreground">No existing procedures found</p>
               ) : (
-                filteredExisting.map(p => (
+                filteredExisting.map((p) => (
                   <button
                     key={p.id}
                     onClick={() => handleCloneFromExisting(p)}
                     disabled={loading}
-                    className="w-full flex flex-col gap-0.5 rounded-lg border border-border bg-secondary p-3 hover:border-primary/50 hover:shadow-md transition-all text-left disabled:opacity-50"
+                    className="flex w-full flex-col gap-0.5 rounded-lg border border-border bg-secondary p-3 text-left transition-all hover:border-primary/50 hover:shadow-md disabled:opacity-50"
                   >
                     <p className="text-sm font-medium text-foreground">{p.name}</p>
                     {p.category && <p className="text-xs text-primary">{p.category}</p>}
