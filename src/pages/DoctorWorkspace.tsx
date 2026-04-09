@@ -5,7 +5,7 @@ import {
   ArrowLeft, MapPin, Search, Plus, Stethoscope, User, Bot, Upload, Trash2,
   Heart, Activity, Brain, Bone, Eye, Baby, Scissors, HandMetal, Ear,
   Waypoints, Shield, Flame, Zap, Ribbon, Footprints, Syringe, Cross,
-  Building2, CheckCircle2,
+  Building2, CheckCircle2, Music,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import NavHeader from "@/components/NavHeader";
 import AddProcedureDialog from "@/components/AddProcedureDialog";
 import UploadPreferenceCardDrawer from "@/components/UploadPreferenceCardDrawer";
+import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -89,6 +90,8 @@ const DoctorWorkspace = () => {
   const [facilitiesLoaded, setFacilitiesLoaded] = useState(false);
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [musicOpen, setMusicOpen] = useState(false);
+  const [musicCount, setMusicCount] = useState(0);
 
   const fetchData = useCallback(async () => {
     if (!userId || !user) return;
