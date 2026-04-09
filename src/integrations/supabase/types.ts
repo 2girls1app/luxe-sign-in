@@ -741,6 +741,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_facility_linked_user: {
+        Args: { _facility_id: string; _viewer_id: string }
+        Returns: boolean
+      }
+      is_facility_owner: {
+        Args: { _facility_id: string; _viewer_id: string }
+        Returns: boolean
+      }
       is_linked_doctor: {
         Args: { _doctor_user_id: string; _viewer_id: string }
         Returns: boolean
