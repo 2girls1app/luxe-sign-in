@@ -95,6 +95,25 @@ const DoctorWorkspace = () => {
         setFacilityName(fac.name || "");
         setFacilityLocation(fac.location || "");
       }
+      // Get facility_id for adding procedures
+      const fId = (profileRes.data as any).facility_id;
+      if (fId) setFacilityId(fId);
+    }
+
+    // For individual users, fetch facilities linked to this doctor
+    if (isIndividual && userId) {
+      const { data: docFacs } = await supabase
+        .from("doctor_facilities")
+        .select("facility_id, facilities(id, name)")
+        .eq("user_id", userId);
+      if (docFacs) {
+        const facs = docFacs.map((df: any) => ({
+          id: df.facility_id,
+          name: df.facilities?.name || "Unknown",
+        }));
+        setFacilities(facs);
+        if (facs.length > 0 && !facilityId) setFacilityId(facs[0].id);
+      }
     }
 
     if (procsRes.data) {
