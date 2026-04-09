@@ -62,6 +62,8 @@ function getIconForProcedure(name: string, category: string | null): React.Eleme
 const DoctorWorkspace = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const shouldAutoOpenProcedure = searchParams.get("addProcedure") === "true";
   const { user, profile } = useAuth();
   const { toast } = useToast();
 
