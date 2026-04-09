@@ -21,6 +21,7 @@ interface MultiSelectGridProps {
   onChange: (value: string) => void;
   addLabel?: string;
   supportsHold?: boolean;
+  hideInternalAdd?: boolean;
 }
 
 const parseItems = (value: string): ItemData[] => {
@@ -42,7 +43,7 @@ const serializeItems = (items: ItemData[]): string => {
   return JSON.stringify(items);
 };
 
-const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false }: MultiSelectGridProps) => {
+const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false, hideInternalAdd = false }: MultiSelectGridProps) => {
   const items = parseItems(value);
   const selectedNames = items.map((i) => i.name);
   const [showInput, setShowInput] = useState(false);
@@ -200,36 +201,39 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
           ))}
       </div>
 
-      {/* Add custom item */}
-      <div className="mt-3">
-        {showInput ? (
-          <div className="flex items-center gap-2 rounded-xl border border-primary/50 bg-secondary p-3">
-            <input
-              ref={inputRef}
-              type="text"
-              value={customName}
-              onChange={(e) => setCustomName(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type custom item name..."
-              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
-            />
-            <button type="button" onClick={addCustomItem} disabled={!customName.trim()} className="p-1.5 rounded-lg bg-primary text-primary-foreground disabled:opacity-40 transition-opacity">
-              <Plus size={14} />
+      {/* Add custom item - only when not externally managed */}
+      {!hideInternalAdd && (
+        <div className="mt-3">
+          {showInput ? (
+            <div className="flex items-center gap-2 rounded-xl border border-primary/50 bg-secondary p-3">
+              <input
+                ref={inputRef}
+                type="text"
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Type custom item name..."
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+              />
+              <button type="button" onClick={addCustomItem} disabled={!customName.trim()} className="p-1.5 rounded-lg bg-primary text-primary-foreground disabled:opacity-40 transition-opacity">
+                <Plus size={14} />
+              </button>
+              <button type="button" onClick={() => { setShowInput(false); setCustomName(""); }} className="p-1.5 rounded-lg hover:bg-card text-muted-foreground transition-colors">
+                <X size={14} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowInput(true)}
+              className="flex items-center gap-2 w-full rounded-xl border border-dashed border-border hover:border-primary/50 p-3 text-sm text-muted-foreground hover:text-primary transition-all"
+            >
+              <Plus size={16} />
+              {addLabel}
             </button>
-            <button type="button" onClick={() => { setShowInput(false); setCustomName(""); }} className="p-1.5 rounded-lg hover:bg-card text-muted-foreground transition-colors">
-              <X size={14} />
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setShowInput(true)}
-            className="flex items-center gap-2 w-full rounded-xl border border-dashed border-border hover:border-primary/50 p-3 text-sm text-muted-foreground hover:text-primary transition-all"
-          >
-            <Plus size={16} />
-            {addLabel}
-          </button>
-        )}
+          )}
+        </div>
+      )}
       </div>
     </div>
   );
