@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, Plus } from "lucide-react";
+import { Check } from "lucide-react";
 import {
   Pill, Hand, RotateCcw, Droplets, Wrench, Scissors, LayoutGrid, Package, Ribbon,
   Image, Video, FileText, ListOrdered, Bot,
@@ -31,11 +31,6 @@ export const PREFERENCE_CATEGORIES: PreferenceCategory[] = [
   { key: "pdfs", label: "PDFs", icon: FileText, type: "file" },
 ];
 
-const ADD_ENABLED_KEYS = new Set([
-  "medication", "gloves", "skinprep", "equipment", "instruments",
-  "robotic_instruments", "trays", "supplies", "suture",
-]);
-
 interface PreferenceCategoryWidgetProps {
   category: PreferenceCategory;
   value?: string;
@@ -44,10 +39,9 @@ interface PreferenceCategoryWidgetProps {
   onClick: () => void;
   index: number;
   pendingCount?: number;
-  isIndividual?: boolean;
 }
 
-const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, pendingCount, isIndividual }: PreferenceCategoryWidgetProps) => {
+const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, pendingCount }: PreferenceCategoryWidgetProps) => {
   const Icon = category.icon;
   const isFile = category.type === "file";
   const isMedication = category.key === "medication";
@@ -156,12 +150,6 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
           {previewText}
         </span>
       </div>
-
-      {isIndividual && ADD_ENABLED_KEYS.has(category.key) && (
-        <span className="absolute bottom-2 right-2 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
-          <Plus size={12} className="text-primary" />
-        </span>
-      )}
     </motion.button>
   );
 };
