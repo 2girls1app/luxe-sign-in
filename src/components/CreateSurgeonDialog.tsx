@@ -81,6 +81,7 @@ const CreateSurgeonDialog = ({ onCreated, facilityId }: CreateSurgeonDialogProps
           email: form.email.trim(),
           phone: form.phone.trim(),
           password: form.password,
+          facility_id: facilityId || undefined,
         },
       });
 
