@@ -308,8 +308,8 @@ const Profile = () => {
                 {avatarUrl ? (
                   <AvatarImage src={avatarUrl} alt={displayName} />
                 ) : null}
-                <AvatarFallback className="bg-secondary text-foreground text-lg font-medium">
-                  {displayName.charAt(0).toUpperCase()}
+                <AvatarFallback className="bg-primary/15 text-primary text-lg font-semibold">
+                  {(displayName || "?").split(" ").map(n => n.charAt(0).toUpperCase()).slice(0, 2).join("")}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
