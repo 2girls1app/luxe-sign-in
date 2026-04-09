@@ -63,6 +63,7 @@ const ProcedurePreferences = () => {
       setFacilityName((data.facilities as any)?.name || "");
       setIsComplete(data.is_complete);
       setIsOwner(data.user_id === user.id);
+      setOwnerId(data.user_id);
     } else navigate("/profile");
   }, [procedureId, user, navigate]);
 
