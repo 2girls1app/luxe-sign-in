@@ -235,11 +235,18 @@ const DoctorWorkspace = () => {
     setDeleteTarget(null);
   };
 
-  const filtered = procedures.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSpecialty = !doctor?.specialty || !p.category || p.category === doctor.specialty;
-    return matchesSearch && matchesSpecialty;
-  });
+  const filtered = procedures
+    .filter(p => {
+      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSpecialty = !doctor?.specialty || !p.category || p.category === doctor.specialty;
+      return matchesSearch && matchesSpecialty;
+    })
+    .sort((a, b) => {
+      const aFav = favorites.has(a.id) ? 0 : 1;
+      const bFav = favorites.has(b.id) ? 0 : 1;
+      if (aFav !== bFav) return aFav - bFav;
+      return a.name.localeCompare(b.name);
+    });
 
   if (!doctor) {
     return (
