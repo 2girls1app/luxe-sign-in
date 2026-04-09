@@ -93,8 +93,18 @@ const DoctorWorkspace = () => {
   const [musicOpen, setMusicOpen] = useState(false);
   const [musicCount, setMusicCount] = useState(0);
 
+  const fetchMusicCount = useCallback(async () => {
+    if (!userId) return;
+    const { count } = await supabase
+      .from("music_preferences")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId);
+    setMusicCount(count || 0);
+  }, [userId]);
+
   const fetchData = useCallback(async () => {
     if (!userId || !user) return;
+    fetchMusicCount();
 
     const [profileRes, procsRes] = await Promise.all([
       supabase.from("profiles").select("user_id, display_name, avatar_url, role, specialty, facility_id").eq("user_id", userId).maybeSingle(),
