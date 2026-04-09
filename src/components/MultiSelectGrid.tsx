@@ -37,7 +37,7 @@ const parseItems = (value: string): ItemData[] => {
       notes: item.notes ?? "",
     }));
   } catch {}
-  return value.split(", ").filter(Boolean).map((name) => ({ name, qty: 1, hold: false, holdQty: 1 }));
+  return value.split(", ").filter(Boolean).map((name) => ({ name, qty: 1, hold: false, holdQty: 1, notes: "" }));
 };
 
 const serializeItems = (items: ItemData[]): string => {
