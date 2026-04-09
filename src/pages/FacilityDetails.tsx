@@ -153,7 +153,7 @@ const FacilityDetails = () => {
 
           {isIndividual && (
             <div className="mb-3">
-              <CreateSurgeonDialog onCreated={fetchDoctors} facilityId={facilityId} />
+              <CreateSurgeonDialog onCreated={fetchDoctors} facilityId={facilityId} isIndividual={isIndividual} />
             </div>
           )}
 
