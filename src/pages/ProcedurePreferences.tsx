@@ -333,6 +333,18 @@ const ProcedurePreferences = () => {
               Team Chat
             </button>
           )}
+          <button
+            onClick={() => setMusicOpen(true)}
+            className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-xs font-medium text-foreground hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-[0.98]"
+          >
+            <Music size={16} className="text-primary" />
+            Music Preference
+            {musicCount > 0 && (
+              <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                {musicCount}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Widget grid - 3 per row */}
