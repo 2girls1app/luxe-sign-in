@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Plus, X } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import MultiSelectGrid from "@/components/MultiSelectGrid";
 import { MULTI_SELECT_CATEGORIES } from "@/data/preferenceOptions";
 import type { PreferenceCategory } from "@/components/PreferenceCategoryWidget";
@@ -45,13 +48,22 @@ const PreferenceDetailDrawer = ({
 }: PreferenceDetailDrawerProps) => {
   const [value, setValue] = useState(currentValue);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [showAddInput, setShowAddInput] = useState(false);
+  const [customName, setCustomName] = useState("");
+  const addInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setValue(currentValue);
+    setShowAddInput(false);
+    setCustomName("");
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
   }, [currentValue, open]);
+
+  useEffect(() => {
+    if (showAddInput && addInputRef.current) addInputRef.current.focus();
+  }, [showAddInput]);
 
   if (!category) return null;
 
