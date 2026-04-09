@@ -218,8 +218,7 @@ const ProcedurePreferences = () => {
             >
               <ArrowLeft size={20} />
             </button>
-            <Avatar className="h-9 w-9 shrink-0 border border-border">
-              <AvatarImage src={providerAvatar} alt={providerName} />
+            <Avatar className="h-9 w-9 shrink-0 border border-primary/30">
               <AvatarFallback className="bg-primary/15 text-primary text-sm font-semibold">
                 {(providerName || "?").split(" ").map(n => n.charAt(0).toUpperCase()).slice(0, 2).join("")}
               </AvatarFallback>
