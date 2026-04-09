@@ -13,6 +13,7 @@ interface ItemData {
   qty: number;
   hold?: boolean;
   holdQty?: number;
+  notes?: string;
 }
 
 interface MultiSelectGridProps {
