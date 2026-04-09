@@ -117,7 +117,7 @@ const UploadPreferenceCardDrawer = ({
     try {
       // Upload file to storage
       const ext = file.name.split(".").pop() || "jpg";
-      const path = `${targetUserId}/preference-card-uploads/${crypto.randomUUID()}.${ext}`;
+      const path = `${user.id}/preference-card-uploads/${crypto.randomUUID()}.${ext}`;
       setProgress(20);
 
       const { error: uploadError } = await supabase.storage
@@ -190,14 +190,16 @@ const UploadPreferenceCardDrawer = ({
 
     try {
       // Create the procedure
+      // Use the authenticated user's ID for inserts to satisfy RLS policies
+      const insertUserId = user.id;
       const { data: proc, error: procError } = await supabase
         .from("procedures")
         .insert({
           name: procedureName.trim(),
-          user_id: targetUserId,
+          user_id: insertUserId,
           facility_id: selectedFacility || null,
           notes: `Auto-generated from uploaded preference card: ${fileName}`,
-        } as any)
+        })
         .select("id")
         .single();
 
@@ -216,7 +218,7 @@ const UploadPreferenceCardDrawer = ({
 
         inserts.push({
           procedure_id: proc.id,
-          user_id: targetUserId,
+          user_id: insertUserId,
           category,
           value: JSON.stringify(formatted),
         });
