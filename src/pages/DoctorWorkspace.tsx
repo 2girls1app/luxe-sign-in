@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, MapPin, Search, Plus, Stethoscope, User, Bot, Upload,
+  ArrowLeft, MapPin, Search, Plus, Stethoscope, User, Bot, Upload, Trash2,
   Heart, Activity, Brain, Bone, Eye, Baby, Scissors, HandMetal, Ear,
   Waypoints, Shield, Flame, Zap, Ribbon, Footprints, Syringe, Cross,
   Building2, CheckCircle2,
@@ -17,6 +17,10 @@ import { useToast } from "@/hooks/use-toast";
 import NavHeader from "@/components/NavHeader";
 import AddProcedureDialog from "@/components/AddProcedureDialog";
 import UploadPreferenceCardDrawer from "@/components/UploadPreferenceCardDrawer";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface DoctorProfile {
   user_id: string;
@@ -84,6 +88,7 @@ const DoctorWorkspace = () => {
   const [facilities, setFacilities] = useState<{ id: string; name: string }[]>([]);
   const [facilitiesLoaded, setFacilitiesLoaded] = useState(false);
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!userId || !user) return;
@@ -195,9 +200,30 @@ const DoctorWorkspace = () => {
     }
   };
 
+  const deleteProcedure = async () => {
+    if (!deleteTarget || !user) return;
+    const id = deleteTarget.id;
+
+    // Delete related data first, then the procedure
+    await Promise.all([
+      supabase.from("procedure_preferences").delete().eq("procedure_id", id),
+      supabase.from("procedure_files").delete().eq("procedure_id", id),
+      supabase.from("procedure_favorites").delete().eq("procedure_id", id),
+      supabase.from("pending_preference_changes").delete().eq("procedure_id", id),
+    ]);
+
+    const { error } = await supabase.from("procedures").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Error", description: "Failed to delete procedure.", variant: "destructive" });
+    } else {
+      toast({ title: "Procedure deleted", description: `"${deleteTarget.name}" has been removed.` });
+      setProcedures(prev => prev.filter(p => p.id !== id));
+    }
+    setDeleteTarget(null);
+  };
+
   const filtered = procedures.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    // Filter by doctor's specialty if set
     const matchesSpecialty = !doctor?.specialty || !p.category || p.category === doctor.specialty;
     return matchesSearch && matchesSpecialty;
   });
@@ -344,6 +370,17 @@ const DoctorWorkspace = () => {
                     />
                   </button>
 
+                  {/* Delete button (Individual users) */}
+                  {isIndividual && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: proc.id, name: proc.name }); }}
+                      className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-background/80 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
+                      aria-label="Delete procedure"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+
                   {/* Robotic indicator */}
                   {hasRobotic && (
                     <TooltipProvider>
@@ -410,6 +447,24 @@ const DoctorWorkspace = () => {
           forUserId={userId}
         />
       )}
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-foreground">Delete Procedure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              This will permanently remove <span className="font-semibold text-foreground">"{deleteTarget?.name}"</span> and its related preference card data from your personal workspace.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-border">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteProcedure} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
