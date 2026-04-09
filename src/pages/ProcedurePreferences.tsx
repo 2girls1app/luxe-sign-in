@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ClipboardList, ListOrdered, Share2, User, MessageSquare, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ClipboardList, ListOrdered, Share2, User, MessageSquare, CheckCircle2, Upload } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
