@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Plus, X } from "lucide-react";
 import MultiSelectGrid from "@/components/MultiSelectGrid";
 import { MULTI_SELECT_CATEGORIES } from "@/data/preferenceOptions";
 import type { PreferenceCategory } from "@/components/PreferenceCategoryWidget";
@@ -45,18 +46,67 @@ const PreferenceDetailDrawer = ({
 }: PreferenceDetailDrawerProps) => {
   const [value, setValue] = useState(currentValue);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [showAddInput, setShowAddInput] = useState(false);
+  const [customName, setCustomName] = useState("");
+  const addInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setValue(currentValue);
+    setShowAddInput(false);
+    setCustomName("");
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
   }, [currentValue, open]);
 
+  useEffect(() => {
+    if (showAddInput && addInputRef.current) addInputRef.current.focus();
+  }, [showAddInput]);
+
   if (!category) return null;
 
   const Icon = category.icon;
   const multiSelectOptions = MULTI_SELECT_CATEGORIES[category.key];
+  const isMultiSelect = !!multiSelectOptions;
+
+  const addLabel =
+    category.key === "suture" ? "Add Suture" :
+    category.key === "supplies" ? "Add Supply" :
+    category.key === "trays" ? "Add Tray" :
+    category.key === "robotic_instruments" ? "Add Robotic Item" :
+    category.key === "instruments" ? "Add Instrument" :
+    category.key === "equipment" ? "Add Equipment" :
+    category.key === "skinprep" ? "Add Skin Prep" :
+    category.key === "medication" ? "Add Medication" :
+    category.key === "gloves" ? "Add Gloves" :
+    `Add ${category.label}`;
+
+  const addCustomToValue = () => {
+    const trimmed = customName.trim();
+    if (!trimmed) return;
+    try {
+      const parsed = JSON.parse(value || "[]");
+      if (Array.isArray(parsed)) {
+        if (parsed.some((i: any) => i.name === trimmed)) {
+          setCustomName("");
+          setShowAddInput(false);
+          return;
+        }
+        const updated = [...parsed, { name: trimmed, qty: 1, hold: false, holdQty: 1 }];
+        setValue(JSON.stringify(updated));
+      }
+    } catch {
+      const updated = [{ name: trimmed, qty: 1, hold: false, holdQty: 1 }];
+      setValue(JSON.stringify(updated));
+    }
+    setCustomName("");
+    setShowAddInput(false);
+  };
+
+  const handleAddKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") { e.preventDefault(); addCustomToValue(); }
+    else if (e.key === "Escape") { setShowAddInput(false); setCustomName(""); }
+  };
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -123,16 +173,8 @@ const PreferenceDetailDrawer = ({
               value={value}
               onChange={setValue}
               supportsHold={["suture", "supplies", "equipment", "instruments", "robotic_instruments"].includes(category.key)}
-              addLabel={
-                category.key === "suture" ? "Add Suture" :
-                category.key === "supplies" ? "Add Supply" :
-                category.key === "trays" ? "Add Tray" :
-                category.key === "robotic_instruments" ? "Add Robotic Item" :
-                category.key === "instruments" ? "Add Instrument" :
-                category.key === "equipment" ? "Add Equipment" :
-                category.key === "skinprep" ? "Add Skin Prep" :
-                `Add ${category.label}`
-              }
+              addLabel={addLabel}
+              hideInternalAdd={true}
             />
           ) : (
             <Textarea
@@ -144,6 +186,36 @@ const PreferenceDetailDrawer = ({
           )}
         </div>
         <DrawerFooter>
+          {isMultiSelect && (
+            showAddInput ? (
+              <div className="flex items-center gap-2 rounded-xl border border-primary/50 bg-secondary p-3">
+                <input
+                  ref={addInputRef}
+                  type="text"
+                  value={customName}
+                  onChange={(e) => setCustomName(e.target.value)}
+                  onKeyDown={handleAddKeyDown}
+                  placeholder="Type custom item name..."
+                  className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                />
+                <button type="button" onClick={addCustomToValue} disabled={!customName.trim()} className="p-1.5 rounded-lg bg-primary text-primary-foreground disabled:opacity-40 transition-opacity">
+                  <Plus size={14} />
+                </button>
+                <button type="button" onClick={() => { setShowAddInput(false); setCustomName(""); }} className="p-1.5 rounded-lg hover:bg-card text-muted-foreground transition-colors">
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => setShowAddInput(true)}
+                className="w-full border-primary/30 text-primary hover:bg-primary/10"
+              >
+                <Plus size={16} className="mr-2" />
+                {addLabel}
+              </Button>
+            )
+          )}
           <Button
             onClick={() => onSave(category.key, value)}
             disabled={saving}
