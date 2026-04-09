@@ -42,7 +42,6 @@ Deno.serve(async (req) => {
     let authorized = isIndividual;
 
     if (!authorized) {
-      // Check if user has no facility (treat as individual)
       const { data: profileData } = await adminClient
         .from("profiles")
         .select("facility_id")
@@ -55,7 +54,6 @@ Deno.serve(async (req) => {
     }
 
     if (!authorized) {
-      // Check admin role
       const { data: roleData } = await adminClient
         .from("user_roles")
         .select("role")
@@ -76,10 +74,90 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { first_name, last_name, credentials, specialty, email, phone, avatar_url, password, facility_id } = body;
+    const { first_name, last_name, credentials, specialty, email, phone, avatar_url, password, facility_id, is_individual_invite, notes } = body;
 
-    if (!first_name || !last_name || !email || !password) {
-      return new Response(JSON.stringify({ error: "First name, last name, email, and password are required" }), {
+    console.log("Request payload:", { first_name, last_name, credentials, specialty, email: email ? "provided" : "none", facility_id, is_individual_invite });
+
+    if (!first_name || !last_name) {
+      return new Response(JSON.stringify({ error: "First name and last name are required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const displayName = credentials
+      ? `${first_name} ${last_name}, ${credentials}`
+      : `${first_name} ${last_name}`;
+
+    // --- Individual invite flow: create profile record without auth account ---
+    if (is_individual_invite) {
+      // Generate a random email for the auth account if none provided
+      const authEmail = email || `doctor-${crypto.randomUUID()}@placeholder.local`;
+      const tempPassword = crypto.randomUUID() + "Aa1!";
+
+      const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
+        email: authEmail,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          full_name: displayName,
+          profession: "Surgeon",
+        },
+      });
+
+      if (createError) {
+        console.error("User creation error (individual):", createError);
+        if (createError.message?.includes("already been registered")) {
+          return new Response(JSON.stringify({ error: "A doctor with this email already exists" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        return new Response(JSON.stringify({ error: createError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Update profile
+      const { error: profileError } = await adminClient
+        .from("profiles")
+        .update({
+          display_name: displayName,
+          role: "Surgeon",
+          specialty: specialty || null,
+          avatar_url: avatar_url || null,
+        })
+        .eq("user_id", newUser.user.id);
+
+      if (profileError) {
+        console.error("Profile update error:", profileError);
+      }
+
+      // Link to facility
+      if (facility_id) {
+        const { error: linkError } = await adminClient
+          .from("doctor_facilities")
+          .insert({
+            user_id: newUser.user.id,
+            facility_id: facility_id,
+          });
+        if (linkError) {
+          console.error("Facility link error:", linkError);
+        }
+      }
+
+      console.log("Individual doctor created:", { user_id: newUser.user.id, display_name: displayName });
+
+      return new Response(
+        JSON.stringify({ success: true, user_id: newUser.user.id, display_name: displayName }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // --- Facility/admin flow: requires email + password ---
+    if (!email || !password) {
+      return new Response(JSON.stringify({ error: "Email and password are required for facility accounts" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -92,10 +170,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const displayName = credentials
-      ? `${first_name} ${last_name}, ${credentials}`
-      : `${first_name} ${last_name}`;
-
     const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
       email,
       password,
@@ -107,13 +181,13 @@ Deno.serve(async (req) => {
     });
 
     if (createError) {
+      console.error("User creation error (facility):", createError);
       return new Response(JSON.stringify({ error: createError.message }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Update the profile with additional fields
     const { error: profileError } = await adminClient
       .from("profiles")
       .update({
@@ -128,7 +202,6 @@ Deno.serve(async (req) => {
       console.error("Profile update error:", profileError);
     }
 
-    // If facility_id provided, link the doctor to the facility
     if (facility_id) {
       const { error: linkError } = await adminClient
         .from("doctor_facilities")
