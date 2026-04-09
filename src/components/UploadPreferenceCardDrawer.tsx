@@ -197,7 +197,7 @@ const UploadPreferenceCardDrawer = ({
           user_id: targetUserId,
           facility_id: selectedFacility || null,
           notes: `Auto-generated from uploaded preference card: ${fileName}`,
-        } as any)
+        })
         .select("id")
         .single();
 
