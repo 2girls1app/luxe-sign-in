@@ -1,7 +1,4 @@
-import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig } from "remotion";
-import { loadFont } from "@remotion/google-fonts/Playfair";
-
-const { fontFamily: displayFont } = loadFont("normal", { weights: ["700"], subsets: ["latin"] });
+import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig, Img, staticFile } from "remotion";
 
 export const Scene1Intro = () => {
   const frame = useCurrentFrame();
@@ -16,28 +13,21 @@ export const Scene1Intro = () => {
 
   return (
     <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
-      {/* Logo circle */}
-      <div
+      {/* Logo — same as sign-in page */}
+      <Img
+        src={staticFile("images/logo.png")}
         style={{
-          width: 180,
-          height: 180,
-          borderRadius: "50%",
-          border: "3px solid #BF9B30",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          width: 220,
+          height: 220,
+          objectFit: "contain",
           transform: `scale(${logoScale})`,
           marginBottom: 40,
         }}
-      >
-        <span style={{ fontSize: 48, fontWeight: 700, color: "#BF9B30", fontFamily: displayFont, letterSpacing: 2 }}>
-          1A
-        </span>
-      </div>
+      />
 
       {/* Title */}
       <div style={{ opacity: titleOp, transform: `translateY(${titleY}px)` }}>
-        <span style={{ fontSize: 72, fontWeight: 700, color: "#BF9B30", fontFamily: displayFont, letterSpacing: 8, textTransform: "uppercase" }}>
+        <span style={{ fontSize: 72, fontWeight: 700, fontStyle: "italic", color: "#BF9B30", letterSpacing: 12, textTransform: "uppercase" }}>
           1st Assist
         </span>
       </div>
