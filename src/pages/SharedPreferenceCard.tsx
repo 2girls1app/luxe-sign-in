@@ -1,13 +1,20 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Download, Printer, Pencil } from "lucide-react";
+import { ArrowLeft, Download, Printer, Pencil, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { PREFERENCE_CATEGORIES } from "@/components/PreferenceCategoryWidget";
 import PreferenceDetailDrawer from "@/components/PreferenceDetailDrawer";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import type { PreferenceCategory } from "@/components/PreferenceCategoryWidget";
 
 const SharedPreferenceCard = () => {
@@ -30,11 +37,50 @@ const SharedPreferenceCard = () => {
   const [editDrawerOpen, setEditDrawerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Popup state
+  const [showAccessPopup, setShowAccessPopup] = useState(true);
+  const [sharerName, setSharerName] = useState("");
+  const [sharerLoading, setSharerLoading] = useState(true);
+  const [proceeded, setProceeded] = useState(false);
+
+  // Fetch sharer name (works for both auth and non-auth users via public-ish query)
+  useEffect(() => {
+    const fetchSharerName = async () => {
+      if (!procedureId) return;
+      setSharerLoading(true);
+      try {
+        // Get the procedure owner's name via the procedure -> profile lookup
+        const { data: procedure } = await supabase
+          .from("procedures")
+          .select("user_id")
+          .eq("id", procedureId)
+          .single();
+
+        if (procedure?.user_id) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("display_name")
+            .eq("user_id", procedure.user_id)
+            .single();
+          if (profile?.display_name) {
+            setSharerName(profile.display_name);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching sharer info:", err);
+      }
+      setSharerLoading(false);
+    };
+
+    if (!authLoading) {
+      fetchSharerName();
+    }
+  }, [procedureId, authLoading]);
+
   const fetchSharedData = useCallback(async () => {
     if (!procedureId || !user) return;
     setPageLoading(true);
 
-    // Check if user owns the procedure OR has been shared access
     const { data: procedure } = await supabase
       .from("procedures")
       .select("name, facility_id, user_id, facilities(name)")
@@ -52,7 +98,6 @@ const SharedPreferenceCard = () => {
     setIsOwner(userIsOwner);
 
     if (!userIsOwner) {
-      // Check shared access
       const { data: shared } = await supabase
         .from("shared_procedure_cards")
         .select("permission")
@@ -72,7 +117,6 @@ const SharedPreferenceCard = () => {
     setProcedureName(procedure.name);
     setFacilityName((procedure.facilities as any)?.name || "");
 
-    // Get provider name
     const { data: profile } = await supabase
       .from("profiles")
       .select("display_name")
@@ -80,7 +124,6 @@ const SharedPreferenceCard = () => {
       .single();
     if (profile?.display_name) setProviderName(profile.display_name);
 
-    // Get preferences
     const { data: prefs } = await supabase
       .from("procedure_preferences")
       .select("category, value")
@@ -91,7 +134,6 @@ const SharedPreferenceCard = () => {
       setPreferences(map);
     }
 
-    // Get file counts
     const { data: files } = await supabase
       .from("procedure_files")
       .select("category")
@@ -106,12 +148,21 @@ const SharedPreferenceCard = () => {
   }, [procedureId, user]);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate(`/?redirect=/shared/procedure/${procedureId}`);
-      return;
+    // Only fetch data after user has proceeded and is authenticated
+    if (proceeded && user) {
+      fetchSharedData();
     }
-    if (user) fetchSharedData();
-  }, [user, authLoading, fetchSharedData, navigate, procedureId]);
+    // For non-authenticated users who proceeded, show a minimal loading then error/read-only
+    if (proceeded && !authLoading && !user) {
+      setPageLoading(false);
+      setLoadError("Sign in to view this preference card, or create an account.");
+    }
+  }, [user, authLoading, fetchSharedData, proceeded]);
+
+  const handleProceed = () => {
+    setShowAccessPopup(false);
+    setProceeded(true);
+  };
 
   const handleSubmitChange = async (category: string, value: string) => {
     if (!procedureId || !user) return;
@@ -126,7 +177,6 @@ const SharedPreferenceCard = () => {
       return;
     }
 
-    // Submit as pending change
     const { error } = await supabase
       .from("pending_preference_changes")
       .insert({
@@ -180,7 +230,7 @@ const SharedPreferenceCard = () => {
           return String(item);
         }).join("\n");
       }
-    } catch { /* not JSON */ }
+    } catch {}
     return val;
   };
 
@@ -323,6 +373,69 @@ const SharedPreferenceCard = () => {
     }
   };
 
+  // Show the access popup
+  if (showAccessPopup) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Dialog open={showAccessPopup} onOpenChange={() => {}}>
+          <DialogContent
+            className="sm:max-w-md border-primary/20"
+            onPointerDownOutside={(e) => e.preventDefault()}
+            onEscapeKeyDown={(e) => e.preventDefault()}
+          >
+            <DialogHeader className="items-center text-center">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                <Share2 className="h-7 w-7 text-primary" />
+              </div>
+              <DialogTitle className="text-xl font-semibold text-foreground">
+                Shared Preference Card
+              </DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground pt-2 space-y-2">
+                {sharerLoading ? (
+                  <span>Loading…</span>
+                ) : (
+                  <>
+                    <span className="block">
+                      <span className="font-medium text-foreground">{sharerName || "A user"}</span>{" "}
+                      has shared a card with you.
+                    </span>
+                    <span className="block">Tap Proceed to view.</span>
+                  </>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 pt-4">
+              <Button
+                onClick={handleProceed}
+                className="w-full"
+                disabled={sharerLoading}
+              >
+                Proceed
+              </Button>
+              {!user ? (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate("/signup")}
+                >
+                  Create Account
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate("/clinical-dashboard")}
+                >
+                  Go to Dashboard
+                </Button>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
+
   if (authLoading || pageLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -335,7 +448,14 @@ const SharedPreferenceCard = () => {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background gap-4 px-6">
         <p className="text-muted-foreground text-sm text-center">{loadError}</p>
-        <Button variant="outline" onClick={() => navigate("/profile")}>Go to Profile</Button>
+        {!user ? (
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => navigate("/")}>Sign In</Button>
+            <Button onClick={() => navigate("/signup")}>Create Account</Button>
+          </div>
+        ) : (
+          <Button variant="outline" onClick={() => navigate("/profile")}>Go to Profile</Button>
+        )}
       </div>
     );
   }
@@ -348,6 +468,14 @@ const SharedPreferenceCard = () => {
         transition={{ duration: 0.4 }}
         className="w-full max-w-2xl mx-auto flex flex-col gap-6"
       >
+        {/* Shared banner */}
+        {!isOwner && providerName && (
+          <div className="flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/20 px-4 py-2.5 text-sm text-primary">
+            <Share2 size={16} />
+            <span>Shared with you by <span className="font-medium">{providerName}</span></span>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -438,7 +566,6 @@ const SharedPreferenceCard = () => {
         </div>
       </motion.div>
 
-      {/* Edit drawer for suggesting changes */}
       {editingCategory && (
         <PreferenceDetailDrawer
           open={editDrawerOpen}
