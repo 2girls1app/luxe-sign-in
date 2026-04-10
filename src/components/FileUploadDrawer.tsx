@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Trash2, FileText, Image, Video, ExternalLink } from "lucide-react";
+import { Upload, Trash2, FileText, Image, Video, ExternalLink, Camera } from "lucide-react";
 import type { PreferenceCategory } from "@/components/PreferenceCategoryWidget";
 
 interface ProcedureFile {
@@ -40,6 +40,7 @@ const FileUploadDrawer = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<ProcedureFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -100,6 +101,7 @@ const FileUploadDrawer = ({
     onFilesChanged();
     setUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
 
   const handleDelete = async (file: ProcedureFile) => {
@@ -120,6 +122,10 @@ const FileUploadDrawer = ({
   if (!category) return null;
   const Icon = category.icon;
 
+  const isImages = category.key === "images";
+  const isVideos = category.key === "videos";
+  const showCameraOption = isImages || isVideos;
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="bg-card border-border max-h-[85vh]">
@@ -134,7 +140,7 @@ const FileUploadDrawer = ({
         </DrawerHeader>
 
         <div className="px-4 pb-4 flex flex-col gap-3 overflow-y-auto">
-          {/* Upload button */}
+          {/* Hidden file inputs */}
           <input
             ref={fileInputRef}
             type="file"
@@ -143,18 +149,62 @@ const FileUploadDrawer = ({
             className="hidden"
             onChange={handleUpload}
           />
-          <Button
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="w-full border-dashed border-2 border-primary/30 hover:border-primary/60 h-16 gap-2"
-          >
-            <Upload size={18} className="text-primary" />
-            {uploading ? "Uploading..." : `Upload ${category.label}`}
-          </Button>
+
+          {showCameraOption && (
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept={isImages ? "image/*" : "video/*"}
+              capture="environment"
+              className="hidden"
+              onChange={handleUpload}
+            />
+          )}
+
+          {/* Action buttons */}
+          {showCameraOption ? (
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                onClick={() => cameraInputRef.current?.click()}
+                disabled={uploading}
+                className="border-dashed border-2 border-primary/30 hover:border-primary/60 h-16 gap-2 flex-col"
+              >
+                <Camera size={20} className="text-primary" />
+                <span className="text-xs">
+                  {isImages ? "Take Photo" : "Record Video"}
+                </span>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="border-dashed border-2 border-primary/30 hover:border-primary/60 h-16 gap-2 flex-col"
+              >
+                <Upload size={20} className="text-primary" />
+                <span className="text-xs">
+                  {isImages ? "Upload Image" : "Upload Video"}
+                </span>
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="w-full border-dashed border-2 border-primary/30 hover:border-primary/60 h-16 gap-2"
+            >
+              <Upload size={18} className="text-primary" />
+              {uploading ? "Uploading..." : `Upload ${category.label}`}
+            </Button>
+          )}
+
+          {uploading && (
+            <p className="text-center text-sm text-primary animate-pulse">Uploading...</p>
+          )}
 
           {/* File list */}
-          {files.length === 0 && (
+          {files.length === 0 && !uploading && (
             <p className="text-center text-sm text-muted-foreground py-4">
               No files uploaded yet
             </p>
@@ -165,7 +215,6 @@ const FileUploadDrawer = ({
               key={file.id}
               className="flex items-center gap-3 rounded-xl bg-secondary/50 border border-border p-3"
             >
-              {/* Thumbnail / icon */}
               {file.mime_type?.startsWith("image/") ? (
                 <img
                   src={getPublicUrl(file.file_path)}
@@ -182,7 +231,6 @@ const FileUploadDrawer = ({
                 </div>
               )}
 
-              {/* File info */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-foreground truncate">{file.file_name}</p>
                 <p className="text-[10px] text-muted-foreground">
@@ -190,7 +238,6 @@ const FileUploadDrawer = ({
                 </p>
               </div>
 
-              {/* Actions */}
               <a
                 href={getPublicUrl(file.file_path)}
                 target="_blank"
