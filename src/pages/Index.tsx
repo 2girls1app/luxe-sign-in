@@ -24,6 +24,10 @@ const Index = () => {
   const [remember, setRemember] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [showDemoModal, setShowDemoModal] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const modalVideoRef = useRef<HTMLVideoElement>(null);
   const [appleLoading, setAppleLoading] = useState(false);
 
   const handleSignIn = async () => {
