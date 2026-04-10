@@ -89,6 +89,7 @@ const Index = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
+      <DemoVideoPopup />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
