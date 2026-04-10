@@ -43,27 +43,37 @@ const SharedPreferenceCard = () => {
   const [sharerLoading, setSharerLoading] = useState(true);
   const [proceeded, setProceeded] = useState(false);
 
-  // Fetch sharer name (works for both auth and non-auth users via public-ish query)
+  // Fetch sharer name via edge function (works for guests too)
   useEffect(() => {
     const fetchSharerName = async () => {
       if (!procedureId) return;
       setSharerLoading(true);
       try {
-        // Get the procedure owner's name via the procedure -> profile lookup
-        const { data: procedure } = await supabase
-          .from("procedures")
-          .select("user_id")
-          .eq("id", procedureId)
-          .single();
-
-        if (procedure?.user_id) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("display_name")
-            .eq("user_id", procedure.user_id)
+        // For guests, use the edge function; for authenticated users, try direct query first
+        if (user) {
+          const { data: procedure } = await supabase
+            .from("procedures")
+            .select("user_id")
+            .eq("id", procedureId)
             .single();
-          if (profile?.display_name) {
-            setSharerName(profile.display_name);
+
+          if (procedure?.user_id) {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("display_name")
+              .eq("user_id", procedure.user_id)
+              .single();
+            if (profile?.display_name) {
+              setSharerName(profile.display_name);
+            }
+          }
+        } else {
+          // Guest: use edge function to get sharer name
+          const { data, error } = await supabase.functions.invoke("get-shared-card", {
+            body: { procedureId },
+          });
+          if (data?.providerName) {
+            setSharerName(data.providerName);
           }
         }
       } catch (err) {
@@ -75,7 +85,7 @@ const SharedPreferenceCard = () => {
     if (!authLoading) {
       fetchSharerName();
     }
-  }, [procedureId, authLoading]);
+  }, [procedureId, authLoading, user]);
 
   const fetchSharedData = useCallback(async () => {
     if (!procedureId || !user) return;
