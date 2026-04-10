@@ -88,9 +88,35 @@ const SharedPreferenceCard = () => {
   }, [procedureId, authLoading, user]);
 
   const fetchSharedData = useCallback(async () => {
-    if (!procedureId || !user) return;
+    if (!procedureId) return;
     setPageLoading(true);
 
+    // Guest user: fetch via edge function
+    if (!user) {
+      try {
+        const { data, error } = await supabase.functions.invoke("get-shared-card", {
+          body: { procedureId },
+        });
+        if (error || data?.error) {
+          setLoadError(data?.error || "Unable to load this shared card.");
+          setPageLoading(false);
+          return;
+        }
+        setProcedureName(data.procedureName || "");
+        setProviderName(data.providerName || "");
+        setFacilityName(data.facilityName || "");
+        setPreferences(data.preferences || {});
+        setFileCounts(data.fileCounts || {});
+        setIsOwner(false);
+        setCanEdit(false);
+      } catch (err) {
+        setLoadError("Unable to load this shared card.");
+      }
+      setPageLoading(false);
+      return;
+    }
+
+    // Authenticated user: use direct queries
     const { data: procedure } = await supabase
       .from("procedures")
       .select("name, facility_id, user_id, facilities(name)")
@@ -158,16 +184,10 @@ const SharedPreferenceCard = () => {
   }, [procedureId, user]);
 
   useEffect(() => {
-    // Only fetch data after user has proceeded and is authenticated
-    if (proceeded && user) {
+    if (proceeded) {
       fetchSharedData();
     }
-    // For non-authenticated users who proceeded, show a minimal loading then error/read-only
-    if (proceeded && !authLoading && !user) {
-      setPageLoading(false);
-      setLoadError("Sign in to view this preference card, or create an account.");
-    }
-  }, [user, authLoading, fetchSharedData, proceeded]);
+  }, [proceeded, fetchSharedData]);
 
   const handleProceed = () => {
     setShowAccessPopup(false);
