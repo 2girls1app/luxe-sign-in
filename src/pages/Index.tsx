@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { Loader2, Play, Volume2, VolumeX, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { lovable } from "@/integrations/lovable/index";
@@ -8,6 +8,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import logoImg from "@/assets/logo.png";
 import PasswordInput from "@/components/PasswordInput";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
+
+const DEMO_VIDEO_URL = "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/demo-video.mp4";
 
 
 const Index = () => {
@@ -18,6 +24,10 @@ const Index = () => {
   const [remember, setRemember] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [showDemoModal, setShowDemoModal] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const modalVideoRef = useRef<HTMLVideoElement>(null);
   const [appleLoading, setAppleLoading] = useState(false);
 
   const handleSignIn = async () => {
@@ -177,7 +187,63 @@ const Index = () => {
             Sign Up Here
           </Link>
         </p>
+
+        {/* Demo Video Preview */}
+        <div className="w-full mt-2">
+          <button
+            onClick={() => setShowDemoModal(true)}
+            className="w-full group relative rounded-xl overflow-hidden border border-border hover:border-primary/40 transition-all"
+          >
+            <video
+              ref={videoRef}
+              src={DEMO_VIDEO_URL}
+              muted
+              autoPlay
+              loop
+              playsInline
+              className="w-full aspect-video object-cover opacity-70 group-hover:opacity-90 transition-opacity"
+            />
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 group-hover:bg-black/20 transition-colors">
+              <div className="w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <Play size={20} className="text-primary-foreground ml-0.5" />
+              </div>
+              <span className="text-xs font-medium text-foreground/90 tracking-wider uppercase">
+                Quick Demo
+              </span>
+            </div>
+          </button>
+        </div>
       </motion.div>
+
+      {/* Demo Video Modal */}
+      <Dialog open={showDemoModal} onOpenChange={setShowDemoModal}>
+        <DialogContent className="sm:max-w-2xl p-0 overflow-hidden border-primary/20 bg-card">
+          <div className="relative">
+            <video
+              ref={modalVideoRef}
+              src={DEMO_VIDEO_URL}
+              autoPlay
+              loop
+              playsInline
+              muted={isMuted}
+              className="w-full aspect-video object-contain bg-black"
+            />
+            <div className="absolute bottom-4 right-4 flex gap-2">
+              <button
+                onClick={() => setIsMuted(!isMuted)}
+                className="p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors"
+              >
+                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+              </button>
+            </div>
+            <div className="absolute top-3 left-4">
+              <span className="text-xs font-medium text-white/80 bg-black/50 px-3 py-1 rounded-full">
+                See how it works
+              </span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
