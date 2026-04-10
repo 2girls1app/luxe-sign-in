@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import logoImg from "@/assets/logo.png";
 import PasswordInput from "@/components/PasswordInput";
+import { DemoVideoPopup } from "@/components/DemoVideoPopup";
 import {
   Dialog,
   DialogContent,
