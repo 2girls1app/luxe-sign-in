@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import logoImg from "@/assets/logo.png";
 import PasswordInput from "@/components/PasswordInput";
+import { DemoVideoPopup } from "@/components/DemoVideoPopup";
 import {
   Dialog,
   DialogContent,
@@ -88,6 +89,7 @@ const Index = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
+      <DemoVideoPopup />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
