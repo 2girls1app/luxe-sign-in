@@ -43,27 +43,37 @@ const SharedPreferenceCard = () => {
   const [sharerLoading, setSharerLoading] = useState(true);
   const [proceeded, setProceeded] = useState(false);
 
-  // Fetch sharer name (works for both auth and non-auth users via public-ish query)
+  // Fetch sharer name via edge function (works for guests too)
   useEffect(() => {
     const fetchSharerName = async () => {
       if (!procedureId) return;
       setSharerLoading(true);
       try {
-        // Get the procedure owner's name via the procedure -> profile lookup
-        const { data: procedure } = await supabase
-          .from("procedures")
-          .select("user_id")
-          .eq("id", procedureId)
-          .single();
-
-        if (procedure?.user_id) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("display_name")
-            .eq("user_id", procedure.user_id)
+        // For guests, use the edge function; for authenticated users, try direct query first
+        if (user) {
+          const { data: procedure } = await supabase
+            .from("procedures")
+            .select("user_id")
+            .eq("id", procedureId)
             .single();
-          if (profile?.display_name) {
-            setSharerName(profile.display_name);
+
+          if (procedure?.user_id) {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("display_name")
+              .eq("user_id", procedure.user_id)
+              .single();
+            if (profile?.display_name) {
+              setSharerName(profile.display_name);
+            }
+          }
+        } else {
+          // Guest: use edge function to get sharer name
+          const { data, error } = await supabase.functions.invoke("get-shared-card", {
+            body: { procedureId },
+          });
+          if (data?.providerName) {
+            setSharerName(data.providerName);
           }
         }
       } catch (err) {
@@ -75,12 +85,38 @@ const SharedPreferenceCard = () => {
     if (!authLoading) {
       fetchSharerName();
     }
-  }, [procedureId, authLoading]);
+  }, [procedureId, authLoading, user]);
 
   const fetchSharedData = useCallback(async () => {
-    if (!procedureId || !user) return;
+    if (!procedureId) return;
     setPageLoading(true);
 
+    // Guest user: fetch via edge function
+    if (!user) {
+      try {
+        const { data, error } = await supabase.functions.invoke("get-shared-card", {
+          body: { procedureId },
+        });
+        if (error || data?.error) {
+          setLoadError(data?.error || "Unable to load this shared card.");
+          setPageLoading(false);
+          return;
+        }
+        setProcedureName(data.procedureName || "");
+        setProviderName(data.providerName || "");
+        setFacilityName(data.facilityName || "");
+        setPreferences(data.preferences || {});
+        setFileCounts(data.fileCounts || {});
+        setIsOwner(false);
+        setCanEdit(false);
+      } catch (err) {
+        setLoadError("Unable to load this shared card.");
+      }
+      setPageLoading(false);
+      return;
+    }
+
+    // Authenticated user: use direct queries
     const { data: procedure } = await supabase
       .from("procedures")
       .select("name, facility_id, user_id, facilities(name)")
@@ -148,16 +184,10 @@ const SharedPreferenceCard = () => {
   }, [procedureId, user]);
 
   useEffect(() => {
-    // Only fetch data after user has proceeded and is authenticated
-    if (proceeded && user) {
+    if (proceeded) {
       fetchSharedData();
     }
-    // For non-authenticated users who proceeded, show a minimal loading then error/read-only
-    if (proceeded && !authLoading && !user) {
-      setPageLoading(false);
-      setLoadError("Sign in to view this preference card, or create an account.");
-    }
-  }, [user, authLoading, fetchSharedData, proceeded]);
+  }, [proceeded, fetchSharedData]);
 
   const handleProceed = () => {
     setShowAccessPopup(false);
