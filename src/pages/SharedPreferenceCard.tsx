@@ -399,7 +399,9 @@ const SharedPreferenceCard = () => {
                       <span className="font-medium text-foreground">{sharerName || "A user"}</span>{" "}
                       has shared a card with you.
                     </span>
-                    <span className="block">Tap Proceed to view.</span>
+                    <span className="block">
+                      You can view it now or create an account for full access.
+                    </span>
                   </>
                 )}
               </DialogDescription>
@@ -410,7 +412,7 @@ const SharedPreferenceCard = () => {
                 className="w-full"
                 disabled={sharerLoading}
               >
-                Proceed
+                Proceed without an account
               </Button>
               {!user ? (
                 <Button
@@ -469,10 +471,23 @@ const SharedPreferenceCard = () => {
         className="w-full max-w-2xl mx-auto flex flex-col gap-6"
       >
         {/* Shared banner */}
-        {!isOwner && providerName && (
-          <div className="flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/20 px-4 py-2.5 text-sm text-primary">
-            <Share2 size={16} />
-            <span>Shared with you by <span className="font-medium">{providerName}</span></span>
+        {!isOwner && (
+          <div className="flex flex-col gap-1.5 rounded-lg bg-primary/10 border border-primary/20 px-4 py-3">
+            <div className="flex items-center gap-2 text-sm text-primary">
+              <Share2 size={16} />
+              <span>You are viewing this card in read-only mode</span>
+            </div>
+            {!user && (
+              <span className="text-xs text-muted-foreground pl-6">
+                <button
+                  onClick={() => navigate("/signup")}
+                  className="text-primary underline underline-offset-2 hover:text-primary/80"
+                >
+                  Create an account
+                </button>{" "}
+                to edit or save your own cards
+              </span>
+            )}
           </div>
         )}
 
