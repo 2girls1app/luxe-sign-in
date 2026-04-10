@@ -25,26 +25,12 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Check that a share record exists for this procedure
-    const { data: shareRecord } = await supabase
-      .from("shared_procedure_cards")
-      .select("id")
-      .eq("procedure_id", procedureId)
-      .limit(1);
-
-    if (!shareRecord || shareRecord.length === 0) {
-      return new Response(JSON.stringify({ error: "No shared card found" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     // Fetch procedure info
     const { data: procedure } = await supabase
       .from("procedures")
       .select("name, facility_id, user_id")
       .eq("id", procedureId)
-      .single();
+      .maybeSingle();
 
     if (!procedure) {
       return new Response(JSON.stringify({ error: "Procedure not found" }), {
@@ -60,7 +46,7 @@ Deno.serve(async (req) => {
         .from("facilities")
         .select("name")
         .eq("id", procedure.facility_id)
-        .single();
+        .maybeSingle();
       facilityName = facility?.name || "";
     }
 
@@ -69,7 +55,7 @@ Deno.serve(async (req) => {
       .from("profiles")
       .select("display_name")
       .eq("user_id", procedure.user_id)
-      .single();
+      .maybeSingle();
 
     // Fetch preferences
     const { data: prefs } = await supabase
