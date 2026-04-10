@@ -48,10 +48,13 @@ const ThemeSelectionDialog = ({ open, onComplete }: ThemeSelectionDialogProps) =
           <button
             onClick={() => handleSelect("dark")}
             className={cn(
-              "flex flex-col items-center gap-3 rounded-xl border-2 border-border p-6 transition-all",
+              "relative flex flex-col items-center gap-3 rounded-xl border-2 border-primary p-6 transition-all",
               "hover:border-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.1)] active:scale-95"
             )}
           >
+            <span className="absolute -top-2.5 right-2 bg-primary text-primary-foreground text-[10px] font-semibold px-2 py-0.5 rounded-full">
+              Recommended
+            </span>
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-primary">
               <Moon className="h-8 w-8" />
             </div>
