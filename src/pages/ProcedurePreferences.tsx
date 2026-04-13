@@ -6,6 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useSmartSuggestions } from "@/hooks/useSmartSuggestions";
 import PreferenceCategoryWidget, {
   PREFERENCE_CATEGORIES,
   type PreferenceCategory,
