@@ -190,7 +190,7 @@ export const DemoVideoPopup = () => {
                 playsInline
                 muted={isMuted}
                 onLoadedData={() => setVideoLoaded(true)}
-                className="w-full aspect-video object-contain"
+                className="w-full aspect-video object-cover"
               />
 
               {/* Gradient overlay at bottom for controls */}
