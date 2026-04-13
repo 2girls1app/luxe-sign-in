@@ -25,6 +25,10 @@ interface MedicationSelectorProps {
   currentValue: string;
   onSave: (category: string, value: string) => void;
   saving: boolean;
+  procedureSuggestions?: string[];
+  specialtySuggestions?: string[];
+  procedureName?: string;
+  specialtyName?: string;
 }
 
 const ROUTES = ["IV", "IM", "PO", "SQ", "Local", "Topical", "Intranasal", "Rectal", "Nebulized"];
