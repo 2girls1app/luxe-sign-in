@@ -57,6 +57,8 @@ const ProcedurePreferences = () => {
   const [musicCount, setMusicCount] = useState(0);
   const [salesRepOpen, setSalesRepOpen] = useState(false);
   const [anesthesiaOpen, setAnesthesiaOpen] = useState(false);
+  const [specialty, setSpecialty] = useState("");
+  const [procedureFacilityId, setProcedureFacilityId] = useState<string | null>(null);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
