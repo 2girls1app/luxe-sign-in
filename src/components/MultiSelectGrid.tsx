@@ -170,7 +170,8 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
         </div>
       </div>
 
-      {/* Qty controls */}
+      {/* Qty controls - hide for sutures since qty is per-size */}
+      {!supportsSizes && (
       <div className="flex items-center gap-3 pl-7">
         <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-8">Qty</span>
         <div className="flex items-center gap-1.5">
