@@ -18,6 +18,7 @@ import StepsDrawer from "@/components/StepsDrawer";
 import SharePreferenceCardDrawer from "@/components/SharePreferenceCardDrawer";
 import TeamChatDrawer from "@/components/TeamChatDrawer";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
+import SalesRepDrawer from "@/components/SalesRepDrawer";
 
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
@@ -53,6 +54,7 @@ const ProcedurePreferences = () => {
   const [togglingComplete, setTogglingComplete] = useState(false);
   const [musicOpen, setMusicOpen] = useState(false);
   const [musicCount, setMusicCount] = useState(0);
+  const [salesRepOpen, setSalesRepOpen] = useState(false);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
@@ -176,6 +178,8 @@ const ProcedurePreferences = () => {
       setMedicationOpen(true);
     } else if (cat.key === "steps") {
       setStepsOpen(true);
+    } else if (cat.key === "sales_rep") {
+      setSalesRepOpen(true);
     } else if (cat.type === "file") {
       setFileDrawerOpen(true);
     } else {
@@ -427,6 +431,14 @@ const ProcedurePreferences = () => {
         open={musicOpen}
         onOpenChange={(open) => { setMusicOpen(open); if (!open) fetchMusicCount(); }}
         doctorUserId={effectiveUserId}
+      />
+
+      <SalesRepDrawer
+        open={salesRepOpen}
+        onOpenChange={(open) => { setSalesRepOpen(open); }}
+        currentValue={preferences["sales_rep"] || ""}
+        onSave={handleSave}
+        saving={saving}
       />
     </div>
   );
