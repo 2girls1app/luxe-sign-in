@@ -439,6 +439,7 @@ const ProcedurePreferences = () => {
         currentValue={preferences["sales_rep"] || ""}
         onSave={handleSave}
         saving={saving}
+        procedureId={procedureId || ""}
       />
     </div>
   );
