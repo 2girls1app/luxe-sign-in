@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import {
   Pill, Hand, RotateCcw, Droplets, Wrench, Scissors, LayoutGrid, Package, Ribbon,
-  Image, Video, FileText, ListOrdered, Bot,
+  Image, Video, FileText, ListOrdered, Bot, UserCheck,
 } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
@@ -29,6 +29,7 @@ export const PREFERENCE_CATEGORIES: PreferenceCategory[] = [
   { key: "images", label: "Images", icon: Image, type: "file" },
   { key: "videos", label: "Videos", icon: Video, type: "file" },
   { key: "pdfs", label: "PDFs", icon: FileText, type: "file" },
+  { key: "sales_rep", label: "Sales Rep", icon: UserCheck },
 ];
 
 
