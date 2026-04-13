@@ -220,6 +220,7 @@ const PreferenceDetailDrawer = ({
               value={value}
               onChange={setValue}
               supportsHold={["suture", "supplies", "equipment", "instruments", "robotic_instruments"].includes(category.key)}
+              supportsSizes={category.key === "suture"}
               addLabel={addLabel}
               hideInternalAdd={true}
               procedureSuggestions={procedureSuggestions}
