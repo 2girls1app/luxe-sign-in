@@ -216,14 +216,15 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
           </div>
         </div>
       )}
+      )}
 
-      {/* Size selection for sutures */}
+      {/* Size selection for sutures with per-size qty */}
       {supportsSizes && (
-        <div className="pl-7 space-y-1.5">
+        <div className="pl-7 space-y-2">
           <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sizes</span>
           <div className="flex flex-wrap gap-1.5">
             {SUTURE_SIZES.map((size) => {
-              const isSelected = (item.sizes || []).includes(size);
+              const isSelected = getSizeNames(item.sizes).includes(size);
               return (
                 <button
                   key={size}
@@ -240,6 +241,26 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
               );
             })}
           </div>
+          {/* Per-size qty controls */}
+          {normalizeSizes(item.sizes).length > 0 && (
+            <div className="space-y-1.5 mt-1">
+              {normalizeSizes(item.sizes).map((entry) => (
+                <div key={entry.size} className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-primary w-10">{entry.size}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Qty</span>
+                  <div className="flex items-center gap-1">
+                    <button type="button" onClick={() => updateSizeQty(item.name, entry.size, -1)} className="w-5 h-5 rounded bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
+                      <ChevronDown size={10} className="text-muted-foreground" />
+                    </button>
+                    <span className="text-xs font-semibold text-foreground w-5 text-center">{entry.qty}</span>
+                    <button type="button" onClick={() => updateSizeQty(item.name, entry.size, 1)} className="w-5 h-5 rounded bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
+                      <ChevronUp size={10} className="text-muted-foreground" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
