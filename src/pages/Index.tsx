@@ -217,35 +217,45 @@ const Index = () => {
         </div>
       </motion.div>
 
-      {/* Demo Video Modal */}
-      <Dialog open={showDemoModal} onOpenChange={setShowDemoModal}>
-        <DialogContent className="sm:max-w-2xl p-0 overflow-hidden border-primary/20 bg-card">
-          <div className="relative">
-            <video
-              ref={modalVideoRef}
-              src={DEMO_VIDEO_URL}
-              autoPlay
-              loop
-              playsInline
-              muted={isMuted}
-              className="w-full aspect-video object-contain bg-black"
-            />
-            <div className="absolute bottom-4 right-4 flex gap-2">
-              <button
-                onClick={() => setIsMuted(!isMuted)}
-                className="p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors"
-              >
-                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-              </button>
-            </div>
-            <div className="absolute top-3 left-4">
-              <span className="text-xs font-medium text-white/80 bg-black/50 px-3 py-1 rounded-full">
-                See how it works
-              </span>
-            </div>
+      {/* Demo Video Modal — fullscreen landscape */}
+      {showDemoModal && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <video
+            ref={modalVideoRef}
+            src={DEMO_VIDEO_URL}
+            autoPlay
+            loop
+            playsInline
+            muted={isMuted}
+            className="w-full h-full object-contain"
+          />
+          <div className="absolute top-4 right-4 flex gap-2">
+            <button
+              onClick={() => setIsMuted(!isMuted)}
+              className="p-2.5 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-white/80 hover:text-white hover:bg-black/70 transition-all"
+            >
+              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+            </button>
+            <button
+              onClick={() => setShowDemoModal(false)}
+              className="p-2.5 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-white/80 hover:text-white hover:bg-black/70 transition-all"
+            >
+              <X size={16} />
+            </button>
           </div>
-        </DialogContent>
-      </Dialog>
+          <div className="absolute top-4 left-4">
+            <span className="text-xs font-medium text-white/80 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
+              See how it works
+            </span>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };
