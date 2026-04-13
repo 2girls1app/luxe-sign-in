@@ -23,6 +23,10 @@ interface MultiSelectGridProps {
   addLabel?: string;
   supportsHold?: boolean;
   hideInternalAdd?: boolean;
+  procedureSuggestions?: string[];
+  specialtySuggestions?: string[];
+  procedureName?: string;
+  specialtyName?: string;
 }
 
 const parseItems = (value: string): ItemData[] => {
@@ -45,7 +49,7 @@ const serializeItems = (items: ItemData[]): string => {
   return JSON.stringify(items);
 };
 
-const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false, hideInternalAdd = false }: MultiSelectGridProps) => {
+const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false, hideInternalAdd = false, procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName }: MultiSelectGridProps) => {
   const items = parseItems(value);
   const selectedNames = items.map((i) => i.name);
   const [showInput, setShowInput] = useState(false);
@@ -189,33 +193,77 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
     </div>
   );
 
+  // Categorize unselected options into suggestion groups
+  const unselectedOptions = options.filter((opt) => !items.some((i) => i.name === opt.name));
+  const procSuggestedSet = new Set(procedureSuggestions);
+  const specSuggestedSet = new Set(specialtySuggestions);
+
+  const procSuggested = unselectedOptions.filter((opt) => procSuggestedSet.has(opt.name));
+  const specSuggested = unselectedOptions.filter((opt) => specSuggestedSet.has(opt.name) && !procSuggestedSet.has(opt.name));
+  const remaining = unselectedOptions.filter((opt) => !procSuggestedSet.has(opt.name) && !specSuggestedSet.has(opt.name));
+
+  const hasSuggestions = procSuggested.length > 0 || specSuggested.length > 0;
+
+  const renderUnselectedItem = (opt: MultiSelectOption) => (
+    <button
+      key={opt.name}
+      type="button"
+      onClick={() => toggle(opt.name)}
+      className="flex items-start gap-2 rounded-xl border border-border bg-secondary hover:border-primary/40 p-3 cursor-pointer transition-all text-left"
+    >
+      <Checkbox checked={false} className="mt-0.5 pointer-events-none" />
+      <div className="flex flex-col gap-0.5">
+        <span className="text-sm font-medium text-foreground">{opt.name}</span>
+        <span className="text-[10px] text-muted-foreground leading-tight">{opt.desc}</span>
+      </div>
+    </button>
+  );
+
   return (
     <div className="max-h-[50vh] overflow-y-auto">
       <div className="grid grid-cols-1 gap-3">
         {/* Selected items first */}
-        {/* Selected items first: custom then predefined */}
         {customItems.map((item) => renderSelectedItem(item, true))}
         {options
           .filter((opt) => items.some((i) => i.name === opt.name))
           .map((opt) => renderSelectedItem(items.find((i) => i.name === opt.name)!, false))}
 
-        {/* Unselected options */}
-        {options
-          .filter((opt) => !items.some((i) => i.name === opt.name))
-          .map((opt) => (
-            <button
-              key={opt.name}
-              type="button"
-              onClick={() => toggle(opt.name)}
-              className="flex items-start gap-2 rounded-xl border border-border bg-secondary hover:border-primary/40 p-3 cursor-pointer transition-all text-left"
-            >
-              <Checkbox checked={false} className="mt-0.5 pointer-events-none" />
-              <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium text-foreground">{opt.name}</span>
-                <span className="text-[10px] text-muted-foreground leading-tight">{opt.desc}</span>
-              </div>
-            </button>
-          ))}
+        {/* Suggested for this Procedure */}
+        {procSuggested.length > 0 && (
+          <>
+            <div className="flex items-center gap-2 mt-2 mb-0.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">
+                Suggested for {procedureName || "this Procedure"}
+              </span>
+              <div className="flex-1 h-px bg-primary/20" />
+            </div>
+            {procSuggested.map(renderUnselectedItem)}
+          </>
+        )}
+
+        {/* Common for this Specialty */}
+        {specSuggested.length > 0 && (
+          <>
+            <div className="flex items-center gap-2 mt-2 mb-0.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-primary/70">
+                Common for {specialtyName || "this Specialty"}
+              </span>
+              <div className="flex-1 h-px bg-primary/10" />
+            </div>
+            {specSuggested.map(renderUnselectedItem)}
+          </>
+        )}
+
+        {/* All Items */}
+        {hasSuggestions && remaining.length > 0 && (
+          <div className="flex items-center gap-2 mt-2 mb-0.5">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              All Items
+            </span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+        )}
+        {remaining.map(renderUnselectedItem)}
       </div>
 
       {/* Add custom item - only when not externally managed */}

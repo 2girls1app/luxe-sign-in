@@ -25,6 +25,10 @@ interface MedicationSelectorProps {
   currentValue: string;
   onSave: (category: string, value: string) => void;
   saving: boolean;
+  procedureSuggestions?: string[];
+  specialtySuggestions?: string[];
+  procedureName?: string;
+  specialtyName?: string;
 }
 
 const ROUTES = ["IV", "IM", "PO", "SQ", "Local", "Topical", "Intranasal", "Rectal", "Nebulized"];
@@ -44,6 +48,7 @@ const parseMedications = (value: string): SelectedMedication[] => {
 
 const MedicationSelector = ({
   open, onOpenChange, currentValue, onSave, saving,
+  procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName,
 }: MedicationSelectorProps) => {
   const [medications, setMedications] = useState<SelectedMedication[]>([]);
   const [search, setSearch] = useState("");
@@ -96,6 +101,22 @@ const MedicationSelector = ({
     });
     return groups;
   }, [medications]);
+
+  // Suggested medications from history
+  const suggestedProcMeds = useMemo(() => {
+    const procSet = new Set(procedureSuggestions.map(s => s.toLowerCase()));
+    return MEDICATIONS_DATABASE.filter(
+      (m) => procSet.has(m.name.toLowerCase()) && !medications.some((sel) => sel.name.toLowerCase() === m.name.toLowerCase())
+    );
+  }, [procedureSuggestions, medications]);
+
+  const suggestedSpecMeds = useMemo(() => {
+    const specSet = new Set(specialtySuggestions.map(s => s.toLowerCase()));
+    const procSet = new Set(procedureSuggestions.map(s => s.toLowerCase()));
+    return MEDICATIONS_DATABASE.filter(
+      (m) => specSet.has(m.name.toLowerCase()) && !procSet.has(m.name.toLowerCase()) && !medications.some((sel) => sel.name.toLowerCase() === m.name.toLowerCase())
+    );
+  }, [specialtySuggestions, procedureSuggestions, medications]);
 
   const addMedication = (med: MedicationEntry | { name: string; category: string; isCustom?: boolean }) => {
     const newMed: SelectedMedication = {
@@ -398,10 +419,60 @@ const MedicationSelector = ({
                 </div>
               )}
 
+              {/* Suggested for this Procedure */}
+              {!search.trim() && suggestedProcMeds.length > 0 && (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 px-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                      Suggested for {procedureName || "this Procedure"}
+                    </span>
+                    <div className="flex-1 h-px bg-primary/20" />
+                  </div>
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 overflow-hidden">
+                    {suggestedProcMeds.map((med) => (
+                      <button
+                        key={med.name}
+                        onClick={() => addMedication(med)}
+                        className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-primary/10 transition-colors flex items-center gap-2"
+                      >
+                        <Plus size={12} className="text-primary" />
+                        {med.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Common for this Specialty */}
+              {!search.trim() && suggestedSpecMeds.length > 0 && (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 px-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-primary/70">
+                      Common for {specialtyName || "this Specialty"}
+                    </span>
+                    <div className="flex-1 h-px bg-primary/10" />
+                  </div>
+                  <div className="rounded-xl border border-border bg-secondary/30 overflow-hidden">
+                    {suggestedSpecMeds.map((med) => (
+                      <button
+                        key={med.name}
+                        onClick={() => addMedication(med)}
+                        className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-primary/10 transition-colors flex items-center gap-2"
+                      >
+                        <Plus size={12} className="text-primary" />
+                        {med.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Browse by category (when not searching) */}
               {!search.trim() && (
                 <div className="space-y-1">
-                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider px-1">Browse by Category</p>
+                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider px-1">
+                    {(suggestedProcMeds.length > 0 || suggestedSpecMeds.length > 0) ? "All Medications" : "Browse by Category"}
+                  </p>
                   <div className="rounded-xl border border-border bg-secondary/30 overflow-hidden">
                     {MEDICATION_CATEGORIES.map((cat) => {
                       const meds = browsableGroups[cat];

@@ -6,6 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useSmartSuggestions } from "@/hooks/useSmartSuggestions";
 import PreferenceCategoryWidget, {
   PREFERENCE_CATEGORIES,
   type PreferenceCategory,
@@ -56,12 +57,14 @@ const ProcedurePreferences = () => {
   const [musicCount, setMusicCount] = useState(0);
   const [salesRepOpen, setSalesRepOpen] = useState(false);
   const [anesthesiaOpen, setAnesthesiaOpen] = useState(false);
+  const [specialty, setSpecialty] = useState("");
+  const [procedureFacilityId, setProcedureFacilityId] = useState<string | null>(null);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
     const { data } = await supabase
       .from("procedures")
-      .select("name, facility_id, user_id, is_complete, facilities(name)")
+      .select("name, facility_id, user_id, is_complete, category, facilities(name)")
       .eq("id", procedureId)
       .single();
     if (data) {
@@ -70,6 +73,8 @@ const ProcedurePreferences = () => {
       setIsComplete(data.is_complete);
       setIsOwner(data.user_id === user.id);
       setOwnerId(data.user_id);
+      setSpecialty(data.category || "");
+      setProcedureFacilityId(data.facility_id);
     } else navigate("/profile");
   }, [procedureId, user, navigate]);
 
@@ -132,6 +137,15 @@ const ProcedurePreferences = () => {
     fetchProviderName();
     fetchMusicCount();
   }, [fetchProcedure, fetchPreferences, fetchFileCounts, fetchProviderName, fetchMusicCount]);
+
+  // Smart suggestions based on procedure name and specialty
+  const activeCategoryKey = selectedCategory?.key || "";
+  const { procedureSuggestions, specialtySuggestions } = useSmartSuggestions(
+    procedureName,
+    specialty,
+    activeCategoryKey,
+    procedureFacilityId
+  );
 
   const handleSave = async (category: string, value: string) => {
     if (!procedureId || !user || !effectiveUserId) return;
@@ -378,6 +392,10 @@ const ProcedurePreferences = () => {
         currentValue={selectedCategory ? (preferences[selectedCategory.key] || "") : ""}
         onSave={handleSave}
         saving={saving}
+        procedureSuggestions={procedureSuggestions}
+        specialtySuggestions={specialtySuggestions}
+        procedureName={procedureName}
+        specialtyName={specialty}
       />
 
       <FileUploadDrawer
@@ -394,6 +412,10 @@ const ProcedurePreferences = () => {
         currentValue={preferences["medication"] || ""}
         onSave={handleSave}
         saving={saving}
+        procedureSuggestions={procedureSuggestions}
+        specialtySuggestions={specialtySuggestions}
+        procedureName={procedureName}
+        specialtyName={specialty}
       />
 
       <StepsDrawer
