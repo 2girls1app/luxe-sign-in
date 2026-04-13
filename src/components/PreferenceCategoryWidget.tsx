@@ -97,6 +97,7 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
         if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
           const parts: string[] = [];
           if (parsed.meds?.length) parts.push(`${parsed.meds.length} med${parsed.meds.length !== 1 ? "s" : ""}`);
+          if (parsed.antibiotics?.length) parts.push(`${parsed.antibiotics.length} abx`);
           if (parsed.tube) parts.push(parsed.tube);
           if (parsed.paralyze) parts.push(`Para: ${parsed.paralyze}`);
           return parts.length > 0 ? parts.join(", ") : null;
