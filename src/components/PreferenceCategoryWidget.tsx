@@ -103,6 +103,21 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
       return raw;
     }
 
+    // Special handling for sales_rep JSON format
+    if (category.key === "sales_rep") {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const first = parsed[0];
+          const parts: string[] = [];
+          if (first.company) parts.push(first.company);
+          if (first.rep_name) parts.push(first.rep_name);
+          const summary = parts.join(" – ") || "1 rep";
+          return parsed.length > 1 ? `${summary} +${parsed.length - 1}` : summary;
+        }
+      } catch { /* fallback */ }
+    }
+
     const parsed = parseStructuredValue(raw);
     if (Array.isArray(parsed)) {
       if (parsed.length === 0) return "No items selected";
