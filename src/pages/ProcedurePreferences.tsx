@@ -444,6 +444,14 @@ const ProcedurePreferences = () => {
         saving={saving}
         procedureId={procedureId || ""}
       />
+
+      <AnesthesiaDrawer
+        open={anesthesiaOpen}
+        onOpenChange={setAnesthesiaOpen}
+        currentValue={preferences["anesthesia"] || ""}
+        onSave={handleSave}
+        saving={saving}
+      />
     </div>
   );
 };
