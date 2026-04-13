@@ -255,12 +255,6 @@ export const DemoVideoPopup = () => {
             {/* Bottom gold line */}
             <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[hsl(var(--gold)/0.2)] to-transparent" />
 
-            {/* Music credit (tiny, subtle) */}
-            <div className="absolute bottom-[1px] left-1/2 -translate-x-1/2">
-              <span className="text-[8px] text-muted-foreground/30">
-                ♫ "Carefree" — Kevin MacLeod (incompetech.com) CC BY 4.0
-              </span>
-            </div>
           </motion.div>
         </motion.div>
       )}
