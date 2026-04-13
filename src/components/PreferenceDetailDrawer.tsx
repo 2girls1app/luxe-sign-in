@@ -39,6 +39,10 @@ interface PreferenceDetailDrawerProps {
   currentValue: string;
   onSave: (category: string, value: string) => void;
   saving: boolean;
+  procedureSuggestions?: string[];
+  specialtySuggestions?: string[];
+  procedureName?: string;
+  specialtyName?: string;
 }
 
 const parseGloveValue = (val: string): { doctor: string; first_assist: string } => {
