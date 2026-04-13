@@ -417,7 +417,6 @@ const ProcedurePreferences = () => {
         procedureName={procedureName}
         specialtyName={specialty}
       />
-      />
 
       <StepsDrawer
         open={stepsOpen}
