@@ -90,6 +90,20 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
     if (!value?.trim()) return null;
     const raw = value.trim();
 
+    // Special handling for anesthesia JSON format
+    if (category.key === "anesthesia") {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          const parts: string[] = [];
+          if (parsed.meds?.length) parts.push(`${parsed.meds.length} med${parsed.meds.length !== 1 ? "s" : ""}`);
+          if (parsed.tube) parts.push(parsed.tube);
+          if (parsed.paralyze) parts.push(`Para: ${parsed.paralyze}`);
+          return parts.length > 0 ? parts.join(", ") : null;
+        }
+      } catch { /* fallback */ }
+    }
+
     // Special handling for gloves JSON format
     if (category.key === "gloves") {
       try {
