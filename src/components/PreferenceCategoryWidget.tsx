@@ -143,7 +143,12 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
       if (category.key === "suture") {
         const sutureParts = parsed.slice(0, 2).map((item: any) => {
           const name = typeof item === "string" ? item : item.name;
-          const sizes = item.sizes?.length ? ` ${item.sizes.join(", ")}` : "";
+          const sizes = item.sizes?.length
+            ? ` ${item.sizes.map((s: any) => {
+                if (typeof s === "string") return s;
+                return s.qty > 1 ? `${s.size} x${s.qty}` : s.size;
+              }).join(", ")}`
+            : "";
           return `${name}${sizes}`;
         });
         const summary = sutureParts.join(" • ");
