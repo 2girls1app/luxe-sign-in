@@ -266,6 +266,18 @@ const SharedPreferenceCard = () => {
 
   const getDisplayValue = (key: string, val: string): string => {
     if (key === "medication") return formatMedValue(val);
+    if (key === "gloves") {
+      try {
+        const parsed = JSON.parse(val);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          const parts: string[] = [];
+          if (parsed.doctor) parts.push(`Doctor: ${parsed.doctor}`);
+          if (parsed.first_assist) parts.push(`First Assist: ${parsed.first_assist}`);
+          return parts.length > 0 ? parts.join(", ") : val;
+        }
+      } catch { /* fallback */ }
+      return val;
+    }
     if (key === "steps") {
       try {
         const steps = JSON.parse(val);
