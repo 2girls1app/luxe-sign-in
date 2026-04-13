@@ -64,7 +64,7 @@ const ProcedurePreferences = () => {
     if (!procedureId || !user) return;
     const { data } = await supabase
       .from("procedures")
-      .select("name, facility_id, user_id, is_complete, facilities(name)")
+      .select("name, facility_id, user_id, is_complete, category, facilities(name)")
       .eq("id", procedureId)
       .single();
     if (data) {
@@ -73,6 +73,8 @@ const ProcedurePreferences = () => {
       setIsComplete(data.is_complete);
       setIsOwner(data.user_id === user.id);
       setOwnerId(data.user_id);
+      setSpecialty(data.category || "");
+      setProcedureFacilityId(data.facility_id);
     } else navigate("/profile");
   }, [procedureId, user, navigate]);
 
