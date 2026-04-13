@@ -194,7 +194,32 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
         </div>
       )}
 
-      {/* Notes */}
+      {/* Size selection for sutures */}
+      {supportsSizes && (
+        <div className="pl-7 space-y-1.5">
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sizes</span>
+          <div className="flex flex-wrap gap-1.5">
+            {SUTURE_SIZES.map((size) => {
+              const isSelected = (item.sizes || []).includes(size);
+              return (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => toggleSize(item.name, size)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+                    isSelected
+                      ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
+                      : "border-border bg-secondary text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                  }`}
+                >
+                  {size}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="pl-7">
         <textarea
           value={item.notes || ""}
