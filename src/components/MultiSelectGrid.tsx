@@ -10,14 +10,27 @@ interface MultiSelectOption {
   desc: string;
 }
 
+interface SizeEntry {
+  size: string;
+  qty: number;
+}
+
 interface ItemData {
   name: string;
   qty: number;
   hold?: boolean;
   holdQty?: number;
   notes?: string;
-  sizes?: string[];
+  sizes?: (string | SizeEntry)[];
 }
+
+const normalizeSizes = (sizes?: (string | SizeEntry)[]): SizeEntry[] => {
+  if (!sizes) return [];
+  return sizes.map((s) => typeof s === "string" ? { size: s, qty: 1 } : s);
+};
+
+const getSizeNames = (sizes?: (string | SizeEntry)[]): string[] =>
+  normalizeSizes(sizes).map((s) => s.size);
 
 interface MultiSelectGridProps {
   options: MultiSelectOption[];
