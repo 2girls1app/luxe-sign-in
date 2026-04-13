@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { X, Volume2, VolumeX, Play, Pause } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { motion, AnimatePresence } from "framer-motion";
 
 const DEMO_VIDEO_URL =
   "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/demo-video.mp4";
@@ -11,20 +11,22 @@ export const DemoVideoPopup = () => {
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
   const [dontShow, setDontShow] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (localStorage.getItem(STORAGE_KEY) !== "true") {
-      setOpen(true);
+      const timer = setTimeout(() => setOpen(true), 600);
+      return () => clearTimeout(timer);
     }
   }, []);
 
-  const handleClose = (value: boolean) => {
-    if (!value && dontShow) {
+  const handleClose = useCallback(() => {
+    if (dontShow) {
       localStorage.setItem(STORAGE_KEY, "true");
     }
-    setOpen(value);
-  };
+    setOpen(false);
+  }, [dontShow]);
 
   const togglePlay = () => {
     if (!videoRef.current) return;
@@ -38,78 +40,146 @@ export const DemoVideoPopup = () => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden border-primary/20 bg-card [&>button]:hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-2">
-          <div>
-            <h2 className="text-lg font-bold text-gold">Welcome to 1st Assist</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              See how to add doctors, procedures, preference cards, and use AI import
-            </p>
-          </div>
-          <button
-            onClick={() => handleClose(false)}
-            className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Video */}
-        <div className="relative bg-black">
-          <video
-            ref={videoRef}
-            src={DEMO_VIDEO_URL}
-            autoPlay
-            loop
-            playsInline
-            muted={isMuted}
-            className="w-full aspect-video object-contain"
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          {/* Backdrop — dark blur */}
+          <motion.div
+            className="absolute inset-0 bg-black/70 backdrop-blur-xl"
+            onClick={handleClose}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
           />
-          <div className="absolute bottom-3 right-3 flex gap-2">
-            <button
-              onClick={togglePlay}
-              className="p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors"
-            >
-              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
-            </button>
-            <button
-              onClick={() => setIsMuted(!isMuted)}
-              className="p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors"
-            >
-              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-            </button>
-          </div>
-        </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between px-5 pb-4 pt-2">
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <div
-              className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                dontShow ? "bg-gold border-gold" : "border-muted-foreground"
-              }`}
-              onClick={() => setDontShow(!dontShow)}
-            >
-              {dontShow && (
-                <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                  <path d="M2 6L5 9L10 3" stroke="hsl(0,0%,8%)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
-            </div>
-            <span className="text-xs text-muted-foreground" onClick={() => setDontShow(!dontShow)}>
-              Don't show this again
-            </span>
-          </label>
-          <button
-            onClick={() => handleClose(false)}
-            className="text-xs text-gold hover:text-gold-light transition-colors font-medium"
+          {/* Modal */}
+          <motion.div
+            className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-[hsl(var(--gold)/0.25)] bg-[hsl(var(--card))] shadow-[0_0_80px_-20px_hsl(var(--gold)/0.15),0_25px_50px_-12px_rgba(0,0,0,0.6)]"
+            initial={{ opacity: 0, scale: 0.92, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            Skip
-          </button>
-        </div>
-      </DialogContent>
-    </Dialog>
+            {/* Subtle gold glow at top */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[hsl(var(--gold)/0.5)] to-transparent" />
+
+            {/* Header */}
+            <div className="relative px-7 pt-6 pb-3">
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+              >
+                <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[hsl(var(--gold))] mb-1.5">
+                  Welcome to 1st Assist
+                </p>
+                <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                  Built for Precision. Designed for You.
+                </h2>
+              </motion.div>
+
+              <button
+                onClick={handleClose}
+                className="absolute top-5 right-5 p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--muted))] transition-all duration-200"
+              >
+                <X size={16} strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {/* Video container */}
+            <motion.div
+              className="relative mx-4 mb-3 rounded-xl overflow-hidden bg-black"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+            >
+              {/* Shimmer loader */}
+              {!videoLoaded && (
+                <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--card))] via-[hsl(var(--muted))] to-[hsl(var(--card))] animate-pulse" />
+              )}
+
+              <video
+                ref={videoRef}
+                src={DEMO_VIDEO_URL}
+                autoPlay
+                loop
+                playsInline
+                muted={isMuted}
+                onLoadedData={() => setVideoLoaded(true)}
+                className="w-full aspect-video object-contain"
+              />
+
+              {/* Gradient overlay at bottom for controls */}
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+
+              {/* Custom controls */}
+              <div className="absolute bottom-3 right-3 flex gap-1.5">
+                <button
+                  onClick={togglePlay}
+                  className="p-2.5 rounded-full bg-black/40 backdrop-blur-sm border border-white/10 text-white/80 hover:text-white hover:bg-black/60 transition-all duration-200"
+                >
+                  {isPlaying ? <Pause size={14} strokeWidth={1.5} /> : <Play size={14} strokeWidth={1.5} />}
+                </button>
+                <button
+                  onClick={() => setIsMuted(!isMuted)}
+                  className="p-2.5 rounded-full bg-black/40 backdrop-blur-sm border border-white/10 text-white/80 hover:text-white hover:bg-black/60 transition-all duration-200"
+                >
+                  {isMuted ? <VolumeX size={14} strokeWidth={1.5} /> : <Volume2 size={14} strokeWidth={1.5} />}
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between px-7 pb-5 pt-2">
+              <label className="flex items-center gap-2.5 cursor-pointer select-none group">
+                <div
+                  className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-all duration-200 ${
+                    dontShow
+                      ? "bg-[hsl(var(--gold))] border-[hsl(var(--gold))]"
+                      : "border-[hsl(var(--muted-foreground)/0.4)] group-hover:border-[hsl(var(--muted-foreground)/0.7)]"
+                  }`}
+                  onClick={() => setDontShow(!dontShow)}
+                >
+                  {dontShow && (
+                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                      <path
+                        d="M2 6L5 9L10 3"
+                        stroke="hsl(0,0%,8%)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </div>
+                <span
+                  className="text-xs text-muted-foreground group-hover:text-foreground/70 transition-colors duration-200"
+                  onClick={() => setDontShow(!dontShow)}
+                >
+                  Don't show this again
+                </span>
+              </label>
+
+              <button
+                onClick={handleClose}
+                className="text-xs font-medium text-[hsl(var(--gold)/0.7)] hover:text-[hsl(var(--gold))] transition-colors duration-200"
+              >
+                Close
+              </button>
+            </div>
+
+            {/* Bottom gold line */}
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[hsl(var(--gold)/0.2)] to-transparent" />
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
