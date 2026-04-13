@@ -138,6 +138,15 @@ const ProcedurePreferences = () => {
     fetchMusicCount();
   }, [fetchProcedure, fetchPreferences, fetchFileCounts, fetchProviderName, fetchMusicCount]);
 
+  // Smart suggestions based on procedure name and specialty
+  const activeCategoryKey = selectedCategory?.key || "";
+  const { procedureSuggestions, specialtySuggestions } = useSmartSuggestions(
+    procedureName,
+    specialty,
+    activeCategoryKey,
+    procedureFacilityId
+  );
+
   const handleSave = async (category: string, value: string) => {
     if (!procedureId || !user || !effectiveUserId) return;
     setSaving(true);
