@@ -97,9 +97,18 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
   const toggleSize = (name: string, size: string) => {
     updateItems(items.map((i) => {
       if (i.name !== name) return i;
-      const currentSizes = i.sizes || [];
-      const has = currentSizes.includes(size);
-      return { ...i, sizes: has ? currentSizes.filter((s) => s !== size) : [...currentSizes, size] };
+      const current = normalizeSizes(i.sizes);
+      const has = current.some((s) => s.size === size);
+      const newSizes = has ? current.filter((s) => s.size !== size) : [...current, { size, qty: 1 }];
+      return { ...i, sizes: newSizes };
+    }));
+  };
+
+  const updateSizeQty = (name: string, size: string, delta: number) => {
+    updateItems(items.map((i) => {
+      if (i.name !== name) return i;
+      const current = normalizeSizes(i.sizes);
+      return { ...i, sizes: current.map((s) => s.size === size ? { ...s, qty: Math.max(1, s.qty + delta) } : s) };
     }));
   };
 
