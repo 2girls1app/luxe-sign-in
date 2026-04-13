@@ -139,6 +139,16 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
       if (parsed.length === 0) return "No items selected";
       if (isMedication) return `${parsed.length} med${parsed.length !== 1 ? "s" : ""}`;
       if (isSteps) return `${parsed.length} step${parsed.length !== 1 ? "s" : ""}`;
+      // Suture summary with sizes
+      if (category.key === "suture") {
+        const sutureParts = parsed.slice(0, 2).map((item: any) => {
+          const name = typeof item === "string" ? item : item.name;
+          const sizes = item.sizes?.length ? ` ${item.sizes.join(", ")}` : "";
+          return `${name}${sizes}`;
+        });
+        const summary = sutureParts.join(" • ");
+        return parsed.length > 2 ? `${summary} +${parsed.length - 2}` : summary;
+      }
       return summarizeNames(extractNames(parsed)) || `${parsed.length} items selected`;
     }
     if (parsed && typeof parsed === "object") {

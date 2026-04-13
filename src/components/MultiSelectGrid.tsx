@@ -3,6 +3,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Plus, X, ChevronUp, ChevronDown, Pause } from "lucide-react";
 
+const SUTURE_SIZES = ["0", "2-0", "3-0", "4-0", "5-0", "6-0", "7-0", "8-0"];
+
 interface MultiSelectOption {
   name: string;
   desc: string;
@@ -14,6 +16,7 @@ interface ItemData {
   hold?: boolean;
   holdQty?: number;
   notes?: string;
+  sizes?: string[];
 }
 
 interface MultiSelectGridProps {
@@ -22,6 +25,7 @@ interface MultiSelectGridProps {
   onChange: (value: string) => void;
   addLabel?: string;
   supportsHold?: boolean;
+  supportsSizes?: boolean;
   hideInternalAdd?: boolean;
   procedureSuggestions?: string[];
   specialtySuggestions?: string[];
@@ -39,9 +43,10 @@ const parseItems = (value: string): ItemData[] => {
       hold: item.hold ?? false,
       holdQty: item.holdQty ?? 1,
       notes: item.notes ?? "",
+      sizes: item.sizes ?? [],
     }));
   } catch {}
-  return value.split(", ").filter(Boolean).map((name) => ({ name, qty: 1, hold: false, holdQty: 1, notes: "" }));
+  return value.split(", ").filter(Boolean).map((name) => ({ name, qty: 1, hold: false, holdQty: 1, notes: "", sizes: [] }));
 };
 
 const serializeItems = (items: ItemData[]): string => {
@@ -49,7 +54,7 @@ const serializeItems = (items: ItemData[]): string => {
   return JSON.stringify(items);
 };
 
-const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false, hideInternalAdd = false, procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName }: MultiSelectGridProps) => {
+const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false, supportsSizes = false, hideInternalAdd = false, procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName }: MultiSelectGridProps) => {
   const items = parseItems(value);
   const selectedNames = items.map((i) => i.name);
   const [showInput, setShowInput] = useState(false);
@@ -72,8 +77,17 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
     if (existing) {
       updateItems(items.filter((i) => i.name !== name));
     } else {
-      updateItems([...items, { name, qty: 1, hold: false, holdQty: 1, notes: "" }]);
+      updateItems([...items, { name, qty: 1, hold: false, holdQty: 1, notes: "", sizes: [] }]);
     }
+  };
+
+  const toggleSize = (name: string, size: string) => {
+    updateItems(items.map((i) => {
+      if (i.name !== name) return i;
+      const currentSizes = i.sizes || [];
+      const has = currentSizes.includes(size);
+      return { ...i, sizes: has ? currentSizes.filter((s) => s !== size) : [...currentSizes, size] };
+    }));
   };
 
   const updateQty = (name: string, delta: number) => {
@@ -180,7 +194,32 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
         </div>
       )}
 
-      {/* Notes */}
+      {/* Size selection for sutures */}
+      {supportsSizes && (
+        <div className="pl-7 space-y-1.5">
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sizes</span>
+          <div className="flex flex-wrap gap-1.5">
+            {SUTURE_SIZES.map((size) => {
+              const isSelected = (item.sizes || []).includes(size);
+              return (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => toggleSize(item.name, size)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+                    isSelected
+                      ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
+                      : "border-border bg-secondary text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                  }`}
+                >
+                  {size}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="pl-7">
         <textarea
           value={item.notes || ""}
