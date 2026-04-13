@@ -23,6 +23,10 @@ interface MultiSelectGridProps {
   addLabel?: string;
   supportsHold?: boolean;
   hideInternalAdd?: boolean;
+  procedureSuggestions?: string[];
+  specialtySuggestions?: string[];
+  procedureName?: string;
+  specialtyName?: string;
 }
 
 const parseItems = (value: string): ItemData[] => {
