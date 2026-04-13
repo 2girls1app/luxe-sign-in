@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import {
   Pill, Hand, RotateCcw, Droplets, Wrench, Scissors, LayoutGrid, Package, Ribbon,
-  Image, Video, FileText, ListOrdered, Bot,
+  Image, Video, FileText, ListOrdered, Bot, UserCheck,
 } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
@@ -29,6 +29,7 @@ export const PREFERENCE_CATEGORIES: PreferenceCategory[] = [
   { key: "images", label: "Images", icon: Image, type: "file" },
   { key: "videos", label: "Videos", icon: Video, type: "file" },
   { key: "pdfs", label: "PDFs", icon: FileText, type: "file" },
+  { key: "sales_rep", label: "Sales Rep", icon: UserCheck },
 ];
 
 
@@ -100,6 +101,21 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
         }
       } catch { /* fallback to raw */ }
       return raw;
+    }
+
+    // Special handling for sales_rep JSON format
+    if (category.key === "sales_rep") {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const first = parsed[0];
+          const parts: string[] = [];
+          if (first.company) parts.push(first.company);
+          if (first.rep_name) parts.push(first.rep_name);
+          const summary = parts.join(" – ") || "1 rep";
+          return parsed.length > 1 ? `${summary} +${parsed.length - 1}` : summary;
+        }
+      } catch { /* fallback */ }
     }
 
     const parsed = parseStructuredValue(raw);
