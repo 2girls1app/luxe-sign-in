@@ -102,6 +102,22 @@ const MedicationSelector = ({
     return groups;
   }, [medications]);
 
+  // Suggested medications from history
+  const suggestedProcMeds = useMemo(() => {
+    const procSet = new Set(procedureSuggestions.map(s => s.toLowerCase()));
+    return MEDICATIONS_DATABASE.filter(
+      (m) => procSet.has(m.name.toLowerCase()) && !medications.some((sel) => sel.name.toLowerCase() === m.name.toLowerCase())
+    );
+  }, [procedureSuggestions, medications]);
+
+  const suggestedSpecMeds = useMemo(() => {
+    const specSet = new Set(specialtySuggestions.map(s => s.toLowerCase()));
+    const procSet = new Set(procedureSuggestions.map(s => s.toLowerCase()));
+    return MEDICATIONS_DATABASE.filter(
+      (m) => specSet.has(m.name.toLowerCase()) && !procSet.has(m.name.toLowerCase()) && !medications.some((sel) => sel.name.toLowerCase() === m.name.toLowerCase())
+    );
+  }, [specialtySuggestions, procedureSuggestions, medications]);
+
   const addMedication = (med: MedicationEntry | { name: string; category: string; isCustom?: boolean }) => {
     const newMed: SelectedMedication = {
       name: med.name,
