@@ -140,22 +140,46 @@ const PreferenceDetailDrawer = ({
         </DrawerHeader>
         <div className="px-4 pb-2">
           {category.key === "gloves" ? (
-            <RadioGroup value={value} onValueChange={setValue} className="grid grid-cols-3 gap-3">
-              {GLOVE_SIZES.map((size) => (
-                <Label
-                  key={size}
-                  htmlFor={`glove-${size}`}
-                  className={`flex items-center justify-center rounded-xl border px-3 py-3 text-sm font-medium cursor-pointer transition-all ${
-                    value === size
-                      ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
-                      : "border-border bg-secondary text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                  }`}
-                >
-                  <RadioGroupItem value={size} id={`glove-${size}`} className="sr-only" />
-                  {size}
-                </Label>
-              ))}
-            </RadioGroup>
+            <div className="space-y-5">
+              <div>
+                <p className="text-xs font-semibold text-foreground mb-2.5">Doctor Gloves</p>
+                <div className="grid grid-cols-3 gap-3">
+                  {GLOVE_SIZES.map((size) => (
+                    <button
+                      key={`doc-${size}`}
+                      type="button"
+                      onClick={() => setDoctorGlove(size)}
+                      className={`flex items-center justify-center rounded-xl border px-3 py-3 text-sm font-medium cursor-pointer transition-all ${
+                        doctorGlove === size
+                          ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
+                          : "border-border bg-secondary text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-foreground mb-2.5">First Assist Gloves</p>
+                <div className="grid grid-cols-3 gap-3">
+                  {GLOVE_SIZES.map((size) => (
+                    <button
+                      key={`fa-${size}`}
+                      type="button"
+                      onClick={() => setFirstAssistGlove(size)}
+                      className={`flex items-center justify-center rounded-xl border px-3 py-3 text-sm font-medium cursor-pointer transition-all ${
+                        firstAssistGlove === size
+                          ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
+                          : "border-border bg-secondary text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           ) : category.key === "position" ? (
             <div ref={scrollRef} className="max-h-[50vh] overflow-y-auto">
               <RadioGroup value={value} onValueChange={setValue} className="grid grid-cols-2 gap-3">
