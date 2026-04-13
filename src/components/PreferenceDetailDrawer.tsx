@@ -41,6 +41,17 @@ interface PreferenceDetailDrawerProps {
   saving: boolean;
 }
 
+const parseGloveValue = (val: string): { doctor: string; first_assist: string } => {
+  try {
+    const parsed = JSON.parse(val);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return { doctor: parsed.doctor || "", first_assist: parsed.first_assist || "" };
+    }
+  } catch { /* fallback for legacy single-string values */ }
+  // Legacy: treat plain string as doctor glove size
+  return { doctor: val || "", first_assist: "" };
+};
+
 const PreferenceDetailDrawer = ({
   open, onOpenChange, category, currentValue, onSave, saving,
 }: PreferenceDetailDrawerProps) => {
@@ -49,15 +60,22 @@ const PreferenceDetailDrawer = ({
   const [showAddInput, setShowAddInput] = useState(false);
   const [customName, setCustomName] = useState("");
   const addInputRef = useRef<HTMLInputElement>(null);
+  const [doctorGlove, setDoctorGlove] = useState("");
+  const [firstAssistGlove, setFirstAssistGlove] = useState("");
 
   useEffect(() => {
     setValue(currentValue);
     setShowAddInput(false);
     setCustomName("");
+    if (category?.key === "gloves") {
+      const parsed = parseGloveValue(currentValue);
+      setDoctorGlove(parsed.doctor);
+      setFirstAssistGlove(parsed.first_assist);
+    }
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
-  }, [currentValue, open]);
+  }, [currentValue, open, category?.key]);
 
   useEffect(() => {
     if (showAddInput && addInputRef.current) addInputRef.current.focus();
