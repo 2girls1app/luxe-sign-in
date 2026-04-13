@@ -263,25 +263,29 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
             <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
               <Image size={12} /> Images
             </Label>
-            <div className="mt-1.5 flex flex-wrap gap-2">
-              {repImages.map(f => (
-                <div key={f.id} className="relative group w-16 h-16 rounded-lg overflow-hidden border border-border">
-                  <img src={getPublicUrl(f.file_path)} alt={f.file_name} className="w-full h-full object-cover" />
-                  <button
-                    onClick={() => deleteFile(f)}
-                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-destructive/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X size={10} className="text-destructive-foreground" />
-                  </button>
+            <div className="mt-1.5 space-y-1.5">
+              {repImages.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {repImages.map(f => (
+                    <div key={f.id} className="relative group w-16 h-16 rounded-lg overflow-hidden border border-border">
+                      <img src={getPublicUrl(f.file_path)} alt={f.file_name} className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => deleteFile(f)}
+                        className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-destructive/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X size={10} className="text-destructive-foreground" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
               <button
                 onClick={() => imageInputRef.current?.click()}
                 disabled={uploading}
-                className="w-16 h-16 rounded-lg border border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-0.5 text-muted-foreground hover:text-primary transition-colors"
+                className="w-full flex items-center justify-center gap-2 rounded-lg border border-dashed border-border hover:border-primary/50 px-3 py-2.5 text-xs text-muted-foreground hover:text-primary transition-colors"
               >
                 <Upload size={14} />
-                <span className="text-[9px]">Add</span>
+                {uploading ? "Uploading..." : "Upload Photo"}
               </button>
             </div>
             <input ref={imageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="hidden" onChange={e => handleFileUpload(e, "sales_rep_images")} />
