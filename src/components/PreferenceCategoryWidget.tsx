@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import {
   Pill, Hand, RotateCcw, Droplets, Wrench, Scissors, LayoutGrid, Package, Ribbon,
-  Image, Video, FileText, ListOrdered, Bot, UserCheck,
+  Image, Video, FileText, ListOrdered, Bot, UserCheck, Stethoscope,
 } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
@@ -14,6 +14,7 @@ export interface PreferenceCategory {
 }
 
 export const PREFERENCE_CATEGORIES: PreferenceCategory[] = [
+  { key: "anesthesia", label: "Anesthesia", icon: Stethoscope },
   { key: "medication", label: "Medication", icon: Pill },
   { key: "gloves", label: "Gloves", icon: Hand },
   { key: "position", label: "Position", icon: RotateCcw },
@@ -88,6 +89,20 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
   const getPreviewText = (): string | null => {
     if (!value?.trim()) return null;
     const raw = value.trim();
+
+    // Special handling for anesthesia JSON format
+    if (category.key === "anesthesia") {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          const parts: string[] = [];
+          if (parsed.meds?.length) parts.push(`${parsed.meds.length} med${parsed.meds.length !== 1 ? "s" : ""}`);
+          if (parsed.tube) parts.push(parsed.tube);
+          if (parsed.paralyze) parts.push(`Para: ${parsed.paralyze}`);
+          return parts.length > 0 ? parts.join(", ") : null;
+        }
+      } catch { /* fallback */ }
+    }
 
     // Special handling for gloves JSON format
     if (category.key === "gloves") {

@@ -19,7 +19,7 @@ import SharePreferenceCardDrawer from "@/components/SharePreferenceCardDrawer";
 import TeamChatDrawer from "@/components/TeamChatDrawer";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import SalesRepDrawer from "@/components/SalesRepDrawer";
-
+import AnesthesiaDrawer from "@/components/AnesthesiaDrawer";
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
   const navigate = useNavigate();
@@ -55,6 +55,7 @@ const ProcedurePreferences = () => {
   const [musicOpen, setMusicOpen] = useState(false);
   const [musicCount, setMusicCount] = useState(0);
   const [salesRepOpen, setSalesRepOpen] = useState(false);
+  const [anesthesiaOpen, setAnesthesiaOpen] = useState(false);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
@@ -174,7 +175,9 @@ const ProcedurePreferences = () => {
 
   const openCategory = (cat: PreferenceCategory) => {
     setSelectedCategory(cat);
-    if (cat.key === "medication") {
+    if (cat.key === "anesthesia") {
+      setAnesthesiaOpen(true);
+    } else if (cat.key === "medication") {
       setMedicationOpen(true);
     } else if (cat.key === "steps") {
       setStepsOpen(true);
@@ -440,6 +443,14 @@ const ProcedurePreferences = () => {
         onSave={handleSave}
         saving={saving}
         procedureId={procedureId || ""}
+      />
+
+      <AnesthesiaDrawer
+        open={anesthesiaOpen}
+        onOpenChange={setAnesthesiaOpen}
+        currentValue={preferences["anesthesia"] || ""}
+        onSave={handleSave}
+        saving={saving}
       />
     </div>
   );
