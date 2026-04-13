@@ -3,6 +3,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Plus, X, ChevronUp, ChevronDown, Pause } from "lucide-react";
 
+const SUTURE_SIZES = ["0", "2-0", "3-0", "4-0", "5-0", "6-0", "7-0", "8-0"];
+
 interface MultiSelectOption {
   name: string;
   desc: string;
@@ -14,6 +16,7 @@ interface ItemData {
   hold?: boolean;
   holdQty?: number;
   notes?: string;
+  sizes?: string[];
 }
 
 interface MultiSelectGridProps {
@@ -22,6 +25,7 @@ interface MultiSelectGridProps {
   onChange: (value: string) => void;
   addLabel?: string;
   supportsHold?: boolean;
+  supportsSizes?: boolean;
   hideInternalAdd?: boolean;
   procedureSuggestions?: string[];
   specialtySuggestions?: string[];
@@ -39,9 +43,10 @@ const parseItems = (value: string): ItemData[] => {
       hold: item.hold ?? false,
       holdQty: item.holdQty ?? 1,
       notes: item.notes ?? "",
+      sizes: item.sizes ?? [],
     }));
   } catch {}
-  return value.split(", ").filter(Boolean).map((name) => ({ name, qty: 1, hold: false, holdQty: 1, notes: "" }));
+  return value.split(", ").filter(Boolean).map((name) => ({ name, qty: 1, hold: false, holdQty: 1, notes: "", sizes: [] }));
 };
 
 const serializeItems = (items: ItemData[]): string => {
@@ -49,7 +54,7 @@ const serializeItems = (items: ItemData[]): string => {
   return JSON.stringify(items);
 };
 
-const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false, hideInternalAdd = false, procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName }: MultiSelectGridProps) => {
+const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false, supportsSizes = false, hideInternalAdd = false, procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName }: MultiSelectGridProps) => {
   const items = parseItems(value);
   const selectedNames = items.map((i) => i.name);
   const [showInput, setShowInput] = useState(false);
