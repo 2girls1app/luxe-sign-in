@@ -392,6 +392,10 @@ const ProcedurePreferences = () => {
         currentValue={selectedCategory ? (preferences[selectedCategory.key] || "") : ""}
         onSave={handleSave}
         saving={saving}
+        procedureSuggestions={procedureSuggestions}
+        specialtySuggestions={specialtySuggestions}
+        procedureName={procedureName}
+        specialtyName={specialty}
       />
 
       <FileUploadDrawer
@@ -408,6 +412,11 @@ const ProcedurePreferences = () => {
         currentValue={preferences["medication"] || ""}
         onSave={handleSave}
         saving={saving}
+        procedureSuggestions={procedureSuggestions}
+        specialtySuggestions={specialtySuggestions}
+        procedureName={procedureName}
+        specialtyName={specialty}
+      />
       />
 
       <StepsDrawer
