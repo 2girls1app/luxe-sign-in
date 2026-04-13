@@ -41,6 +41,17 @@ interface PreferenceDetailDrawerProps {
   saving: boolean;
 }
 
+const parseGloveValue = (val: string): { doctor: string; first_assist: string } => {
+  try {
+    const parsed = JSON.parse(val);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return { doctor: parsed.doctor || "", first_assist: parsed.first_assist || "" };
+    }
+  } catch { /* fallback for legacy single-string values */ }
+  // Legacy: treat plain string as doctor glove size
+  return { doctor: val || "", first_assist: "" };
+};
+
 const PreferenceDetailDrawer = ({
   open, onOpenChange, category, currentValue, onSave, saving,
 }: PreferenceDetailDrawerProps) => {
@@ -49,15 +60,22 @@ const PreferenceDetailDrawer = ({
   const [showAddInput, setShowAddInput] = useState(false);
   const [customName, setCustomName] = useState("");
   const addInputRef = useRef<HTMLInputElement>(null);
+  const [doctorGlove, setDoctorGlove] = useState("");
+  const [firstAssistGlove, setFirstAssistGlove] = useState("");
 
   useEffect(() => {
     setValue(currentValue);
     setShowAddInput(false);
     setCustomName("");
+    if (category?.key === "gloves") {
+      const parsed = parseGloveValue(currentValue);
+      setDoctorGlove(parsed.doctor);
+      setFirstAssistGlove(parsed.first_assist);
+    }
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
-  }, [currentValue, open]);
+  }, [currentValue, open, category?.key]);
 
   useEffect(() => {
     if (showAddInput && addInputRef.current) addInputRef.current.focus();
@@ -122,22 +140,46 @@ const PreferenceDetailDrawer = ({
         </DrawerHeader>
         <div className="px-4 pb-2">
           {category.key === "gloves" ? (
-            <RadioGroup value={value} onValueChange={setValue} className="grid grid-cols-3 gap-3">
-              {GLOVE_SIZES.map((size) => (
-                <Label
-                  key={size}
-                  htmlFor={`glove-${size}`}
-                  className={`flex items-center justify-center rounded-xl border px-3 py-3 text-sm font-medium cursor-pointer transition-all ${
-                    value === size
-                      ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
-                      : "border-border bg-secondary text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                  }`}
-                >
-                  <RadioGroupItem value={size} id={`glove-${size}`} className="sr-only" />
-                  {size}
-                </Label>
-              ))}
-            </RadioGroup>
+            <div className="space-y-5">
+              <div>
+                <p className="text-xs font-semibold text-foreground mb-2.5">Doctor Gloves</p>
+                <div className="grid grid-cols-3 gap-3">
+                  {GLOVE_SIZES.map((size) => (
+                    <button
+                      key={`doc-${size}`}
+                      type="button"
+                      onClick={() => setDoctorGlove(size)}
+                      className={`flex items-center justify-center rounded-xl border px-3 py-3 text-sm font-medium cursor-pointer transition-all ${
+                        doctorGlove === size
+                          ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
+                          : "border-border bg-secondary text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-foreground mb-2.5">First Assist Gloves</p>
+                <div className="grid grid-cols-3 gap-3">
+                  {GLOVE_SIZES.map((size) => (
+                    <button
+                      key={`fa-${size}`}
+                      type="button"
+                      onClick={() => setFirstAssistGlove(size)}
+                      className={`flex items-center justify-center rounded-xl border px-3 py-3 text-sm font-medium cursor-pointer transition-all ${
+                        firstAssistGlove === size
+                          ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
+                          : "border-border bg-secondary text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           ) : category.key === "position" ? (
             <div ref={scrollRef} className="max-h-[50vh] overflow-y-auto">
               <RadioGroup value={value} onValueChange={setValue} className="grid grid-cols-2 gap-3">
@@ -217,7 +259,13 @@ const PreferenceDetailDrawer = ({
             )
           )}
           <Button
-            onClick={() => onSave(category.key, value)}
+            onClick={() => {
+              if (category.key === "gloves") {
+                onSave(category.key, JSON.stringify({ doctor: doctorGlove, first_assist: firstAssistGlove }));
+              } else {
+                onSave(category.key, value);
+              }
+            }}
             disabled={saving}
             className="w-full"
           >

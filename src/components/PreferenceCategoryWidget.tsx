@@ -87,6 +87,21 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
   const getPreviewText = (): string | null => {
     if (!value?.trim()) return null;
     const raw = value.trim();
+
+    // Special handling for gloves JSON format
+    if (category.key === "gloves") {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          const parts: string[] = [];
+          if (parsed.doctor) parts.push(`Dr: ${parsed.doctor}`);
+          if (parsed.first_assist) parts.push(`FA: ${parsed.first_assist}`);
+          return parts.length > 0 ? parts.join(", ") : null;
+        }
+      } catch { /* fallback to raw */ }
+      return raw;
+    }
+
     const parsed = parseStructuredValue(raw);
     if (Array.isArray(parsed)) {
       if (parsed.length === 0) return "No items selected";
