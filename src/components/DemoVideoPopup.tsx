@@ -4,7 +4,11 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const DEMO_VIDEO_URL =
   "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/demo-video.mp4";
+const DEMO_MUSIC_URL =
+  "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/demo-music.mp3";
 const STORAGE_KEY = "hide_demo_popup";
+const MUSIC_VOLUME = 0.18; // Soft background level
+const FADE_DURATION = 1500; // ms for fade in/out
 
 export const DemoVideoPopup = () => {
   const [open, setOpen] = useState(false);
@@ -13,7 +17,48 @@ export const DemoVideoPopup = () => {
   const [dontShow, setDontShow] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const musicRef = useRef<HTMLAudioElement | null>(null);
+  const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Initialize background music
+  useEffect(() => {
+    const audio = new Audio(DEMO_MUSIC_URL);
+    audio.loop = true;
+    audio.volume = 0;
+    audio.preload = "auto";
+    musicRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audio.src = "";
+      musicRef.current = null;
+    };
+  }, []);
+
+  // Fade music volume smoothly
+  const fadeMusicTo = useCallback((targetVolume: number, onComplete?: () => void) => {
+    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+    const music = musicRef.current;
+    if (!music) return;
+
+    const steps = 30;
+    const stepDuration = FADE_DURATION / steps;
+    const startVolume = music.volume;
+    const delta = (targetVolume - startVolume) / steps;
+    let step = 0;
+
+    fadeIntervalRef.current = setInterval(() => {
+      step++;
+      music.volume = Math.max(0, Math.min(1, startVolume + delta * step));
+      if (step >= steps) {
+        if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+        fadeIntervalRef.current = null;
+        onComplete?.();
+      }
+    }, stepDuration);
+  }, []);
+
+  // Show popup after delay
   useEffect(() => {
     if (localStorage.getItem(STORAGE_KEY) !== "true") {
       const timer = setTimeout(() => setOpen(true), 600);
@@ -21,22 +66,54 @@ export const DemoVideoPopup = () => {
     }
   }, []);
 
+  // Sync music with mute state
+  useEffect(() => {
+    const music = musicRef.current;
+    if (!music || !open) return;
+
+    if (!isMuted) {
+      music.play().then(() => fadeMusicTo(MUSIC_VOLUME)).catch(() => {});
+    } else {
+      fadeMusicTo(0, () => music.pause());
+    }
+  }, [isMuted, open, fadeMusicTo]);
+
   const handleClose = useCallback(() => {
     if (dontShow) {
       localStorage.setItem(STORAGE_KEY, "true");
     }
-    setOpen(false);
-  }, [dontShow]);
+    // Fade out music before closing
+    const music = musicRef.current;
+    if (music && !music.paused) {
+      fadeMusicTo(0, () => {
+        music.pause();
+        setOpen(false);
+      });
+    } else {
+      setOpen(false);
+    }
+  }, [dontShow, fadeMusicTo]);
 
   const togglePlay = () => {
-    if (!videoRef.current) return;
-    if (videoRef.current.paused) {
-      videoRef.current.play();
+    const video = videoRef.current;
+    const music = musicRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      video.play();
+      if (music && !isMuted) music.play().catch(() => {});
       setIsPlaying(true);
     } else {
-      videoRef.current.pause();
+      video.pause();
+      if (music && !isMuted) music.pause();
       setIsPlaying(false);
     }
+  };
+
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (video) video.muted = !isMuted;
+    setIsMuted(!isMuted);
   };
 
   return (
@@ -128,7 +205,7 @@ export const DemoVideoPopup = () => {
                   {isPlaying ? <Pause size={14} strokeWidth={1.5} /> : <Play size={14} strokeWidth={1.5} />}
                 </button>
                 <button
-                  onClick={() => setIsMuted(!isMuted)}
+                  onClick={toggleMute}
                   className="p-2.5 rounded-full bg-black/40 backdrop-blur-sm border border-white/10 text-white/80 hover:text-white hover:bg-black/60 transition-all duration-200"
                 >
                   {isMuted ? <VolumeX size={14} strokeWidth={1.5} /> : <Volume2 size={14} strokeWidth={1.5} />}
@@ -177,6 +254,13 @@ export const DemoVideoPopup = () => {
 
             {/* Bottom gold line */}
             <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[hsl(var(--gold)/0.2)] to-transparent" />
+
+            {/* Music credit (tiny, subtle) */}
+            <div className="absolute bottom-[1px] left-1/2 -translate-x-1/2">
+              <span className="text-[8px] text-muted-foreground/30">
+                ♫ "Carefree" — Kevin MacLeod (incompetech.com) CC BY 4.0
+              </span>
+            </div>
           </motion.div>
         </motion.div>
       )}
