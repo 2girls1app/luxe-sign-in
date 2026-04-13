@@ -448,33 +448,39 @@ export type Database = {
         Row: {
           category: string
           created_at: string
+          custom_name: string | null
           file_name: string
           file_path: string
           file_size: number | null
           id: string
           mime_type: string | null
+          notes: string | null
           procedure_id: string
           user_id: string
         }
         Insert: {
           category: string
           created_at?: string
+          custom_name?: string | null
           file_name: string
           file_path: string
           file_size?: number | null
           id?: string
           mime_type?: string | null
+          notes?: string | null
           procedure_id: string
           user_id: string
         }
         Update: {
           category?: string
           created_at?: string
+          custom_name?: string | null
           file_name?: string
           file_path?: string
           file_size?: number | null
           id?: string
           mime_type?: string | null
+          notes?: string | null
           procedure_id?: string
           user_id?: string
         }

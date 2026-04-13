@@ -3,10 +3,13 @@ import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Trash2, FileText, Image, Video, ExternalLink, Camera } from "lucide-react";
+import { Upload, Trash2, FileText, Video, ExternalLink, Camera, Pencil, X, Check, StickyNote } from "lucide-react";
 import type { PreferenceCategory } from "@/components/PreferenceCategoryWidget";
 
 interface ProcedureFile {
@@ -16,6 +19,8 @@ interface ProcedureFile {
   file_size: number | null;
   mime_type: string | null;
   created_at: string;
+  custom_name: string | null;
+  notes: string | null;
 }
 
 interface FileUploadDrawerProps {
@@ -44,9 +49,14 @@ const FileUploadDrawer = ({
   const [files, setFiles] = useState<ProcedureFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [editingFile, setEditingFile] = useState<ProcedureFile | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (open && category && user) fetchFiles();
+    if (!open) setEditingFile(null);
   }, [open, category, user]);
 
   const fetchFiles = async () => {
@@ -109,9 +119,36 @@ const FileUploadDrawer = ({
     await supabase.storage.from("procedure-files").remove([file.file_path]);
     await supabase.from("procedure_files").delete().eq("id", file.id);
     toast({ title: "File deleted" });
+    if (editingFile?.id === file.id) setEditingFile(null);
     await fetchFiles();
     onFilesChanged();
     setDeleting(null);
+  };
+
+  const openEdit = (file: ProcedureFile) => {
+    setEditingFile(file);
+    setEditName(file.custom_name || "");
+    setEditNotes(file.notes || "");
+  };
+
+  const handleSaveMetadata = async () => {
+    if (!editingFile) return;
+    setSaving(true);
+    const trimmedName = editName.trim().slice(0, 200);
+    const trimmedNotes = editNotes.trim().slice(0, 1000);
+
+    await supabase
+      .from("procedure_files")
+      .update({
+        custom_name: trimmedName || null,
+        notes: trimmedNotes || null,
+      } as any)
+      .eq("id", editingFile.id);
+
+    toast({ title: "Details saved" });
+    setEditingFile(null);
+    await fetchFiles();
+    setSaving(false);
   };
 
   const getPublicUrl = (path: string) => {
@@ -203,6 +240,61 @@ const FileUploadDrawer = ({
             <p className="text-center text-sm text-primary animate-pulse">Uploading...</p>
           )}
 
+          {/* Inline edit panel */}
+          {editingFile && (
+            <div className="rounded-xl bg-secondary/70 border border-primary/30 p-4 flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-foreground">Edit Details</span>
+                <button onClick={() => setEditingFile(null)} className="p-1 rounded-full hover:bg-card text-muted-foreground">
+                  <X size={16} />
+                </button>
+              </div>
+
+              {editingFile.mime_type?.startsWith("image/") && (
+                <img
+                  src={getPublicUrl(editingFile.file_path)}
+                  alt={editingFile.custom_name || editingFile.file_name}
+                  className="w-full max-h-40 rounded-lg object-contain bg-background/50"
+                />
+              )}
+
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-name" className="text-xs text-muted-foreground">Image Name</Label>
+                <Input
+                  id="edit-name"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="e.g. Instrument Setup, Tray Layout..."
+                  maxLength={200}
+                  className="bg-background/50 border-border"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-notes" className="text-xs text-muted-foreground">Notes</Label>
+                <Textarea
+                  id="edit-notes"
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                  placeholder="Add notes about this image..."
+                  maxLength={1000}
+                  rows={3}
+                  className="bg-background/50 border-border resize-none text-sm"
+                />
+              </div>
+
+              <Button
+                onClick={handleSaveMetadata}
+                disabled={saving}
+                size="sm"
+                className="w-full gap-2"
+              >
+                <Check size={14} />
+                {saving ? "Saving..." : "Save Details"}
+              </Button>
+            </div>
+          )}
+
           {/* File list */}
           {files.length === 0 && !uploading && (
             <p className="text-center text-sm text-muted-foreground py-4">
@@ -210,51 +302,70 @@ const FileUploadDrawer = ({
             </p>
           )}
 
-          {files.map((file) => (
-            <div
-              key={file.id}
-              className="flex items-center gap-3 rounded-xl bg-secondary/50 border border-border p-3"
-            >
-              {file.mime_type?.startsWith("image/") ? (
-                <img
-                  src={getPublicUrl(file.file_path)}
-                  alt={file.file_name}
-                  className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-                />
-              ) : file.mime_type?.startsWith("video/") ? (
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Video size={20} className="text-primary" />
-                </div>
-              ) : (
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <FileText size={20} className="text-primary" />
-                </div>
-              )}
+          {files.map((file) => {
+            const displayName = file.custom_name || file.file_name;
+            const isEditing = editingFile?.id === file.id;
 
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-foreground truncate">{file.file_name}</p>
-                <p className="text-[10px] text-muted-foreground">
-                  {file.file_size ? `${(file.file_size / 1024 / 1024).toFixed(1)} MB` : ""}
-                </p>
+            return (
+              <div
+                key={file.id}
+                className={`flex items-start gap-3 rounded-xl bg-secondary/50 border p-3 transition-colors ${isEditing ? "border-primary/50" : "border-border"}`}
+              >
+                {file.mime_type?.startsWith("image/") ? (
+                  <img
+                    src={getPublicUrl(file.file_path)}
+                    alt={displayName}
+                    className="w-12 h-12 rounded-lg object-cover flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => openEdit(file)}
+                  />
+                ) : file.mime_type?.startsWith("video/") ? (
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Video size={20} className="text-primary" />
+                  </div>
+                ) : (
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <FileText size={20} className="text-primary" />
+                  </div>
+                )}
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground truncate">{displayName}</p>
+                  {file.notes && (
+                    <p className="text-[10px] text-primary/70 truncate flex items-center gap-1 mt-0.5">
+                      <StickyNote size={9} className="flex-shrink-0" />
+                      {file.notes}
+                    </p>
+                  )}
+                  <p className="text-[10px] text-muted-foreground">
+                    {file.file_size ? `${(file.file_size / 1024 / 1024).toFixed(1)} MB` : ""}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => openEdit(file)}
+                  className="p-2 rounded-full hover:bg-primary/10 transition-colors text-muted-foreground hover:text-primary flex-shrink-0"
+                  title="Edit details"
+                >
+                  <Pencil size={14} />
+                </button>
+                <a
+                  href={getPublicUrl(file.file_path)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-foreground flex-shrink-0"
+                >
+                  <ExternalLink size={14} />
+                </a>
+                <button
+                  onClick={() => handleDelete(file)}
+                  disabled={deleting === file.id}
+                  className="p-2 rounded-full hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive flex-shrink-0"
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
-
-              <a
-                href={getPublicUrl(file.file_path)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-foreground"
-              >
-                <ExternalLink size={16} />
-              </a>
-              <button
-                onClick={() => handleDelete(file)}
-                disabled={deleting === file.id}
-                className="p-2 rounded-full hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </DrawerContent>
     </Drawer>
