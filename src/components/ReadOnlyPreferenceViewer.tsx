@@ -96,25 +96,61 @@ const ReadOnlyPreferenceViewer = ({
 
   // --- Gloves ---
   if (categoryKey === "gloves") {
+    let doctorSize = "";
+    let firstAssistSize = "";
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        doctorSize = parsed.doctor || "";
+        firstAssistSize = parsed.first_assist || "";
+      } else {
+        doctorSize = value;
+      }
+    } catch {
+      doctorSize = value;
+    }
+
     return (
-      <div>
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
-          Glove Size
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          {GLOVE_SIZES.map((size) => (
-            <div
-              key={size}
-              className={`flex items-center justify-center rounded-xl border px-3 py-3 text-sm font-medium ${
-                value === size
-                  ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
-                  : "border-border bg-secondary text-muted-foreground/40"
-              }`}
-            >
-              {size}
-              {value === size && <Check size={14} className="ml-1.5" />}
-            </div>
-          ))}
+      <div className="space-y-3">
+        <div>
+          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            Doctor Glove Size
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {GLOVE_SIZES.map((size) => (
+              <div
+                key={`doc-${size}`}
+                className={`flex items-center justify-center rounded-xl border px-3 py-3 text-sm font-medium ${
+                  doctorSize === size
+                    ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
+                    : "border-border bg-secondary text-muted-foreground/40"
+                }`}
+              >
+                {size}
+                {doctorSize === size && <Check size={14} className="ml-1.5" />}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            First Assist Glove Size
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {GLOVE_SIZES.map((size) => (
+              <div
+                key={`fa-${size}`}
+                className={`flex items-center justify-center rounded-xl border px-3 py-3 text-sm font-medium ${
+                  firstAssistSize === size
+                    ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
+                    : "border-border bg-secondary text-muted-foreground/40"
+                }`}
+              >
+                {size}
+                {firstAssistSize === size && <Check size={14} className="ml-1.5" />}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
