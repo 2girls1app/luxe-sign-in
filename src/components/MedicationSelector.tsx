@@ -48,6 +48,7 @@ const parseMedications = (value: string): SelectedMedication[] => {
 
 const MedicationSelector = ({
   open, onOpenChange, currentValue, onSave, saving,
+  procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName,
 }: MedicationSelectorProps) => {
   const [medications, setMedications] = useState<SelectedMedication[]>([]);
   const [search, setSearch] = useState("");
