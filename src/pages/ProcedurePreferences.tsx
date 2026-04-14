@@ -59,6 +59,8 @@ const ProcedurePreferences = () => {
   const [anesthesiaOpen, setAnesthesiaOpen] = useState(false);
   const [specialty, setSpecialty] = useState("");
   const [procedureFacilityId, setProcedureFacilityId] = useState<string | null>(null);
+  const [aiPrefilling, setAiPrefilling] = useState(false);
+  const [aiPrefilled, setAiPrefilled] = useState(false);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
