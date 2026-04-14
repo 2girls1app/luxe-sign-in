@@ -427,6 +427,33 @@ const ProcedurePreferences = () => {
           </button>
         </div>
 
+        {/* AI Prefill Button - shown when no preferences exist yet or user wants to regenerate */}
+        {canManageCard && (
+          <button
+            onClick={handleAiPrefill}
+            disabled={aiPrefilling}
+            className={`group flex items-center justify-center gap-2.5 rounded-xl border px-4 py-3.5 text-xs font-medium transition-all active:scale-[0.98] ${
+              aiPrefilled
+                ? "border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
+                : "border-primary/40 bg-gradient-to-r from-primary/10 to-primary/5 text-primary hover:from-primary/20 hover:to-primary/10 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10"
+            }`}
+          >
+            {aiPrefilling ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Sparkles size={16} className="group-hover:scale-110 transition-transform" />
+            )}
+            {aiPrefilling
+              ? "Generating AI Suggestions..."
+              : aiPrefilled
+              ? "Regenerate AI Suggestions"
+              : "Prefill with AI"}
+            {!aiPrefilling && !aiPrefilled && (
+              <span className="text-[9px] text-primary/60 font-normal">AI Recommended</span>
+            )}
+          </button>
+        )}
+
         {/* Widget grid - 3 per row */}
         <div className="grid grid-cols-3 gap-3">
           {PREFERENCE_CATEGORIES.map((cat, i) => (
