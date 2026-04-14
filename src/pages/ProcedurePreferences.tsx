@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ClipboardList, ListOrdered, Share2, User, MessageSquare, CheckCircle2, Music } from "lucide-react";
+import { ArrowLeft, ClipboardList, ListOrdered, Share2, User, MessageSquare, CheckCircle2, Music, Sparkles, Loader2 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -59,6 +59,8 @@ const ProcedurePreferences = () => {
   const [anesthesiaOpen, setAnesthesiaOpen] = useState(false);
   const [specialty, setSpecialty] = useState("");
   const [procedureFacilityId, setProcedureFacilityId] = useState<string | null>(null);
+  const [aiPrefilling, setAiPrefilling] = useState(false);
+  const [aiPrefilled, setAiPrefilled] = useState(false);
 
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
@@ -201,6 +203,63 @@ const ProcedurePreferences = () => {
       setFileDrawerOpen(true);
     } else {
       setDrawerOpen(true);
+    }
+  };
+
+  const handleAiPrefill = async () => {
+    if (!procedureId || !user || !effectiveUserId || aiPrefilling) return;
+    setAiPrefilling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-prefill-preferences", {
+        body: { procedureName, specialty },
+      });
+      if (error) throw error;
+      const suggestions = data?.suggestions;
+      if (!suggestions) throw new Error("No suggestions returned");
+
+      // Convert suggestions to the stored format and save each category
+      const categoryMap: Record<string, string> = {};
+
+      // Multi-select categories stored as JSON arrays of {name} objects
+      for (const key of ["skinprep", "equipment", "instruments", "trays", "supplies", "medication"]) {
+        if (suggestions[key] && Array.isArray(suggestions[key]) && suggestions[key].length > 0) {
+          categoryMap[key] = JSON.stringify(suggestions[key].map((name: string) => ({ name })));
+        }
+      }
+
+      // Suture: stored as JSON array of {name} objects (sizes added later by user)
+      if (suggestions.suture && Array.isArray(suggestions.suture) && suggestions.suture.length > 0) {
+        categoryMap["suture"] = JSON.stringify(suggestions.suture.map((name: string) => ({ name })));
+      }
+
+      // Simple string categories
+      if (suggestions.position) categoryMap["position"] = suggestions.position;
+      if (suggestions.gloves) categoryMap["gloves"] = suggestions.gloves;
+
+      // Batch upsert all preferences
+      const upserts = Object.entries(categoryMap).map(([category, value]) => ({
+        procedure_id: procedureId,
+        user_id: effectiveUserId,
+        category,
+        value,
+        updated_at: new Date().toISOString(),
+      }));
+
+      if (upserts.length > 0) {
+        const { error: upsertError } = await supabase
+          .from("procedure_preferences")
+          .upsert(upserts, { onConflict: "procedure_id,category" });
+        if (upsertError) throw upsertError;
+      }
+
+      await fetchPreferences();
+      setAiPrefilled(true);
+      toast({ title: "AI Suggestions Applied", description: `${upserts.length} categories prefilled. Review and edit as needed.` });
+    } catch (err: any) {
+      console.error("AI prefill error:", err);
+      toast({ title: "AI prefill failed", description: err.message || "Please try again.", variant: "destructive" });
+    } finally {
+      setAiPrefilling(false);
     }
   };
 
@@ -367,6 +426,33 @@ const ProcedurePreferences = () => {
             )}
           </button>
         </div>
+
+        {/* AI Prefill Button - shown when no preferences exist yet or user wants to regenerate */}
+        {canManageCard && (
+          <button
+            onClick={handleAiPrefill}
+            disabled={aiPrefilling}
+            className={`group flex items-center justify-center gap-2.5 rounded-xl border px-4 py-3.5 text-xs font-medium transition-all active:scale-[0.98] ${
+              aiPrefilled
+                ? "border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
+                : "border-primary/40 bg-gradient-to-r from-primary/10 to-primary/5 text-primary hover:from-primary/20 hover:to-primary/10 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10"
+            }`}
+          >
+            {aiPrefilling ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Sparkles size={16} className="group-hover:scale-110 transition-transform" />
+            )}
+            {aiPrefilling
+              ? "Generating AI Suggestions..."
+              : aiPrefilled
+              ? "Regenerate AI Suggestions"
+              : "Prefill with AI"}
+            {!aiPrefilling && !aiPrefilled && (
+              <span className="text-[9px] text-primary/60 font-normal">AI Recommended</span>
+            )}
+          </button>
+        )}
 
         {/* Widget grid - 3 per row */}
         <div className="grid grid-cols-3 gap-3">
