@@ -206,6 +206,63 @@ const ProcedurePreferences = () => {
     }
   };
 
+  const handleAiPrefill = async () => {
+    if (!procedureId || !user || !effectiveUserId || aiPrefilling) return;
+    setAiPrefilling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-prefill-preferences", {
+        body: { procedureName, specialty },
+      });
+      if (error) throw error;
+      const suggestions = data?.suggestions;
+      if (!suggestions) throw new Error("No suggestions returned");
+
+      // Convert suggestions to the stored format and save each category
+      const categoryMap: Record<string, string> = {};
+
+      // Multi-select categories stored as JSON arrays of {name} objects
+      for (const key of ["skinprep", "equipment", "instruments", "trays", "supplies", "medication"]) {
+        if (suggestions[key] && Array.isArray(suggestions[key]) && suggestions[key].length > 0) {
+          categoryMap[key] = JSON.stringify(suggestions[key].map((name: string) => ({ name })));
+        }
+      }
+
+      // Suture: stored as JSON array of {name} objects (sizes added later by user)
+      if (suggestions.suture && Array.isArray(suggestions.suture) && suggestions.suture.length > 0) {
+        categoryMap["suture"] = JSON.stringify(suggestions.suture.map((name: string) => ({ name })));
+      }
+
+      // Simple string categories
+      if (suggestions.position) categoryMap["position"] = suggestions.position;
+      if (suggestions.gloves) categoryMap["gloves"] = suggestions.gloves;
+
+      // Batch upsert all preferences
+      const upserts = Object.entries(categoryMap).map(([category, value]) => ({
+        procedure_id: procedureId,
+        user_id: effectiveUserId,
+        category,
+        value,
+        updated_at: new Date().toISOString(),
+      }));
+
+      if (upserts.length > 0) {
+        const { error: upsertError } = await supabase
+          .from("procedure_preferences")
+          .upsert(upserts, { onConflict: "procedure_id,category" });
+        if (upsertError) throw upsertError;
+      }
+
+      await fetchPreferences();
+      setAiPrefilled(true);
+      toast({ title: "AI Suggestions Applied", description: `${upserts.length} categories prefilled. Review and edit as needed.` });
+    } catch (err: any) {
+      console.error("AI prefill error:", err);
+      toast({ title: "AI prefill failed", description: err.message || "Please try again.", variant: "destructive" });
+    } finally {
+      setAiPrefilling(false);
+    }
+  };
+
   const canManageCard = isOwner || isIndividual;
 
   const toggleComplete = async () => {
