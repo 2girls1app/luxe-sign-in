@@ -51,49 +51,50 @@ const SelectProfession = () => {
           Please Select Your Medical<br />Profession
         </h1>
 
-        <div className="grid grid-cols-2 gap-7 w-full">
+        <div className="grid grid-cols-2 gap-6 w-full">
           {professions.map((prof, index) => (
-            <motion.button
+            <button
               key={prof.id}
               onClick={() => setSelected(prof.id)}
-              whileHover={{ y: -4 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              className={`flex flex-col items-center gap-3 focus:outline-none ${
+              className={`flex flex-col items-center gap-2 focus:outline-none ${
                 professions.length % 2 !== 0 && index === professions.length - 1
                   ? "col-span-2"
                   : ""
               }`}
             >
-              <div
-                className={`relative w-28 h-28 rounded-full overflow-hidden transition-all duration-300 ${
-                  selected === prof.id
-                    ? "shadow-[0_0_24px_-4px_hsl(var(--primary)/0.5)] ring-1 ring-primary/60"
-                    : "shadow-[0_4px_20px_-4px_hsl(0_0%_0%/0.4)] ring-1 ring-border/40 hover:shadow-[0_6px_28px_-4px_hsl(0_0%_0%/0.5)] hover:ring-border/60"
-                }`}
-                style={{
-                  background: "linear-gradient(145deg, hsl(0 0% 18%), hsl(0 0% 12%))",
-                }}
-              >
+              <div className="w-28 h-28 rounded-full overflow-hidden bg-card border-2 border-border">
                 <img
                   src={prof.image}
                   alt={prof.label}
-                  className={`w-full h-full object-cover transition-all duration-300 ${
-                    selected === prof.id ? "saturate-100" : "saturate-[0.85] hover:saturate-100"
-                  }`}
+                  className="w-full h-full object-cover"
                   loading="lazy"
                   width={512}
                   height={512}
                 />
               </div>
-              <span
-                className={`text-[11px] font-medium tracking-[0.15em] transition-colors duration-300 ${
-                  selected === prof.id ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
+              <span className="text-xs font-semibold tracking-wider text-foreground">
                 {prof.label}
               </span>
-            </motion.button>
+              <div
+                className={`w-4 h-4 rounded-sm border-2 flex items-center justify-center transition-colors ${
+                  selected === prof.id
+                    ? "bg-primary border-primary"
+                    : "border-muted-foreground"
+                }`}
+              >
+                {selected === prof.id && (
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                    <path
+                      d="M2 6L5 9L10 3"
+                      stroke="hsl(0,0%,8%)"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
+              </div>
+            </button>
           ))}
         </div>
 
