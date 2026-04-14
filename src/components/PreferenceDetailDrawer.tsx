@@ -39,10 +39,6 @@ interface PreferenceDetailDrawerProps {
   currentValue: string;
   onSave: (category: string, value: string) => void;
   saving: boolean;
-  procedureSuggestions?: string[];
-  specialtySuggestions?: string[];
-  procedureName?: string;
-  specialtyName?: string;
 }
 
 const parseGloveValue = (val: string): { doctor: string; first_assist: string } => {
@@ -58,7 +54,6 @@ const parseGloveValue = (val: string): { doctor: string; first_assist: string } 
 
 const PreferenceDetailDrawer = ({
   open, onOpenChange, category, currentValue, onSave, saving,
-  procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName,
 }: PreferenceDetailDrawerProps) => {
   const [value, setValue] = useState(currentValue);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -220,13 +215,8 @@ const PreferenceDetailDrawer = ({
               value={value}
               onChange={setValue}
               supportsHold={["suture", "supplies", "equipment", "instruments", "robotic_instruments"].includes(category.key)}
-              supportsSizes={category.key === "suture"}
               addLabel={addLabel}
               hideInternalAdd={true}
-              procedureSuggestions={procedureSuggestions}
-              specialtySuggestions={specialtySuggestions}
-              procedureName={procedureName}
-              specialtyName={specialtyName}
             />
           ) : (
             <Textarea

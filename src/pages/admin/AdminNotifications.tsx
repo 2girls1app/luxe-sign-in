@@ -36,7 +36,6 @@ const PROFESSIONS = [
   "Surgeon",
   "Physician Assist",
   "First Assist",
-  "Scrub Tech",
   "Nurse",
   "Anesthesia",
 ];

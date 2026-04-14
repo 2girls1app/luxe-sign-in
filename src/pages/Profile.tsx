@@ -33,7 +33,7 @@ interface Procedure {
   is_complete: boolean;
 }
 
-const CLINICAL_ROLES = ["first-assist", "first assist", "scrub-tech", "scrub tech", "nurse", "physician-assist", "physician assist", "physician assistant", "anesthesia"];
+const CLINICAL_ROLES = ["first-assist", "first assist", "nurse", "physician-assist", "physician assist", "physician assistant", "anesthesia"];
 
 const Profile = () => {
   const navigate = useNavigate();

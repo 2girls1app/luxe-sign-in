@@ -5,6 +5,8 @@ export interface MedicationEntry {
 
 export const MEDICATION_CATEGORIES = [
   "Local Anesthetics",
+  "General Anesthetics",
+  "Antibiotics",
   "Analgesics",
   "Sedatives",
   "Antiemetics",
@@ -28,6 +30,26 @@ export const MEDICATIONS_DATABASE: MedicationEntry[] = [
   { name: "Marcaine", category: "Local Anesthetics" },
   { name: "Tetracaine", category: "Local Anesthetics" },
 
+  // General Anesthetics
+  { name: "Propofol", category: "General Anesthetics" },
+  { name: "Ketamine", category: "General Anesthetics" },
+  { name: "Etomidate", category: "General Anesthetics" },
+  { name: "Sevoflurane", category: "General Anesthetics" },
+  { name: "Desflurane", category: "General Anesthetics" },
+  { name: "Isoflurane", category: "General Anesthetics" },
+  { name: "Nitrous Oxide", category: "General Anesthetics" },
+
+  // Antibiotics
+  { name: "Cefazolin", category: "Antibiotics" },
+  { name: "Vancomycin", category: "Antibiotics" },
+  { name: "Clindamycin", category: "Antibiotics" },
+  { name: "Gentamicin", category: "Antibiotics" },
+  { name: "Metronidazole", category: "Antibiotics" },
+  { name: "Ceftriaxone", category: "Antibiotics" },
+  { name: "Ampicillin", category: "Antibiotics" },
+  { name: "Piperacillin/Tazobactam", category: "Antibiotics" },
+  { name: "Ciprofloxacin", category: "Antibiotics" },
+  { name: "Bacitracin", category: "Antibiotics" },
 
   // Analgesics
   { name: "Fentanyl", category: "Analgesics" },
