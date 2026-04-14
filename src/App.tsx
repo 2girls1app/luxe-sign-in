@@ -24,6 +24,7 @@ import AdminDoctors from "./pages/admin/AdminDoctors.tsx";
 import AdminPrefCards from "./pages/admin/AdminPrefCards.tsx";
 import AdminNotifications from "./pages/admin/AdminNotifications.tsx";
 import AdminSupplyLibrary from "./pages/admin/AdminSupplyLibrary.tsx";
+import AdminFacilityMasterLists from "./pages/admin/AdminFacilityMasterLists.tsx";
 import AdminActivityLogs from "./pages/admin/AdminActivityLogs.tsx";
 import AdminDoctorDetail from "./pages/admin/AdminDoctorDetail.tsx";
 import AdminEditPrefCard from "./pages/admin/AdminEditPrefCard.tsx";
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="/admin/preference-cards" element={<AdminPrefCards />} />
               <Route path="/admin/notifications" element={<AdminNotifications />} />
               <Route path="/admin/supply-library" element={<AdminSupplyLibrary />} />
+              <Route path="/admin/facility-master-lists" element={<AdminFacilityMasterLists />} />
               <Route path="/admin/activity-logs" element={<AdminActivityLogs />} />
               <Route path="/admin/doctors/:userId" element={<AdminDoctorDetail />} />
               <Route path="/admin/doctors/:userId/procedure/:procedureId" element={<AdminEditPrefCard />} />

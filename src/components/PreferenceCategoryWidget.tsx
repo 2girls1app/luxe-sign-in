@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import {
   Pill, Hand, RotateCcw, Droplets, Wrench, Scissors, LayoutGrid, Package, Ribbon,
-  Image, Video, FileText, ListOrdered, Bot, UserCheck,
+  Image, Video, FileText, ListOrdered, Bot, UserCheck, Stethoscope,
 } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
@@ -14,6 +14,7 @@ export interface PreferenceCategory {
 }
 
 export const PREFERENCE_CATEGORIES: PreferenceCategory[] = [
+  { key: "anesthesia", label: "Anesthesia", icon: Stethoscope },
   { key: "medication", label: "Medication", icon: Pill },
   { key: "gloves", label: "Gloves", icon: Hand },
   { key: "position", label: "Position", icon: RotateCcw },
@@ -89,6 +90,21 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
     if (!value?.trim()) return null;
     const raw = value.trim();
 
+    // Special handling for anesthesia JSON format
+    if (category.key === "anesthesia") {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          const parts: string[] = [];
+          if (parsed.meds?.length) parts.push(`${parsed.meds.length} med${parsed.meds.length !== 1 ? "s" : ""}`);
+          if (parsed.antibiotics?.length) parts.push(`${parsed.antibiotics.length} abx`);
+          if (parsed.tube) parts.push(parsed.tube);
+          if (parsed.paralyze) parts.push(`Para: ${parsed.paralyze}`);
+          return parts.length > 0 ? parts.join(", ") : null;
+        }
+      } catch { /* fallback */ }
+    }
+
     // Special handling for gloves JSON format
     if (category.key === "gloves") {
       try {
@@ -123,6 +139,21 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
       if (parsed.length === 0) return "No items selected";
       if (isMedication) return `${parsed.length} med${parsed.length !== 1 ? "s" : ""}`;
       if (isSteps) return `${parsed.length} step${parsed.length !== 1 ? "s" : ""}`;
+      // Suture summary with sizes
+      if (category.key === "suture") {
+        const sutureParts = parsed.slice(0, 2).map((item: any) => {
+          const name = typeof item === "string" ? item : item.name;
+          const sizes = item.sizes?.length
+            ? ` ${item.sizes.map((s: any) => {
+                if (typeof s === "string") return s;
+                return s.qty > 1 ? `${s.size} x${s.qty}` : s.size;
+              }).join(", ")}`
+            : "";
+          return `${name}${sizes}`;
+        });
+        const summary = sutureParts.join(" • ");
+        return parsed.length > 2 ? `${summary} +${parsed.length - 2}` : summary;
+      }
       return summarizeNames(extractNames(parsed)) || `${parsed.length} items selected`;
     }
     if (parsed && typeof parsed === "object") {

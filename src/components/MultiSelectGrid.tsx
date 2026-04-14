@@ -3,9 +3,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Plus, X, ChevronUp, ChevronDown, Pause } from "lucide-react";
 
+const SUTURE_SIZES = ["0", "2-0", "3-0", "4-0", "5-0", "6-0", "7-0", "8-0"];
+
 interface MultiSelectOption {
   name: string;
   desc: string;
+}
+
+interface SizeEntry {
+  size: string;
+  qty: number;
 }
 
 interface ItemData {
@@ -14,7 +21,16 @@ interface ItemData {
   hold?: boolean;
   holdQty?: number;
   notes?: string;
+  sizes?: (string | SizeEntry)[];
 }
+
+const normalizeSizes = (sizes?: (string | SizeEntry)[]): SizeEntry[] => {
+  if (!sizes) return [];
+  return sizes.map((s) => typeof s === "string" ? { size: s, qty: 1 } : s);
+};
+
+const getSizeNames = (sizes?: (string | SizeEntry)[]): string[] =>
+  normalizeSizes(sizes).map((s) => s.size);
 
 interface MultiSelectGridProps {
   options: MultiSelectOption[];
@@ -22,7 +38,12 @@ interface MultiSelectGridProps {
   onChange: (value: string) => void;
   addLabel?: string;
   supportsHold?: boolean;
+  supportsSizes?: boolean;
   hideInternalAdd?: boolean;
+  procedureSuggestions?: string[];
+  specialtySuggestions?: string[];
+  procedureName?: string;
+  specialtyName?: string;
 }
 
 const parseItems = (value: string): ItemData[] => {
@@ -35,9 +56,10 @@ const parseItems = (value: string): ItemData[] => {
       hold: item.hold ?? false,
       holdQty: item.holdQty ?? 1,
       notes: item.notes ?? "",
+      sizes: item.sizes ?? [],
     }));
   } catch {}
-  return value.split(", ").filter(Boolean).map((name) => ({ name, qty: 1, hold: false, holdQty: 1, notes: "" }));
+  return value.split(", ").filter(Boolean).map((name) => ({ name, qty: 1, hold: false, holdQty: 1, notes: "", sizes: [] }));
 };
 
 const serializeItems = (items: ItemData[]): string => {
@@ -45,7 +67,7 @@ const serializeItems = (items: ItemData[]): string => {
   return JSON.stringify(items);
 };
 
-const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false, hideInternalAdd = false }: MultiSelectGridProps) => {
+const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false, supportsSizes = false, hideInternalAdd = false, procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName }: MultiSelectGridProps) => {
   const items = parseItems(value);
   const selectedNames = items.map((i) => i.name);
   const [showInput, setShowInput] = useState(false);
@@ -68,8 +90,26 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
     if (existing) {
       updateItems(items.filter((i) => i.name !== name));
     } else {
-      updateItems([...items, { name, qty: 1, hold: false, holdQty: 1, notes: "" }]);
+      updateItems([...items, { name, qty: 1, hold: false, holdQty: 1, notes: "", sizes: [] }]);
     }
+  };
+
+  const toggleSize = (name: string, size: string) => {
+    updateItems(items.map((i) => {
+      if (i.name !== name) return i;
+      const current = normalizeSizes(i.sizes);
+      const has = current.some((s) => s.size === size);
+      const newSizes = has ? current.filter((s) => s.size !== size) : [...current, { size, qty: 1 }];
+      return { ...i, sizes: newSizes };
+    }));
+  };
+
+  const updateSizeQty = (name: string, size: string, delta: number) => {
+    updateItems(items.map((i) => {
+      if (i.name !== name) return i;
+      const current = normalizeSizes(i.sizes);
+      return { ...i, sizes: current.map((s) => s.size === size ? { ...s, qty: Math.max(1, s.qty + delta) } : s) };
+    }));
   };
 
   const updateQty = (name: string, delta: number) => {
@@ -130,53 +170,101 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
         </div>
       </div>
 
-      {/* Qty controls */}
-      <div className="flex items-center gap-3 pl-7">
-        <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-8">Qty</span>
-        <div className="flex items-center gap-1.5">
-          <button type="button" onClick={() => updateQty(item.name, -1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
-            <ChevronDown size={12} className="text-muted-foreground" />
-          </button>
-          <span className="text-sm font-semibold text-foreground w-6 text-center">{item.qty}</span>
-          <button type="button" onClick={() => updateQty(item.name, 1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
-            <ChevronUp size={12} className="text-muted-foreground" />
-          </button>
-        </div>
+      {/* Qty controls - hide for sutures since qty is per-size */}
+      {!supportsSizes && (
+        <>
+          <div className="flex items-center gap-3 pl-7">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-8">Qty</span>
+            <div className="flex items-center gap-1.5">
+              <button type="button" onClick={() => updateQty(item.name, -1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
+                <ChevronDown size={12} className="text-muted-foreground" />
+              </button>
+              <span className="text-sm font-semibold text-foreground w-6 text-center">{item.qty}</span>
+              <button type="button" onClick={() => updateQty(item.name, 1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
+                <ChevronUp size={12} className="text-muted-foreground" />
+              </button>
+            </div>
 
-        {supportsHold && (
-          <div className="flex items-center gap-2 ml-auto">
-            <button
-              type="button"
-              onClick={() => toggleHold(item.name)}
-              className={`text-[10px] font-medium px-2 py-1 rounded-md border transition-colors ${
-                item.hold
-                  ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
-                  : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
-              }`}
-            >
-              {item.hold ? "On Hold" : "Hold"}
-            </button>
+            {supportsHold && (
+              <div className="flex items-center gap-2 ml-auto">
+                <button
+                  type="button"
+                  onClick={() => toggleHold(item.name)}
+                  className={`text-[10px] font-medium px-2 py-1 rounded-md border transition-colors ${
+                    item.hold
+                      ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
+                      : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                  }`}
+                >
+                  {item.hold ? "On Hold" : "Hold"}
+                </button>
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Hold qty row */}
-      {supportsHold && item.hold && (
-        <div className="flex items-center gap-3 pl-7">
-          <span className="text-[10px] text-amber-400/80 uppercase tracking-wider w-8">Hold</span>
-          <div className="flex items-center gap-1.5">
-            <button type="button" onClick={() => updateHoldQty(item.name, -1)} className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors">
-              <ChevronDown size={12} className="text-amber-400" />
-            </button>
-            <span className="text-sm font-semibold text-amber-400 w-6 text-center">{item.holdQty ?? 1}</span>
-            <button type="button" onClick={() => updateHoldQty(item.name, 1)} className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors">
-              <ChevronUp size={12} className="text-amber-400" />
-            </button>
+          {supportsHold && item.hold && (
+            <div className="flex items-center gap-3 pl-7">
+              <span className="text-[10px] text-amber-400/80 uppercase tracking-wider w-8">Hold</span>
+              <div className="flex items-center gap-1.5">
+                <button type="button" onClick={() => updateHoldQty(item.name, -1)} className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors">
+                  <ChevronDown size={12} className="text-amber-400" />
+                </button>
+                <span className="text-sm font-semibold text-amber-400 w-6 text-center">{item.holdQty ?? 1}</span>
+                <button type="button" onClick={() => updateHoldQty(item.name, 1)} className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors">
+                  <ChevronUp size={12} className="text-amber-400" />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Size selection for sutures with per-size qty */}
+      {supportsSizes && (
+        <div className="pl-7 space-y-2">
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sizes</span>
+          <div className="flex flex-wrap gap-1.5">
+            {SUTURE_SIZES.map((size) => {
+              const isSelected = getSizeNames(item.sizes).includes(size);
+              return (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => toggleSize(item.name, size)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+                    isSelected
+                      ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
+                      : "border-border bg-secondary text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                  }`}
+                >
+                  {size}
+                </button>
+              );
+            })}
           </div>
+          {/* Per-size qty controls */}
+          {normalizeSizes(item.sizes).length > 0 && (
+            <div className="space-y-1.5 mt-1">
+              {normalizeSizes(item.sizes).map((entry) => (
+                <div key={entry.size} className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-primary w-10">{entry.size}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Qty</span>
+                  <div className="flex items-center gap-1">
+                    <button type="button" onClick={() => updateSizeQty(item.name, entry.size, -1)} className="w-5 h-5 rounded bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
+                      <ChevronDown size={10} className="text-muted-foreground" />
+                    </button>
+                    <span className="text-xs font-semibold text-foreground w-5 text-center">{entry.qty}</span>
+                    <button type="button" onClick={() => updateSizeQty(item.name, entry.size, 1)} className="w-5 h-5 rounded bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
+                      <ChevronUp size={10} className="text-muted-foreground" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Notes */}
       <div className="pl-7">
         <textarea
           value={item.notes || ""}
@@ -189,33 +277,77 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
     </div>
   );
 
+  // Categorize unselected options into suggestion groups
+  const unselectedOptions = options.filter((opt) => !items.some((i) => i.name === opt.name));
+  const procSuggestedSet = new Set(procedureSuggestions);
+  const specSuggestedSet = new Set(specialtySuggestions);
+
+  const procSuggested = unselectedOptions.filter((opt) => procSuggestedSet.has(opt.name));
+  const specSuggested = unselectedOptions.filter((opt) => specSuggestedSet.has(opt.name) && !procSuggestedSet.has(opt.name));
+  const remaining = unselectedOptions.filter((opt) => !procSuggestedSet.has(opt.name) && !specSuggestedSet.has(opt.name));
+
+  const hasSuggestions = procSuggested.length > 0 || specSuggested.length > 0;
+
+  const renderUnselectedItem = (opt: MultiSelectOption) => (
+    <button
+      key={opt.name}
+      type="button"
+      onClick={() => toggle(opt.name)}
+      className="flex items-start gap-2 rounded-xl border border-border bg-secondary hover:border-primary/40 p-3 cursor-pointer transition-all text-left"
+    >
+      <Checkbox checked={false} className="mt-0.5 pointer-events-none" />
+      <div className="flex flex-col gap-0.5">
+        <span className="text-sm font-medium text-foreground">{opt.name}</span>
+        <span className="text-[10px] text-muted-foreground leading-tight">{opt.desc}</span>
+      </div>
+    </button>
+  );
+
   return (
     <div className="max-h-[50vh] overflow-y-auto">
       <div className="grid grid-cols-1 gap-3">
         {/* Selected items first */}
-        {/* Selected items first: custom then predefined */}
         {customItems.map((item) => renderSelectedItem(item, true))}
         {options
           .filter((opt) => items.some((i) => i.name === opt.name))
           .map((opt) => renderSelectedItem(items.find((i) => i.name === opt.name)!, false))}
 
-        {/* Unselected options */}
-        {options
-          .filter((opt) => !items.some((i) => i.name === opt.name))
-          .map((opt) => (
-            <button
-              key={opt.name}
-              type="button"
-              onClick={() => toggle(opt.name)}
-              className="flex items-start gap-2 rounded-xl border border-border bg-secondary hover:border-primary/40 p-3 cursor-pointer transition-all text-left"
-            >
-              <Checkbox checked={false} className="mt-0.5 pointer-events-none" />
-              <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium text-foreground">{opt.name}</span>
-                <span className="text-[10px] text-muted-foreground leading-tight">{opt.desc}</span>
-              </div>
-            </button>
-          ))}
+        {/* Suggested for this Procedure */}
+        {procSuggested.length > 0 && (
+          <>
+            <div className="flex items-center gap-2 mt-2 mb-0.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">
+                Suggested for {procedureName || "this Procedure"}
+              </span>
+              <div className="flex-1 h-px bg-primary/20" />
+            </div>
+            {procSuggested.map(renderUnselectedItem)}
+          </>
+        )}
+
+        {/* Common for this Specialty */}
+        {specSuggested.length > 0 && (
+          <>
+            <div className="flex items-center gap-2 mt-2 mb-0.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-primary/70">
+                Common for {specialtyName || "this Specialty"}
+              </span>
+              <div className="flex-1 h-px bg-primary/10" />
+            </div>
+            {specSuggested.map(renderUnselectedItem)}
+          </>
+        )}
+
+        {/* All Items */}
+        {hasSuggestions && remaining.length > 0 && (
+          <div className="flex items-center gap-2 mt-2 mb-0.5">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              All Items
+            </span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+        )}
+        {remaining.map(renderUnselectedItem)}
       </div>
 
       {/* Add custom item - only when not externally managed */}
