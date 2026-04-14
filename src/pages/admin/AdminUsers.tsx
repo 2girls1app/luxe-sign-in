@@ -37,6 +37,7 @@ const ROLE_FILTERS = [
   { value: "administrative", label: "Administrative" },
   { value: "nurse", label: "Nurse" },
   { value: "physician assistant", label: "Physician Assistant" },
+  { value: "scrub tech", label: "Scrub Tech" },
   { value: "anesthesia", label: "Anesthesia" },
   { value: "no-role", label: "No Role" },
 ];

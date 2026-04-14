@@ -9,10 +9,12 @@ import nurseImg from "@/assets/nurse.png";
 import anesthesiaImg from "@/assets/anesthesia.png";
 import administrativeImg from "@/assets/administrative.png";
 import paImg from "@/assets/physician-assistant.png";
+import scrubTechImg from "@/assets/scrub-tech.png";
 
 const professions = [
   { id: "doctor", label: "DOCTOR", image: physicianImg },
   { id: "first-assist", label: "FIRST ASSIST", image: firstAssistImg },
+  { id: "scrub-tech", label: "SCRUB TECH", image: scrubTechImg },
   { id: "physician-assistant", label: "PHYSICIAN ASST", image: paImg },
   { id: "nurse", label: "NURSE", image: nurseImg },
   { id: "anesthesia", label: "ANESTHESIA", image: anesthesiaImg },
