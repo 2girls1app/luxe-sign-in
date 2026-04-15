@@ -39,14 +39,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const facilityFilter = searchParams.get("facility");
-  const { user, profile, signOut, refreshProfile } = useAuth();
-
-  // Redirect clinical staff to their dedicated dashboard
-  useEffect(() => {
-    if (profile?.role && CLINICAL_ROLES.includes(profile.role.toLowerCase())) {
-      navigate("/clinical-dashboard", { replace: true });
-    }
-  }, [profile?.role, navigate]);
+  const { user, profile, loading, signOut, refreshProfile } = useAuth();
   const { toast } = useToast();
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
@@ -207,6 +200,23 @@ const Profile = () => {
   // Determine greeting based on time of day
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
+
+  // Auth guard: redirect unauthenticated users
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/", { replace: true });
+    }
+  }, [loading, user, navigate]);
+
+  // Redirect clinical staff to their dedicated dashboard
+  useEffect(() => {
+    if (profile?.role && CLINICAL_ROLES.includes(profile.role.toLowerCase())) {
+      navigate("/clinical-dashboard", { replace: true });
+    }
+  }, [profile?.role, navigate]);
+
+  // Don't render until auth is resolved
+  if (loading || !user) return null;
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pt-8 pb-8">
