@@ -40,25 +40,6 @@ const Profile = () => {
   const [searchParams] = useSearchParams();
   const facilityFilter = searchParams.get("facility");
   const { user, profile, loading, signOut, refreshProfile } = useAuth();
-
-  // Redirect unauthenticated users to login
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/", { replace: true });
-    }
-  }, [loading, user, navigate]);
-
-  // Redirect clinical staff to their dedicated dashboard
-  useEffect(() => {
-    if (profile?.role && CLINICAL_ROLES.includes(profile.role.toLowerCase())) {
-      navigate("/clinical-dashboard", { replace: true });
-    }
-  }, [profile?.role, navigate]);
-
-  // Show nothing while auth is loading or user is not yet available
-  if (loading || !user) {
-    return null;
-  }
   const { toast } = useToast();
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
