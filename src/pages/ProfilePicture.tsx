@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Camera, Upload, User } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Camera, ImagePlus, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/NavHeader";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,21 +25,17 @@ const ProfilePicture = () => {
     }
   };
 
-  const handleUpload = async () => {
-    const role = user?.user_metadata?.profession;
-    const isAdmin = role === "administrative" || role === "admin" || role === "admin-staff";
+  const handleContinue = async () => {
+    if (!user) return;
 
-    if (!file || !user) {
+    if (!file) {
       if (preview) {
         localStorage.setItem("avatar_preview", preview);
       }
-      // Mark onboarding complete even if skipping photo
-      if (user) {
-        await supabase
-          .from("profiles")
-          .update({ onboarding_completed: true })
-          .eq("user_id", user.id);
-      }
+      await supabase
+        .from("profiles")
+        .update({ onboarding_completed: true })
+        .eq("user_id", user.id);
       navigate("/profile");
       return;
     }
@@ -87,41 +83,70 @@ const ProfilePicture = () => {
         className="w-full max-w-sm flex flex-col items-center gap-8"
       >
         <h1 className="text-xl font-light tracking-wide text-foreground text-center">
-          Upload Profile Photo
+          Add a Profile Photo
         </h1>
 
-        <div className="w-36 h-36 rounded-full overflow-hidden bg-card border-2 border-border flex items-center justify-center">
+        <div className="w-36 h-36 rounded-full overflow-hidden bg-card border border-border/50 flex items-center justify-center shadow-lg">
           {preview ? (
             <img src={preview} alt="Profile" className="w-full h-full object-cover" />
           ) : (
-            <User size={64} className="text-muted-foreground" />
+            <User size={64} className="text-muted-foreground/50" />
           )}
         </div>
 
-        <div className="w-full flex flex-col gap-3">
-          <label className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-foreground transition-colors hover:bg-muted cursor-pointer">
-            <Upload size={18} />
-            Upload Photo
-            <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-          </label>
+        <AnimatePresence mode="wait">
+          {preview ? (
+            <motion.div
+              key="confirm"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="w-full flex flex-col items-center gap-4"
+            >
+              <button
+                onClick={handleContinue}
+                disabled={uploading}
+                className="w-full rounded-lg bg-primary px-12 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
+              >
+                {uploading ? "Saving..." : "Save & Continue"}
+              </button>
+              <button
+                onClick={() => { setPreview(null); setFile(null); }}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Choose a different photo
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="pick"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="w-full flex flex-col gap-3"
+            >
+              <label className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-foreground transition-colors hover:bg-muted cursor-pointer">
+                <ImagePlus size={18} />
+                Choose Photo
+                <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+              </label>
 
-          <label className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-foreground transition-colors hover:bg-muted cursor-pointer">
-            <Camera size={18} />
-            Capture Photo
-            <input type="file" accept="image/*" capture="user" onChange={handleFileChange} className="hidden" />
-          </label>
-        </div>
+              <label className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-foreground transition-colors hover:bg-muted cursor-pointer">
+                <Camera size={18} />
+                Take Photo
+                <input type="file" accept="image/*" capture="user" onChange={handleFileChange} className="hidden" />
+              </label>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <button
-          onClick={handleUpload}
-          disabled={uploading}
-          className="rounded-lg bg-primary px-12 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-gold-light active:scale-95 disabled:opacity-50"
-        >
-          {uploading ? "Uploading..." : "Upload"}
-        </button>
-
-        <button
-          onClick={() => navigate("/profile")}
+          onClick={() => {
+            if (user) {
+              supabase.from("profiles").update({ onboarding_completed: true }).eq("user_id", user.id);
+            }
+            navigate("/profile");
+          }}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           Skip for now
