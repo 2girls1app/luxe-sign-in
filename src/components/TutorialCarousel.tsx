@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Play } from "lucide-react";
+import { Play, X, Volume2, VolumeX } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import step1Img from "@/assets/tutorial-step1.jpg";
 import step2Img from "@/assets/tutorial-step2.jpg";
@@ -13,9 +14,23 @@ export type TutorialItem = {
   meta: string;
   thumbnail: string;
   videoUrl?: string;
+  featured?: boolean;
 };
 
+const DEMO_VIDEO_URL =
+  "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/demo-video.mp4";
+
 const DEFAULT_ITEMS: TutorialItem[] = [
+  {
+    id: "demo",
+    step: "START HERE",
+    title: "Quick App Demo",
+    description: "See how 1st Assist works in under a minute",
+    meta: "01:00",
+    thumbnail: step1Img,
+    videoUrl: DEMO_VIDEO_URL,
+    featured: true,
+  },
   {
     id: "step-1",
     step: "STEP 1",
@@ -43,7 +58,7 @@ const DEFAULT_ITEMS: TutorialItem[] = [
 ];
 
 // Seconds for ONE full set of cards to traverse — slower = more premium
-const SCROLL_DURATION_SECONDS = 28;
+const SCROLL_DURATION_SECONDS = 32;
 
 interface TutorialCarouselProps {
   items?: TutorialItem[];
@@ -53,9 +68,10 @@ interface TutorialCarouselProps {
 export function TutorialCarousel({ items = DEFAULT_ITEMS, onSelect }: TutorialCarouselProps) {
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [activeVideo, setActiveVideo] = useState<TutorialItem | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
 
-  // Duplicate the items once → seamless loop when we translate -50%
   const loopedItems = [...items, ...items];
 
   useEffect(() => {
@@ -66,9 +82,18 @@ export function TutorialCarousel({ items = DEFAULT_ITEMS, onSelect }: TutorialCa
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
-  // Touch handlers for mobile (no hover) — pause while touching
   const handleTouchStart = () => setPaused(true);
   const handleTouchEnd = () => setPaused(false);
+
+  const handleSelect = (item: TutorialItem) => {
+    if (onSelect) {
+      onSelect(item);
+      return;
+    }
+    if (item.videoUrl) {
+      setActiveVideo(item);
+    }
+  };
 
   return (
     <section
@@ -81,11 +106,9 @@ export function TutorialCarousel({ items = DEFAULT_ITEMS, onSelect }: TutorialCa
       onTouchCancel={handleTouchEnd}
     >
       <div className="relative">
-        {/* Edge fade masks */}
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-background to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-background to-transparent" />
 
-        {/* Reduced motion: native horizontal scroll instead of marquee */}
         {reducedMotion ? (
           <div
             role="region"
@@ -98,7 +121,7 @@ export function TutorialCarousel({ items = DEFAULT_ITEMS, onSelect }: TutorialCa
             )}
           >
             {items.map((item) => (
-              <Card key={item.id} item={item} onSelect={onSelect} />
+              <Card key={item.id} item={item} onSelect={handleSelect} />
             ))}
           </div>
         ) : (
@@ -117,7 +140,7 @@ export function TutorialCarousel({ items = DEFAULT_ITEMS, onSelect }: TutorialCa
                 <Card
                   key={`${item.id}-${i}`}
                   item={item}
-                  onSelect={onSelect}
+                  onSelect={handleSelect}
                   ariaHidden={i >= items.length}
                 />
               ))}
@@ -126,13 +149,53 @@ export function TutorialCarousel({ items = DEFAULT_ITEMS, onSelect }: TutorialCa
         )}
       </div>
 
-      {/* Marquee keyframes — translate exactly -50% so the duplicated set lines up seamlessly */}
       <style>{`
         @keyframes tutorial-marquee {
           0%   { transform: translate3d(0, 0, 0); }
           100% { transform: translate3d(-50%, 0, 0); }
         }
       `}</style>
+
+      {/* Fullscreen video modal */}
+      {activeVideo?.videoUrl && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <video
+            src={activeVideo.videoUrl}
+            autoPlay
+            playsInline
+            controls
+            muted={isMuted}
+            className="w-full h-full object-contain"
+          />
+          <div className="absolute top-4 right-4 flex gap-2">
+            <button
+              onClick={() => setIsMuted(!isMuted)}
+              className="p-2.5 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-white/80 hover:text-white hover:bg-black/70 transition-all"
+              aria-label={isMuted ? "Unmute" : "Mute"}
+            >
+              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+            </button>
+            <button
+              onClick={() => setActiveVideo(null)}
+              className="p-2.5 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-white/80 hover:text-white hover:bg-black/70 transition-all"
+              aria-label="Close video"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <div className="absolute top-4 left-4">
+            <span className="text-xs font-medium text-white/80 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
+              {activeVideo.title}
+            </span>
+          </div>
+        </motion.div>
+      )}
     </section>
   );
 }
@@ -144,6 +207,7 @@ interface CardProps {
 }
 
 function Card({ item, onSelect, ariaHidden }: CardProps) {
+  const featured = item.featured;
   return (
     <article
       role="group"
@@ -154,10 +218,20 @@ function Card({ item, onSelect, ariaHidden }: CardProps) {
         "group relative shrink-0 overflow-hidden rounded-2xl",
         "w-[78vw] sm:w-[340px] md:w-[360px]",
         "max-w-[360px]",
-        "border border-border/60 bg-card",
-        "transition-all duration-300 ease-out",
-        "hover:-translate-y-1 hover:border-primary/60",
-        "hover:shadow-[0_10px_40px_-10px_hsl(var(--primary)/0.4)]",
+        "bg-card transition-all duration-300 ease-out",
+        "hover:-translate-y-1",
+        featured
+          ? [
+              "border-2 border-primary/70",
+              "shadow-[0_0_25px_-5px_hsl(var(--primary)/0.45)]",
+              "hover:border-primary",
+              "hover:shadow-[0_15px_50px_-10px_hsl(var(--primary)/0.6)]",
+            ]
+          : [
+              "border border-border/60",
+              "hover:border-primary/60",
+              "hover:shadow-[0_10px_40px_-10px_hsl(var(--primary)/0.4)]",
+            ],
       )}
     >
       <button
@@ -165,7 +239,7 @@ function Card({ item, onSelect, ariaHidden }: CardProps) {
         onClick={() => onSelect?.(item)}
         tabIndex={ariaHidden ? -1 : 0}
         className="block w-full text-left"
-        aria-label={`Play ${item.title} tutorial video`}
+        aria-label={`Play ${item.title} video`}
       >
         <div className="relative aspect-video overflow-hidden bg-muted">
           <img
@@ -179,20 +253,29 @@ function Card({ item, onSelect, ariaHidden }: CardProps) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent" />
 
-          <span className="absolute left-3 top-3 rounded-full border border-primary/40 bg-background/70 px-2.5 py-1 text-[10px] font-semibold tracking-[0.2em] text-primary backdrop-blur-md">
+          <span
+            className={cn(
+              "absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.2em] backdrop-blur-md",
+              featured
+                ? "bg-primary text-primary-foreground border border-primary"
+                : "border border-primary/40 bg-background/70 text-primary",
+            )}
+          >
             {item.step}
           </span>
 
           <div className="absolute inset-0 flex items-center justify-center">
             <div
               className={cn(
-                "flex h-14 w-14 items-center justify-center rounded-full",
+                "flex items-center justify-center rounded-full",
                 "bg-primary/90 text-primary-foreground",
-                "shadow-[0_0_30px_-5px_hsl(var(--primary)/0.6)]",
                 "transition-transform duration-300 group-hover:scale-110",
+                featured
+                  ? "h-16 w-16 shadow-[0_0_40px_-2px_hsl(var(--primary)/0.85)]"
+                  : "h-14 w-14 shadow-[0_0_30px_-5px_hsl(var(--primary)/0.6)]",
               )}
             >
-              <Play size={22} className="ml-0.5 fill-current" />
+              <Play size={featured ? 26 : 22} className="ml-0.5 fill-current" />
             </div>
           </div>
         </div>
