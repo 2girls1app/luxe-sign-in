@@ -9,7 +9,6 @@ import { toast } from "@/hooks/use-toast";
 import logoImg from "@/assets/logo.png";
 import PasswordInput from "@/components/PasswordInput";
 import { DemoVideoPopup } from "@/components/DemoVideoPopup";
-import { OnboardingVideoCarousel } from "@/components/OnboardingVideoCarousel";
 
 const DEMO_VIDEO_URL = "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/demo-video.mp4";
 
@@ -186,11 +185,6 @@ const Index = () => {
             Sign Up Here
           </Link>
         </p>
-
-        {/* Onboarding tutorial videos carousel */}
-        <OnboardingVideoCarousel
-          onSelect={() => setShowDemoModal(true)}
-        />
 
         {/* Demo Video Preview */}
         <div className="w-full mt-2">
