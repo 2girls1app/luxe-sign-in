@@ -91,7 +91,7 @@ const Index = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-sm flex flex-col items-center gap-6"
+        className="w-full max-w-sm md:max-w-md flex flex-col items-center gap-6"
       >
         <img src={logoImg} alt="1st Assist" className="w-36 h-36 object-contain" />
         <h1 className="text-2xl font-bold italic tracking-[0.25em] text-gold text-center uppercase">
