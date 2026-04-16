@@ -13,6 +13,9 @@ export interface OnboardingVideo {
   videoUrl?: string;
 }
 
+const DEMO_VIDEO =
+  "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/demo-video.mp4";
+
 const DEFAULT_VIDEOS: OnboardingVideo[] = [
   {
     id: "step-1",
@@ -21,8 +24,8 @@ const DEFAULT_VIDEOS: OnboardingVideo[] = [
     description: "Complete your profile and set your preferences",
     category: "For Surgeons",
     duration: "02:14",
-    thumbnail:
-      "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80",
+    thumbnail: DEMO_VIDEO,
+    videoUrl: DEMO_VIDEO,
   },
   {
     id: "step-2",
@@ -31,8 +34,8 @@ const DEFAULT_VIDEOS: OnboardingVideo[] = [
     description: "Manage and organize your surgical cases",
     category: "For Surgeons",
     duration: "03:07",
-    thumbnail:
-      "https://images.unsplash.com/photo-1581595220892-b0739db3ba8c?auto=format&fit=crop&w=800&q=80",
+    thumbnail: DEMO_VIDEO,
+    videoUrl: DEMO_VIDEO,
   },
   {
     id: "step-3",
@@ -41,8 +44,8 @@ const DEFAULT_VIDEOS: OnboardingVideo[] = [
     description: "Monitor and analyze your surgical performance",
     category: "For Surgeons",
     duration: "02:32",
-    thumbnail:
-      "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&w=800&q=80",
+    thumbnail: DEMO_VIDEO,
+    videoUrl: DEMO_VIDEO,
   },
 ];
 
