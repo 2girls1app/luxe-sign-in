@@ -222,13 +222,17 @@ const VideoCard = ({ video, onClick }: VideoCardProps) => (
     aria-label={`Play ${video.title}`}
     className="group relative snap-center shrink-0 w-[82%] sm:w-[60%] md:w-[44%] lg:w-[32%] aspect-[16/10] rounded-2xl overflow-hidden border border-gold/20 bg-card text-left transition-all duration-300 hover:border-gold/60 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_-8px_hsl(var(--gold)/0.4)] focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background"
   >
-    {/* Thumbnail */}
-    <img
-      src={video.thumbnail}
-      alt=""
-      loading="lazy"
-      className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-60 transition-opacity duration-300"
+    {/* Looping video preview */}
+    <video
+      src={video.videoUrl ?? video.thumbnail}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-75 transition-opacity duration-300"
     />
+
     {/* Dark gradient overlay */}
     <div
       aria-hidden
