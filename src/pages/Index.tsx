@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import logoImg from "@/assets/logo.png";
 import PasswordInput from "@/components/PasswordInput";
 import { DemoVideoPopup } from "@/components/DemoVideoPopup";
+import { TutorialCarousel } from "@/components/TutorialCarousel";
 
 const DEMO_VIDEO_URL = "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/demo-video.mp4";
 
@@ -90,7 +91,7 @@ const Index = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-sm flex flex-col items-center gap-6"
+        className="w-full max-w-sm md:max-w-md flex flex-col items-center gap-6"
       >
         <img src={logoImg} alt="1st Assist" className="w-36 h-36 object-contain" />
         <h1 className="text-2xl font-bold italic tracking-[0.25em] text-gold text-center uppercase">
@@ -185,6 +186,11 @@ const Index = () => {
             Sign Up Here
           </Link>
         </p>
+
+        {/* Tutorial Carousel */}
+        <div className="w-full mt-2">
+          <TutorialCarousel />
+        </div>
 
         {/* Demo Video Preview */}
         <div className="w-full mt-2">
