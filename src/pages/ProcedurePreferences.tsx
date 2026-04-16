@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ClipboardList, ListOrdered, Share2, User, MessageSquare, CheckCircle2, Music, Sparkles, Loader2 } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ArrowLeft, ClipboardList, ListOrdered, Share2, MessageSquare, CheckCircle2, Music, Sparkles, Loader2, AlertCircle } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,7 @@ import TeamChatDrawer from "@/components/TeamChatDrawer";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import SalesRepDrawer from "@/components/SalesRepDrawer";
 import AnesthesiaDrawer from "@/components/AnesthesiaDrawer";
+
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ const ProcedurePreferences = () => {
 
   // Track procedure owner for individual users editing doctor's procedures
   const [ownerId, setOwnerId] = useState<string | null>(null);
+  const [ownerResolved, setOwnerResolved] = useState(false);
   const accountType = user?.user_metadata?.account_type;
   const isIndividual = accountType === "individual" || (!profile?.facility_id && !accountType);
   // effectiveUserId: for individual users editing another user's procedure, use the owner's id
@@ -61,27 +63,45 @@ const ProcedurePreferences = () => {
   const [procedureFacilityId, setProcedureFacilityId] = useState<string | null>(null);
   const [aiPrefilling, setAiPrefilling] = useState(false);
   const [aiPrefilled, setAiPrefilled] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [pageError, setPageError] = useState<string | null>(null);
 
+  // Step 1: Fetch procedure (resolves ownerId)
   const fetchProcedure = useCallback(async () => {
     if (!procedureId || !user) return;
-    const { data } = await supabase
-      .from("procedures")
-      .select("name, facility_id, user_id, is_complete, category, facilities(name)")
-      .eq("id", procedureId)
-      .single();
-    if (data) {
-      setProcedureName(data.name);
-      setFacilityName((data.facilities as any)?.name || "");
-      setIsComplete(data.is_complete);
-      setIsOwner(data.user_id === user.id);
-      setOwnerId(data.user_id);
-      setSpecialty(data.category || "");
-      setProcedureFacilityId(data.facility_id);
-    } else navigate("/profile");
+    setPageLoading(true);
+    setPageError(null);
+    try {
+      const { data, error } = await supabase
+        .from("procedures")
+        .select("name, facility_id, user_id, is_complete, category, facilities(name)")
+        .eq("id", procedureId)
+        .single();
+      if (error) throw error;
+      if (data) {
+        setProcedureName(data.name);
+        setFacilityName((data.facilities as { name: string } | null)?.name || "");
+        setIsComplete(data.is_complete);
+        setIsOwner(data.user_id === user.id);
+        setOwnerId(data.user_id);
+        setSpecialty(data.category || "");
+        setProcedureFacilityId(data.facility_id);
+        setOwnerResolved(true);
+      } else {
+        navigate("/profile");
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to load procedure";
+      setPageError(message);
+      console.error("fetchProcedure error:", err);
+    } finally {
+      setPageLoading(false);
+    }
   }, [procedureId, user, navigate]);
 
+  // Step 2: Dependent fetches — only run after ownerId is resolved
   const fetchPreferences = useCallback(async () => {
-    if (!procedureId || !effectiveUserId) return;
+    if (!procedureId || !effectiveUserId || !ownerResolved) return;
     const { data } = await supabase
       .from("procedure_preferences")
       .select("category, value, updated_at")
@@ -90,14 +110,14 @@ const ProcedurePreferences = () => {
     if (data) {
       const map: Record<string, string> = {};
       const dates: Record<string, string> = {};
-      data.forEach((d: any) => { map[d.category] = d.value; dates[d.category] = d.updated_at; });
+      data.forEach((d) => { map[d.category] = d.value; dates[d.category] = d.updated_at; });
       setPreferences(map);
       setUpdatedDates(dates);
     }
-  }, [procedureId, effectiveUserId]);
+  }, [procedureId, effectiveUserId, ownerResolved]);
 
   const fetchFileCounts = useCallback(async () => {
-    if (!procedureId || !effectiveUserId) return;
+    if (!procedureId || !effectiveUserId || !ownerResolved) return;
     const { data } = await supabase
       .from("procedure_files")
       .select("category")
@@ -105,48 +125,54 @@ const ProcedurePreferences = () => {
       .eq("user_id", effectiveUserId);
     if (data) {
       const counts: Record<string, number> = {};
-      data.forEach((d: any) => { counts[d.category] = (counts[d.category] || 0) + 1; });
+      data.forEach((d) => { counts[d.category] = (counts[d.category] || 0) + 1; });
       setFileCounts(counts);
     }
-  }, [procedureId, effectiveUserId]);
+  }, [procedureId, effectiveUserId, ownerResolved]);
 
   const fetchProviderName = useCallback(async () => {
-    const targetId = effectiveUserId || user?.id;
-    if (!targetId) return;
+    if (!effectiveUserId || !ownerResolved) return;
     const { data } = await supabase
       .from("profiles")
       .select("display_name, avatar_url")
-      .eq("user_id", targetId)
+      .eq("user_id", effectiveUserId)
       .single();
     if (data?.display_name) setProviderName(data.display_name);
     if (data?.avatar_url) setProviderAvatar(data.avatar_url);
-  }, [effectiveUserId, user]);
+  }, [effectiveUserId, ownerResolved]);
 
   const fetchMusicCount = useCallback(async () => {
-    const targetId = effectiveUserId || user?.id;
-    if (!targetId) return;
+    if (!effectiveUserId || !ownerResolved) return;
     const { count } = await supabase
       .from("music_preferences")
       .select("id", { count: "exact", head: true })
-      .eq("user_id", targetId);
+      .eq("user_id", effectiveUserId);
     setMusicCount(count || 0);
-  }, [effectiveUserId, user]);
+  }, [effectiveUserId, ownerResolved]);
 
+  // Fetch procedure first (resolves owner)
   useEffect(() => {
     fetchProcedure();
+  }, [fetchProcedure]);
+
+  // Dependent fetches: wait for ownerResolved
+  useEffect(() => {
+    if (!ownerResolved) return;
     fetchPreferences();
     fetchFileCounts();
     fetchProviderName();
     fetchMusicCount();
-  }, [fetchProcedure, fetchPreferences, fetchFileCounts, fetchProviderName, fetchMusicCount]);
+  }, [ownerResolved, fetchPreferences, fetchFileCounts, fetchProviderName, fetchMusicCount]);
 
-  // Smart suggestions based on procedure name and specialty
+  // Smart suggestions: only fetch when a drawer needing suggestions is open
+  const isDrawerWithSuggestionsOpen = drawerOpen || medicationOpen;
   const activeCategoryKey = selectedCategory?.key || "";
   const { procedureSuggestions, specialtySuggestions } = useSmartSuggestions(
     procedureName,
     specialty,
     activeCategoryKey,
-    procedureFacilityId
+    procedureFacilityId,
+    isDrawerWithSuggestionsOpen
   );
 
   const handleSave = async (category: string, value: string) => {
@@ -173,7 +199,7 @@ const ProcedurePreferences = () => {
             value: trimmed,
             updated_at: new Date().toISOString(),
           },
-          { onConflict: "procedure_id,category" }
+          { onConflict: "procedure_id,user_id,category" }
         );
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -217,26 +243,21 @@ const ProcedurePreferences = () => {
       const suggestions = data?.suggestions;
       if (!suggestions) throw new Error("No suggestions returned");
 
-      // Convert suggestions to the stored format and save each category
       const categoryMap: Record<string, string> = {};
 
-      // Multi-select categories stored as JSON arrays of {name} objects
       for (const key of ["skinprep", "equipment", "instruments", "trays", "supplies", "medication"]) {
         if (suggestions[key] && Array.isArray(suggestions[key]) && suggestions[key].length > 0) {
           categoryMap[key] = JSON.stringify(suggestions[key].map((name: string) => ({ name })));
         }
       }
 
-      // Suture: stored as JSON array of {name} objects (sizes added later by user)
       if (suggestions.suture && Array.isArray(suggestions.suture) && suggestions.suture.length > 0) {
         categoryMap["suture"] = JSON.stringify(suggestions.suture.map((name: string) => ({ name })));
       }
 
-      // Simple string categories
       if (suggestions.position) categoryMap["position"] = suggestions.position;
       if (suggestions.gloves) categoryMap["gloves"] = suggestions.gloves;
 
-      // Batch upsert all preferences
       const upserts = Object.entries(categoryMap).map(([category, value]) => ({
         procedure_id: procedureId,
         user_id: effectiveUserId,
@@ -248,16 +269,17 @@ const ProcedurePreferences = () => {
       if (upserts.length > 0) {
         const { error: upsertError } = await supabase
           .from("procedure_preferences")
-          .upsert(upserts, { onConflict: "procedure_id,category" });
+          .upsert(upserts, { onConflict: "procedure_id,user_id,category" });
         if (upsertError) throw upsertError;
       }
 
       await fetchPreferences();
       setAiPrefilled(true);
       toast({ title: "AI Suggestions Applied", description: `${upserts.length} categories prefilled. Review and edit as needed.` });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Please try again.";
       console.error("AI prefill error:", err);
-      toast({ title: "AI prefill failed", description: err.message || "Please try again.", variant: "destructive" });
+      toast({ title: "AI prefill failed", description: message, variant: "destructive" });
     } finally {
       setAiPrefilling(false);
     }
@@ -281,8 +303,7 @@ const ProcedurePreferences = () => {
     if (!error) {
       setIsComplete(newVal);
       toast({ title: newVal ? "Card marked complete" : "Card marked incomplete" });
-      // Audit log
-      await supabase.from("audit_logs" as any).insert({
+      await supabase.from("audit_logs").insert({
         user_id: user.id,
         user_email: user.email || "",
         user_name: providerName,
@@ -294,6 +315,31 @@ const ProcedurePreferences = () => {
     }
     setTogglingComplete(false);
   };
+
+  // Loading state
+  if (pageLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 size={32} className="animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Error state
+  if (pageError) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background gap-4 px-6">
+        <AlertCircle size={40} className="text-destructive" />
+        <p className="text-sm text-muted-foreground text-center">{pageError}</p>
+        <button
+          onClick={() => { setPageError(null); fetchProcedure(); }}
+          className="text-sm text-primary underline"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pt-8 pb-8">
@@ -427,7 +473,7 @@ const ProcedurePreferences = () => {
           </button>
         </div>
 
-        {/* AI Prefill Button - shown when no preferences exist yet or user wants to regenerate */}
+        {/* AI Prefill Button */}
         {canManageCard && (
           <button
             onClick={handleAiPrefill}

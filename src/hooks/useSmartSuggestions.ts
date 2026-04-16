@@ -11,20 +11,22 @@ interface SuggestionResult {
  * Hook that provides smart suggestions for preference categories
  * based on procedure name and specialty usage history.
  * 
+ * Only fetches when `enabled` is true (i.e. when the relevant drawer is open).
  * Priority: procedure-specific > specialty-level > master list
  */
 export const useSmartSuggestions = (
   procedureName: string,
   specialty: string,
   category: string,
-  facilityId?: string | null
+  facilityId?: string | null,
+  enabled: boolean = false
 ): SuggestionResult => {
   const [procedureSuggestions, setProcedureSuggestions] = useState<string[]>([]);
   const [specialtySuggestions, setSpecialtySuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchSuggestions = useCallback(async () => {
-    if (!category || !procedureName) return;
+    if (!category || !procedureName || !enabled) return;
     setLoading(true);
 
     try {
@@ -39,7 +41,7 @@ export const useSmartSuggestions = (
       const procIds = sameProcedures?.map((p) => p.id) || [];
 
       // 2. Get preferences for this category from matching procedures
-      let procItems: Record<string, number> = {};
+      const procItems: Record<string, number> = {};
       if (procIds.length > 0) {
         const { data: procPrefs } = await supabase
           .from("procedure_preferences")
@@ -57,7 +59,7 @@ export const useSmartSuggestions = (
       }
 
       // 3. Get specialty-level suggestions (different procedure names, same specialty)
-      let specItems: Record<string, number> = {};
+      const specItems: Record<string, number> = {};
       if (specialty) {
         let specQuery = supabase
           .from("procedures")
@@ -105,11 +107,17 @@ export const useSmartSuggestions = (
     } finally {
       setLoading(false);
     }
-  }, [procedureName, specialty, category, facilityId]);
+  }, [procedureName, specialty, category, facilityId, enabled]);
 
   useEffect(() => {
+    if (!enabled) {
+      // Reset when disabled
+      setProcedureSuggestions([]);
+      setSpecialtySuggestions([]);
+      return;
+    }
     fetchSuggestions();
-  }, [fetchSuggestions]);
+  }, [fetchSuggestions, enabled]);
 
   return { procedureSuggestions, specialtySuggestions, loading };
 };
@@ -124,7 +132,7 @@ function extractItemNames(value: string): string[] {
     const parsed = JSON.parse(value);
     if (Array.isArray(parsed)) {
       return parsed
-        .map((item: any) => (typeof item === "string" ? item : item.name))
+        .map((item: unknown) => (typeof item === "string" ? item : (item as Record<string, string>)?.name))
         .filter(Boolean);
     }
   } catch {
