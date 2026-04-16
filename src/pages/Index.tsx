@@ -187,6 +187,11 @@ const Index = () => {
           </Link>
         </p>
 
+        {/* Onboarding tutorial videos carousel */}
+        <OnboardingVideoCarousel
+          onSelect={() => setShowDemoModal(true)}
+        />
+
         {/* Demo Video Preview */}
         <div className="w-full mt-2">
           <button
