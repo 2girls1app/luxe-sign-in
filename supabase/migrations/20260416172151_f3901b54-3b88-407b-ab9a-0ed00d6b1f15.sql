@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS public.idx_procedure_preferences_unique;
