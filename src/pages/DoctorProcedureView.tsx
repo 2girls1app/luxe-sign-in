@@ -916,6 +916,13 @@ const DoctorProcedureView = () => {
         procedureName={procedureName}
       />
 
+      {/* Doctor Music Preferences (read view of doctor's saved music) */}
+      <MusicPreferencesDrawer
+        open={musicOpen}
+        onOpenChange={setMusicOpen}
+        doctorUserId={userId}
+      />
+
       {/* File Upload Drawer */}
       <FileUploadDrawer
         open={fileDrawerOpen}
