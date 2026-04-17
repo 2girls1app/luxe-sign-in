@@ -9,7 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import logoImg from "@/assets/logo.png";
 import PasswordInput from "@/components/PasswordInput";
 import { DemoVideoPopup } from "@/components/DemoVideoPopup";
-import { TutorialCarousel } from "@/components/TutorialCarousel";
+import { OnboardingVideoCarousel } from "@/components/OnboardingVideoCarousel";
 
 const DEMO_VIDEO_URL = "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/demo-video.mp4";
 
@@ -91,7 +91,7 @@ const Index = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-sm md:max-w-md flex flex-col items-center gap-6"
+        className="w-full max-w-sm flex flex-col items-center gap-6"
       >
         <img src={logoImg} alt="1st Assist" className="w-36 h-36 object-contain" />
         <h1 className="text-2xl font-bold italic tracking-[0.25em] text-gold text-center uppercase">
@@ -187,36 +187,10 @@ const Index = () => {
           </Link>
         </p>
 
-        {/* Tutorial Carousel */}
-        <div className="w-full mt-2">
-          <TutorialCarousel />
-        </div>
-
-        {/* Demo Video Preview */}
-        <div className="w-full mt-2">
-          <button
-            onClick={() => setShowDemoModal(true)}
-            className="w-full group relative rounded-xl overflow-hidden border border-border hover:border-primary/40 transition-all"
-          >
-            <video
-              ref={videoRef}
-              src={DEMO_VIDEO_URL}
-              muted
-              autoPlay
-              loop
-              playsInline
-              className="w-full aspect-video object-cover opacity-70 group-hover:opacity-90 transition-opacity"
-            />
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 group-hover:bg-black/20 transition-colors">
-              <div className="w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                <Play size={20} className="text-primary-foreground ml-0.5" />
-              </div>
-              <span className="text-xs font-medium text-foreground/90 tracking-wider uppercase">
-                Quick Demo
-              </span>
-            </div>
-          </button>
-        </div>
+        {/* Onboarding tutorial videos carousel */}
+        <OnboardingVideoCarousel
+          onSelect={() => setShowDemoModal(true)}
+        />
       </motion.div>
 
       {/* Demo Video Modal — fullscreen landscape */}
