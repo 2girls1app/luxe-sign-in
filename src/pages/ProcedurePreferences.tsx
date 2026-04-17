@@ -538,7 +538,22 @@ const ProcedurePreferences = () => {
           </button>
         )}
 
-        {/* Action bars */}
+        {/* Undo AI Prefill — appears immediately after AI prefill, until user edits or saves */}
+        {aiPrefilled && preAiSnapshot && canManageCard && (
+          <button
+            onClick={handleUndoAiPrefill}
+            disabled={undoingAi}
+            className="flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 text-xs font-medium text-primary hover:bg-primary/15 transition-all active:scale-[0.98] disabled:opacity-50"
+          >
+            {undoingAi ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Undo2 size={14} />
+            )}
+            {undoingAi ? "Restoring..." : "Undo AI Prefill"}
+          </button>
+        )}
+
         <div className="flex flex-col gap-2">
           <button
             onClick={() => setSummaryOpen(true)}
