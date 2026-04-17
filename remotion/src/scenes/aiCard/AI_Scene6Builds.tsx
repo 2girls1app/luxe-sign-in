@@ -110,7 +110,6 @@ export const AI_Scene6Builds = () => {
                       flexDirection: "column",
                       gap: 8,
                       position: "relative",
-                      aspectRatio: "1",
                       boxShadow: "0 10px 25px -10px rgba(191,155,48,0.25)",
                     }}
                   >
