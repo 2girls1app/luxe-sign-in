@@ -21,6 +21,7 @@ import TeamChatDrawer from "@/components/TeamChatDrawer";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import SalesRepDrawer from "@/components/SalesRepDrawer";
 import AnesthesiaDrawer from "@/components/AnesthesiaDrawer";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 const ProcedurePreferences = () => {
   const { procedureId } = useParams<{ procedureId: string }>();
@@ -395,41 +396,58 @@ const ProcedurePreferences = () => {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-0.5 shrink-0">
-            <button
-              onClick={() => setMusicOpen(true)}
-              className="relative p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary"
-              aria-label="Music preferences"
-            >
-              <Music size={18} />
-              {musicCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-primary text-[9px] font-semibold text-primary-foreground flex items-center justify-center">
-                  {musicCount}
-                </span>
+          <TooltipProvider delayDuration={150}>
+            <div className="flex items-center gap-0.5 shrink-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setMusicOpen(true)}
+                    className="relative p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary"
+                    aria-label="Music Preferences"
+                  >
+                    <Music size={18} />
+                    {musicCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-primary text-[9px] font-semibold text-primary-foreground flex items-center justify-center">
+                        {musicCount}
+                      </span>
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={6}>Music Preferences</TooltipContent>
+              </Tooltip>
+              {canManageCard && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={handleAiPrefill}
+                      disabled={aiPrefilling}
+                      className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary disabled:opacity-50"
+                      aria-label="Prefill Card with AI"
+                    >
+                      {aiPrefilling ? (
+                        <Loader2 size={18} className="animate-spin text-primary" />
+                      ) : (
+                        <Sparkles size={18} className={aiPrefilled ? "text-primary" : ""} />
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" sideOffset={6}>Prefill Card with AI</TooltipContent>
+                </Tooltip>
               )}
-            </button>
-            {canManageCard && (
-              <button
-                onClick={handleAiPrefill}
-                disabled={aiPrefilling}
-                className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary disabled:opacity-50"
-                aria-label="Prefill with AI"
-              >
-                {aiPrefilling ? (
-                  <Loader2 size={18} className="animate-spin text-primary" />
-                ) : (
-                  <Sparkles size={18} className={aiPrefilled ? "text-primary" : ""} />
-                )}
-              </button>
-            )}
-            <button
-              onClick={() => setShareOpen(true)}
-              className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary"
-              aria-label="Share preference card"
-            >
-              <Share2 size={18} />
-            </button>
-          </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setShareOpen(true)}
+                    className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary"
+                    aria-label="Share"
+                  >
+                    <Share2 size={18} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={6}>Share</TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
         </div>
 
         {/* Complete status - hidden for Individual users */}
