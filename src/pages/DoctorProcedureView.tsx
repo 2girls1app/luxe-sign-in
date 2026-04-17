@@ -5,7 +5,7 @@ import {
   ArrowLeft, ClipboardList, User, AlertTriangle, Mic, MicOff, Send,
   ListOrdered, MessageSquare, PenLine, Trash2, Plus, Clock,
   CheckCircle2, XCircle, ChevronRight, Library, Check,
-  ArrowUp, ArrowDown,
+  ArrowUp, ArrowDown, Share2,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ import PreferenceCategoryWidget, {
 import { MULTI_SELECT_CATEGORIES } from "@/data/preferenceOptions";
 import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
 import TeamChatDrawer from "@/components/TeamChatDrawer";
+import SharePreferenceCardDrawer from "@/components/SharePreferenceCardDrawer";
 import NavHeader from "@/components/NavHeader";
 import ReadOnlyPreferenceViewer from "@/components/ReadOnlyPreferenceViewer";
 import FileUploadDrawer from "@/components/FileUploadDrawer";
@@ -109,6 +110,7 @@ const DoctorProcedureView = () => {
   const [allChanges, setAllChanges] = useState<PendingChange[]>([]);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   // View drawer
   const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
@@ -367,6 +369,13 @@ const DoctorProcedureView = () => {
               {procedureCategory && `${procedureCategory} · `}Preference Card
             </p>
           </div>
+          <button
+            onClick={() => setShareOpen(true)}
+            className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary shrink-0"
+            aria-label="Share preference card"
+          >
+            <Share2 size={20} />
+          </button>
         </div>
 
         {/* Pending changes banner */}
@@ -884,6 +893,14 @@ const DoctorProcedureView = () => {
       <TeamChatDrawer
         open={chatOpen}
         onOpenChange={setChatOpen}
+        procedureId={procedureId || ""}
+        procedureName={procedureName}
+      />
+
+      {/* Share Preference Card */}
+      <SharePreferenceCardDrawer
+        open={shareOpen}
+        onOpenChange={setShareOpen}
         procedureId={procedureId || ""}
         procedureName={procedureName}
       />
