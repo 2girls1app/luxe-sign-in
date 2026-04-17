@@ -19,6 +19,8 @@ export type TutorialItem = {
 
 const DEMO_VIDEO_URL =
   "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/demo-video.mp4";
+const ADD_PROCEDURE_VIDEO_URL =
+  "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/add-procedure-demo.mp4";
 const CAROUSEL_MUSIC_URL =
   "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/carousel-music.mp3";
 const MUSIC_VOLUME = 0.35;
@@ -35,12 +37,13 @@ const DEFAULT_ITEMS: TutorialItem[] = [
     featured: true,
   },
   {
-    id: "step-1",
+    id: "add-procedure",
     step: "STEP 1",
-    title: "Create Your Profile",
-    description: "Complete your profile and set your preferences",
-    meta: "For Surgeons | 02:14",
+    title: "Add a Procedure",
+    description: "Walkthrough: create a new procedure card in seconds",
+    meta: "For Surgeons | 00:20",
     thumbnail: step1Img,
+    videoUrl: ADD_PROCEDURE_VIDEO_URL,
   },
   {
     id: "step-2",
