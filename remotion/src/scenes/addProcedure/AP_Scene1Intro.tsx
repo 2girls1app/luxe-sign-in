@@ -1,4 +1,5 @@
 import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig, Img, staticFile } from "remotion";
+import { FONT_BODY, FONT_DISPLAY } from "../../fonts";
 
 export const AP_Scene1Intro = () => {
   const frame = useCurrentFrame();
@@ -31,7 +32,8 @@ export const AP_Scene1Intro = () => {
       <div style={{ opacity: titleOp, transform: `translateY(${titleY}px)`, textAlign: "center" }}>
         <span
           style={{
-            fontSize: 80,
+            fontFamily: FONT_DISPLAY,
+            fontSize: 84,
             fontWeight: 700,
             color: "#f4f4f4",
             letterSpacing: -1,
@@ -53,7 +55,7 @@ export const AP_Scene1Intro = () => {
         }}
       />
       <div style={{ opacity: subOp, transform: `translateY(${subY}px)` }}>
-        <span style={{ fontSize: 30, color: "#BF9B30", letterSpacing: 8, fontWeight: 500, textTransform: "uppercase" }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: 30, color: "#BF9B30", letterSpacing: 8, fontWeight: 500, textTransform: "uppercase" }}>
           A Quick Walkthrough
         </span>
       </div>

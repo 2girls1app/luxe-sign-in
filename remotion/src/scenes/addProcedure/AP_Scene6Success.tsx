@@ -1,4 +1,5 @@
 import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig } from "remotion";
+import { FONT_BODY, FONT_DISPLAY } from "../../fonts";
 import { PhoneScreen } from "../../components/PhoneScreen";
 
 const TOTAL = 130;
@@ -59,12 +60,12 @@ export const AP_Scene6Success = () => {
           >
             ✓
           </div>
-          <span style={{ fontSize: 26, color: "#BF9B30", letterSpacing: 6, fontWeight: 600, textTransform: "uppercase" }}>
+          <span style={{ fontFamily: FONT_BODY, fontSize: 26, color: "#BF9B30", letterSpacing: 6, fontWeight: 600, textTransform: "uppercase" }}>
             Procedure Added
           </span>
         </div>
         <div style={{ opacity: headlineOp, transform: `translateY(${headlineY}px)`, textAlign: "center" }}>
-          <span style={{ fontSize: 56, color: "#f4f4f4", fontWeight: 700, letterSpacing: -1, lineHeight: 1.15 }}>
+          <span style={{ fontFamily: FONT_DISPLAY, fontSize: 60, color: "#f4f4f4", fontWeight: 700, letterSpacing: -1, lineHeight: 1.15 }}>
             That’s it. <span style={{ color: "#BF9B30" }}>You’re ready.</span>
           </span>
         </div>

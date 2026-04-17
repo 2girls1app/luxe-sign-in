@@ -1,4 +1,5 @@
 import { useCurrentFrame, interpolate, spring, useVideoConfig } from "remotion";
+import { FONT_BODY } from "../fonts";
 
 interface CaptionProps {
   step?: string;
@@ -47,6 +48,7 @@ export const Caption = ({ step, title, top = 90 }: CaptionProps) => {
         >
           <span
             style={{
+              fontFamily: FONT_BODY,
               fontSize: 22,
               color: "#BF9B30",
               letterSpacing: 6,
@@ -60,6 +62,7 @@ export const Caption = ({ step, title, top = 90 }: CaptionProps) => {
       )}
       <span
         style={{
+          fontFamily: FONT_BODY,
           fontSize: 56,
           fontWeight: 700,
           color: "#f4f4f4",
