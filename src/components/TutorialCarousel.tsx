@@ -19,6 +19,9 @@ export type TutorialItem = {
 
 const DEMO_VIDEO_URL =
   "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/demo-video.mp4";
+const CAROUSEL_MUSIC_URL =
+  "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/carousel-music.mp3";
+const MUSIC_VOLUME = 0.35;
 
 const DEFAULT_ITEMS: TutorialItem[] = [
   {
