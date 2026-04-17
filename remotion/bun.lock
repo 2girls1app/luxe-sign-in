@@ -9,7 +9,7 @@
         "@remotion/cli": "^4.0.447",
         "@remotion/compositor-linux-x64-musl": "^4.0.447",
         "@remotion/fonts": "^4.0.447",
-        "@remotion/google-fonts": "^4.0.447",
+        "@remotion/google-fonts": "^4.0.448",
         "@remotion/renderer": "^4.0.447",
         "@remotion/transitions": "^4.0.447",
         "@types/react": "^19.2.14",
@@ -140,7 +140,7 @@
 
     "@remotion/fonts": ["@remotion/fonts@4.0.447", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@remotion/fonts/-/fonts-4.0.447.tgz", { "dependencies": { "remotion": "4.0.447" } }, "sha512-jH/3rJGrK4mQSavYQHg1aaHQsxxP3X9gE7jdIRJ4StOehcBENE7BMnvoIOEtI5Nwa1DpJN2FTgnkbIdl3UUA9g=="],
 
-    "@remotion/google-fonts": ["@remotion/google-fonts@4.0.447", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@remotion/google-fonts/-/google-fonts-4.0.447.tgz", { "dependencies": { "remotion": "4.0.447" } }, "sha512-gLqgktbTSQsVjKmY3Y0gxX9RjQsuaMvJtd+SWUSlXM/oHONtiY3gxM/UuZjFCsDuxk+lAblGd3tyRflqrSu8Dw=="],
+    "@remotion/google-fonts": ["@remotion/google-fonts@4.0.448", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@remotion/google-fonts/-/google-fonts-4.0.448.tgz", { "dependencies": { "remotion": "4.0.448" } }, "sha512-mpey2nMUu8PLcAt8wnNFfA22vOLNUH60SjC/YOs7e8CUoisNyjEV9itKOwVdtoUdfKDOdeAWbAQuDrSsua7gTg=="],
 
     "@remotion/licensing": ["@remotion/licensing@4.0.447", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@remotion/licensing/-/licensing-4.0.447.tgz", {}, "sha512-/pqArZCErkX0jVroK6tvTLuWpgFGiu/z5nTyCkaQogg6xvQKi7QQBXBb8mUJ/BvUeiWOUX/eVJ2khDGhSzQpUQ=="],
 
@@ -499,6 +499,8 @@
     "yauzl": ["yauzl@2.10.0", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/yauzl/-/yauzl-2.10.0.tgz", { "dependencies": { "buffer-crc32": "~0.2.3", "fd-slicer": "~1.1.0" } }, "sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g=="],
 
     "zod": ["zod@4.3.6", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/zod/-/zod-4.3.6.tgz", {}, "sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg=="],
+
+    "@remotion/google-fonts/remotion": ["remotion@4.0.448", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/remotion/-/remotion-4.0.448.tgz", { "peerDependencies": { "react": ">=16.8.0", "react-dom": ">=16.8.0" } }, "sha512-4NBSmQRIzntZiLEtOU/bGMQXfnGgUsBoyrewdTRyYzPl+qnvlBjqwxcntsu6SDY/W7ucEwKZUTc7GDOcFhIuAA=="],
 
     "@remotion/renderer/source-map": ["source-map@0.8.0-beta.0", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/source-map/-/source-map-0.8.0-beta.0.tgz", { "dependencies": { "whatwg-url": "^7.0.0" } }, "sha512-2ymg6oRBpebeZi9UUNsgQ89bhx01TcTkmNTGnNO88imTmbSgy4nfujrgVEFKWpMTEGA11EDkTt7mqObTPdigIA=="],
 
