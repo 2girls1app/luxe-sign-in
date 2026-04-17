@@ -47,7 +47,7 @@ const Settings = () => {
   const displayName = profile?.display_name || user?.user_metadata?.full_name || "User";
   const email = user?.email || "";
   const userRole = (profile?.role || "").toLowerCase();
-  const isAdminRole = ["administrative", "admin", "admin-staff", "admin staff"].includes(userRole);
+  const isDoctorRole = ["doctor", "surgeon", "physician"].includes(userRole);
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
@@ -248,7 +248,7 @@ const Settings = () => {
                           className="w-full rounded-lg border border-border bg-secondary/50 px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed"
                         />
                       </div>
-                      {!isAdminRole && (
+                      {isDoctorRole && (
                         <div>
                           <label className="text-xs text-muted-foreground mb-1 flex items-center gap-1.5">
                             <Stethoscope size={12} className="text-primary" /> Specialty
