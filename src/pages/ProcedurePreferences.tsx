@@ -217,6 +217,8 @@ const ProcedurePreferences = () => {
 
     toast({ title: "Preference saved" });
     await fetchPreferences();
+    setAiPrefilled(false);
+    setPreAiSnapshot(null);
     setSaving(false);
     setDrawerOpen(false);
     setMedicationOpen(false);
@@ -242,6 +244,9 @@ const ProcedurePreferences = () => {
   const handleAiPrefill = async () => {
     if (!procedureId || !user || !effectiveUserId || aiPrefilling) return;
     setAiPrefilling(true);
+    // Snapshot current state BEFORE applying AI
+    const snapshotPrefs = { ...preferences };
+    const snapshotDates = { ...updatedDates };
     try {
       const { data, error } = await supabase.functions.invoke("ai-prefill-preferences", {
         body: { procedureName, specialty },
@@ -282,6 +287,11 @@ const ProcedurePreferences = () => {
 
       await fetchPreferences();
       setAiPrefilled(true);
+      setPreAiSnapshot({
+        preferences: snapshotPrefs,
+        updatedDates: snapshotDates,
+        affectedCategories: Object.keys(categoryMap),
+      });
       toast({ title: "AI Suggestions Applied", description: `${upserts.length} categories prefilled. Review and edit as needed.` });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Please try again.";
@@ -289,6 +299,58 @@ const ProcedurePreferences = () => {
       toast({ title: "AI prefill failed", description: message, variant: "destructive" });
     } finally {
       setAiPrefilling(false);
+    }
+  };
+
+  const handleUndoAiPrefill = async () => {
+    if (!procedureId || !effectiveUserId || !preAiSnapshot || undoingAi) return;
+    setUndoingAi(true);
+    try {
+      const { affectedCategories, preferences: prevPrefs, updatedDates: prevDates } = preAiSnapshot;
+
+      // Categories that had a prior value → restore via upsert with original value + date
+      const restores = affectedCategories
+        .filter((cat) => prevPrefs[cat] !== undefined && prevPrefs[cat] !== "")
+        .map((cat) => ({
+          procedure_id: procedureId,
+          user_id: effectiveUserId,
+          category: cat,
+          value: prevPrefs[cat],
+          updated_at: prevDates[cat] || new Date().toISOString(),
+        }));
+
+      // Categories that had no prior value → delete the AI-inserted rows
+      const toDelete = affectedCategories.filter(
+        (cat) => prevPrefs[cat] === undefined || prevPrefs[cat] === ""
+      );
+
+      if (restores.length > 0) {
+        const { error: upsertErr } = await supabase
+          .from("procedure_preferences")
+          .upsert(restores, { onConflict: "procedure_id,user_id,category" });
+        if (upsertErr) throw upsertErr;
+      }
+
+      if (toDelete.length > 0) {
+        const { error: delErr } = await supabase
+          .from("procedure_preferences")
+          .delete()
+          .eq("procedure_id", procedureId)
+          .eq("user_id", effectiveUserId)
+          .in("category", toDelete);
+        if (delErr) throw delErr;
+      }
+
+      await fetchPreferences();
+      setAiPrefilled(false);
+      setPreAiSnapshot(null);
+      toast({ title: "Prefill removed", description: "Fields restored." });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Please try again.";
+      console.error("Undo AI prefill error:", err);
+      toast({ title: "Undo failed", description: message, variant: "destructive" });
+    } finally {
+      setUndoingAi(false);
     }
   };
 
