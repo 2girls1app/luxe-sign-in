@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ClipboardList, ListOrdered, Share2, MessageSquare, CheckCircle2, Music, Sparkles, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, ClipboardList, ListOrdered, Share2, MessageSquare, CheckCircle2, Music, Sparkles, Loader2, AlertCircle, Undo2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -64,6 +64,12 @@ const ProcedurePreferences = () => {
   const [procedureFacilityId, setProcedureFacilityId] = useState<string | null>(null);
   const [aiPrefilling, setAiPrefilling] = useState(false);
   const [aiPrefilled, setAiPrefilled] = useState(false);
+  const [preAiSnapshot, setPreAiSnapshot] = useState<{
+    preferences: Record<string, string>;
+    updatedDates: Record<string, string>;
+    affectedCategories: string[];
+  } | null>(null);
+  const [undoingAi, setUndoingAi] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
 
