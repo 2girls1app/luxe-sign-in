@@ -5,7 +5,7 @@ import {
   ArrowLeft, ClipboardList, User, AlertTriangle, Mic, MicOff, Send,
   ListOrdered, MessageSquare, PenLine, Trash2, Plus, Clock,
   CheckCircle2, XCircle, ChevronRight, Library, Check,
-  ArrowUp, ArrowDown, Share2,
+  ArrowUp, ArrowDown, Share2, Music,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
