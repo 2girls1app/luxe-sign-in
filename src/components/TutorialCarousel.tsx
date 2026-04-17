@@ -32,7 +32,7 @@ const DEFAULT_ITEMS: TutorialItem[] = [
     id: "demo",
     step: "START HERE",
     title: "Quick App Demo",
-    description: "See how 1st Assist works in under a minute",
+    description: "See how First Assist works in under a minute",
     meta: "01:00",
     thumbnail: step1Img,
     videoUrl: DEMO_VIDEO_URL,

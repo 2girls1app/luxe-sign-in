@@ -155,7 +155,7 @@ export const DemoVideoPopup = () => {
                 transition={{ delay: 0.3, duration: 0.5 }}
               >
                 <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[hsl(var(--gold))] mb-1.5">
-                  Welcome to 1st Assist
+                  Welcome to First Assist
                 </p>
                 <h2 className="text-xl font-semibold tracking-tight text-foreground">
                   Built for Precision. Designed for You.

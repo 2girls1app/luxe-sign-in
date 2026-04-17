@@ -28,7 +28,7 @@ export const Scene1Intro = () => {
       {/* Title */}
       <div style={{ opacity: titleOp, transform: `translateY(${titleY}px)` }}>
         <span style={{ fontSize: 72, fontWeight: 700, fontStyle: "italic", color: "#BF9B30", letterSpacing: 12, textTransform: "uppercase" }}>
-          1st Assist
+          First Assist
         </span>
       </div>
 

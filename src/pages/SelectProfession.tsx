@@ -110,7 +110,7 @@ const SelectProfession = () => {
         </motion.button>
 
         <p className="text-[0.65rem] text-muted-foreground/60 tracking-[0.2em] uppercase">
-          1st Assist
+          First Assist
         </p>
       </motion.div>
     </div>
