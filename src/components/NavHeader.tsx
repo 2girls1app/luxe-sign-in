@@ -1,7 +1,11 @@
 import { ArrowLeft, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const NavHeader = () => {
+interface NavHeaderProps {
+  showHome?: boolean;
+}
+
+const NavHeader = ({ showHome = true }: NavHeaderProps) => {
   const navigate = useNavigate();
 
   return (
@@ -13,13 +17,15 @@ const NavHeader = () => {
         <ArrowLeft size={20} />
         <span className="text-xs font-medium">BACK</span>
       </button>
-      <button
-        onClick={() => navigate("/profile")}
-        className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
-      >
-        <Home size={20} />
-        <span className="text-xs font-medium">Home</span>
-      </button>
+      {showHome && (
+        <button
+          onClick={() => navigate("/profile")}
+          className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+        >
+          <Home size={20} />
+          <span className="text-xs font-medium">Home</span>
+        </button>
+      )}
     </div>
   );
 };
