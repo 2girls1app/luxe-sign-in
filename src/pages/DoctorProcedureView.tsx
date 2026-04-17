@@ -29,6 +29,7 @@ import FileUploadDrawer from "@/components/FileUploadDrawer";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle,
 } from "@/components/ui/drawer";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 interface PendingChange {
   id: string;
