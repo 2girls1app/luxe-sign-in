@@ -87,7 +87,7 @@ export const AI_Scene2TwoPaths = () => {
                   fontSize: 36,
                 }}
               >
-                📄
+                ▤
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: FONT_BODY, fontSize: 30, fontWeight: 600, color: "#f4f4f4" }}>
