@@ -21,6 +21,8 @@ const DEMO_VIDEO_URL =
   "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/demo-video.mp4";
 const ADD_PROCEDURE_VIDEO_URL =
   "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/add-procedure-demo.mp4";
+const AI_CARD_VIDEO_URL =
+  "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/ai-card-demo.mp4";
 const CAROUSEL_MUSIC_URL =
   "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/carousel-music.mp3";
 const MUSIC_VOLUME = 0.35;
@@ -46,12 +48,13 @@ const DEFAULT_ITEMS: TutorialItem[] = [
     videoUrl: ADD_PROCEDURE_VIDEO_URL,
   },
   {
-    id: "step-2",
+    id: "ai-card",
     step: "STEP 2",
-    title: "Start Your First Case",
-    description: "Manage and organize your surgical cases",
-    meta: "For Surgeons | 03:07",
+    title: "Build a Card with AI",
+    description: "Upload a card or prefill from scratch — AI does the rest",
+    meta: "For Surgeons | 00:24",
     thumbnail: step2Img,
+    videoUrl: AI_CARD_VIDEO_URL,
   },
   {
     id: "step-3",
