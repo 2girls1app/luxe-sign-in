@@ -93,12 +93,12 @@ const Index = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-sm md:max-w-md flex flex-col items-center gap-6"
       >
-        <img src={logoImg} alt="First Assist" className="w-36 h-36 object-contain" />
-        <h1 className="text-2xl font-bold italic tracking-[0.25em] text-gold text-center uppercase">
+        <img src={logoImg} alt="First Assist" className="w-48 h-48 md:w-52 md:h-52 object-contain" />
+        <h1 className="text-4xl md:text-5xl font-bold italic tracking-[0.35em] text-gold text-center uppercase leading-tight">
           First Assist
         </h1>
 
-        <p className="text-3xl font-light tracking-wide text-foreground">
+        <p className="text-base font-light tracking-wide text-muted-foreground -mt-2">
           Welcome Back!
         </p>
 
