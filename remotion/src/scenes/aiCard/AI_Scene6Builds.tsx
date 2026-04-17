@@ -10,12 +10,12 @@ interface CategoryRow {
 }
 
 const CATEGORIES: CategoryRow[] = [
-  { icon: "🔬", label: "Instruments", count: "12 items" },
-  { icon: "🧵", label: "Sutures", count: "5 types" },
-  { icon: "💊", label: "Medications", count: "8 items" },
-  { icon: "📋", label: "Steps", count: "7 steps" },
-  { icon: "🧤", label: "Gloves", count: "Sized" },
-  { icon: "💉", label: "Anesthesia", count: "Set" },
+  { icon: "◆", label: "Instruments", count: "12 items" },
+  { icon: "✦", label: "Sutures", count: "5 types" },
+  { icon: "●", label: "Medications", count: "8 items" },
+  { icon: "▤", label: "Steps", count: "7 steps" },
+  { icon: "◐", label: "Gloves", count: "Sized" },
+  { icon: "⬢", label: "Anesthesia", count: "Set" },
 ];
 
 /**
