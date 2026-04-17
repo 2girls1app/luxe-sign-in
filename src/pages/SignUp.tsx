@@ -105,9 +105,9 @@ const SignUp = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-sm flex flex-col items-center gap-6"
       >
-        <img src={logoImg} alt="1st Assist" className="w-40 h-40 object-contain" />
+        <img src={logoImg} alt="First Assist" className="w-40 h-40 object-contain" />
         <h1 className="text-2xl font-light tracking-[0.2em] text-primary text-center uppercase">
-          1st Assist
+          First Assist
         </h1>
 
         <div className="w-full flex flex-col items-center gap-1">

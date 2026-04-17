@@ -49,9 +49,9 @@ const SelectAccountType = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-2xl flex flex-col items-center gap-8"
       >
-        <img src={logoImg} alt="1st Assist" className="w-32 h-32 object-contain" />
+        <img src={logoImg} alt="First Assist" className="w-32 h-32 object-contain" />
         <h1 className="text-2xl font-light tracking-[0.2em] text-primary text-center uppercase">
-          1st Assist
+          First Assist
         </h1>
 
         <div className="text-center">
