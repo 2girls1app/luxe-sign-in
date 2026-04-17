@@ -3,6 +3,7 @@ import { User, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import PhotoCropModal from "./PhotoCropModal";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -11,6 +12,7 @@ const ProfileAvatarUpload = () => {
   const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
@@ -19,7 +21,7 @@ const ProfileAvatarUpload = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
@@ -33,14 +35,21 @@ const ProfileAvatarUpload = () => {
       return;
     }
 
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result as string);
+    reader.readAsDataURL(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleSaveCropped = async (blob: Blob) => {
+    if (!user) return;
     setUploading(true);
     try {
-      const fileExt = file.name.split(".").pop();
-      const filePath = `${user.id}/avatar.${fileExt}`;
+      const filePath = `${user.id}/avatar.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, blob, { upsert: true, contentType: "image/jpeg" });
 
       if (uploadError) throw uploadError;
 
@@ -48,7 +57,6 @@ const ProfileAvatarUpload = () => {
         .from("avatars")
         .getPublicUrl(filePath);
 
-      // Add cache-busting timestamp
       const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
 
       await supabase
@@ -59,41 +67,51 @@ const ProfileAvatarUpload = () => {
       localStorage.setItem("avatar_preview", urlWithCacheBust);
       await refreshProfile();
       toast({ title: "Profile photo updated" });
+      setCropSrc(null);
     } catch (error: any) {
       toast({ title: "Upload failed", description: error.message || "Could not upload photo", variant: "destructive" });
     } finally {
       setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={uploading}
-      className="relative w-16 h-16 rounded-full overflow-hidden bg-secondary border-2 border-primary flex items-center justify-center cursor-pointer group shrink-0"
-      title="Change profile photo"
-    >
-      {avatarUrl ? (
-        <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-      ) : (
-        <User size={28} className="text-primary" />
-      )}
-      <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-        {uploading ? (
-          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    <>
+      <button
+        onClick={handleClick}
+        disabled={uploading}
+        className="relative w-16 h-16 rounded-full overflow-hidden bg-secondary border-2 border-primary flex items-center justify-center cursor-pointer group shrink-0"
+        title="Change profile photo"
+      >
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
         ) : (
-          <Camera size={18} className="text-primary" />
+          <User size={28} className="text-primary" />
         )}
-      </div>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        onChange={handleFileChange}
-        className="hidden"
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          {uploading ? (
+            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Camera size={18} className="text-primary" />
+          )}
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+      </button>
+
+      <PhotoCropModal
+        open={!!cropSrc}
+        imageSrc={cropSrc}
+        onClose={() => setCropSrc(null)}
+        onSave={handleSaveCropped}
+        saving={uploading}
       />
-    </button>
+    </>
   );
 };
 
