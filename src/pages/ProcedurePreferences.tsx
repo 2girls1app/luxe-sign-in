@@ -369,31 +369,28 @@ const ProcedurePreferences = () => {
                 <p className="text-[11px] font-medium text-primary truncate">{providerName}</p>
               )}
               <h1 className="text-base font-medium text-foreground truncate leading-tight">{procedureName}</h1>
-              <div className="flex items-center gap-1.5">
-                <p className="text-[10px] text-muted-foreground">Procedure Preferences</p>
-                {(() => {
-                  const allDates = Object.values(updatedDates).filter(Boolean);
-                  if (allDates.length === 0) return null;
-                  const latest = allDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
-                  const formatUpdatedDate = (dateStr: string) => {
-                    const diffMs = new Date().getTime() - new Date(dateStr).getTime();
-                    const diffMins = Math.floor(diffMs / 60000);
-                    const diffHours = Math.floor(diffMs / 3600000);
-                    const diffDays = Math.floor(diffMs / 86400000);
-                    if (diffMins < 1) return "Just now";
-                    if (diffMins < 60) return `${diffMins}m ago`;
-                    if (diffHours < 24) return `${diffHours}h ago`;
-                    if (diffDays < 7) return `${diffDays}d ago`;
-                    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-                  };
-                  return (
-                    <>
-                      <span className="text-[10px] text-muted-foreground/40">·</span>
-                      <p className="text-[10px] text-muted-foreground/60">{formatUpdatedDate(latest)}</p>
-                    </>
-                  );
-                })()}
-              </div>
+              <p className="text-[10px] text-muted-foreground truncate">Procedure Preferences</p>
+              {(() => {
+                const allDates = Object.values(updatedDates).filter(Boolean);
+                if (allDates.length === 0) return null;
+                const latest = allDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+                const formatUpdatedDate = (dateStr: string) => {
+                  const diffMs = new Date().getTime() - new Date(dateStr).getTime();
+                  const diffMins = Math.floor(diffMs / 60000);
+                  const diffHours = Math.floor(diffMs / 3600000);
+                  const diffDays = Math.floor(diffMs / 86400000);
+                  if (diffMins < 1) return "Just now";
+                  if (diffMins < 60) return `${diffMins}m ago`;
+                  if (diffHours < 24) return `${diffHours}h ago`;
+                  if (diffDays < 7) return `${diffDays}d ago`;
+                  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                };
+                return (
+                  <p className="text-[10px] text-muted-foreground/50 truncate whitespace-nowrap">
+                    Last updated: {formatUpdatedDate(latest)}
+                  </p>
+                );
+              })()}
             </div>
           </div>
           <TooltipProvider delayDuration={150}>

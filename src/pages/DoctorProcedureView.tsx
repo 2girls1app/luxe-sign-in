@@ -368,9 +368,27 @@ const DoctorProcedureView = () => {
           <div className="flex-1 min-w-0">
             {doctorName && <p className="text-[11px] font-medium text-primary truncate">{doctorName}</p>}
             <h1 className="text-base font-medium text-foreground truncate leading-tight">{procedureName}</h1>
-            <p className="text-[10px] text-muted-foreground">
-              {procedureCategory && `${procedureCategory} · `}Preference Card
-            </p>
+            <p className="text-[10px] text-muted-foreground truncate">Procedure Preferences</p>
+            {(() => {
+              const allDates = Object.values(updatedDates).filter(Boolean);
+              if (allDates.length === 0) return null;
+              const latest = allDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+              const diffMs = new Date().getTime() - new Date(latest).getTime();
+              const diffMins = Math.floor(diffMs / 60000);
+              const diffHours = Math.floor(diffMs / 3600000);
+              const diffDays = Math.floor(diffMs / 86400000);
+              const label =
+                diffMins < 1 ? "Just now" :
+                diffMins < 60 ? `${diffMins}m ago` :
+                diffHours < 24 ? `${diffHours}h ago` :
+                diffDays < 7 ? `${diffDays}d ago` :
+                new Date(latest).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+              return (
+                <p className="text-[10px] text-muted-foreground/50 truncate whitespace-nowrap">
+                  Last updated: {label}
+                </p>
+              );
+            })()}
           </div>
           <TooltipProvider delayDuration={150}>
             <div className="flex items-center gap-0.5 shrink-0">
