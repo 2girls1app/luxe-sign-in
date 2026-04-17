@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ClipboardList, ListOrdered, Share2, MessageSquare, CheckCircle2, Music, Sparkles, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, ClipboardList, ListOrdered, Share2, MessageSquare, CheckCircle2, Music, Sparkles, Loader2, AlertCircle, Undo2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -64,6 +64,12 @@ const ProcedurePreferences = () => {
   const [procedureFacilityId, setProcedureFacilityId] = useState<string | null>(null);
   const [aiPrefilling, setAiPrefilling] = useState(false);
   const [aiPrefilled, setAiPrefilled] = useState(false);
+  const [preAiSnapshot, setPreAiSnapshot] = useState<{
+    preferences: Record<string, string>;
+    updatedDates: Record<string, string>;
+    affectedCategories: string[];
+  } | null>(null);
+  const [undoingAi, setUndoingAi] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
 
@@ -211,6 +217,8 @@ const ProcedurePreferences = () => {
 
     toast({ title: "Preference saved" });
     await fetchPreferences();
+    setAiPrefilled(false);
+    setPreAiSnapshot(null);
     setSaving(false);
     setDrawerOpen(false);
     setMedicationOpen(false);
@@ -236,6 +244,9 @@ const ProcedurePreferences = () => {
   const handleAiPrefill = async () => {
     if (!procedureId || !user || !effectiveUserId || aiPrefilling) return;
     setAiPrefilling(true);
+    // Snapshot current state BEFORE applying AI
+    const snapshotPrefs = { ...preferences };
+    const snapshotDates = { ...updatedDates };
     try {
       const { data, error } = await supabase.functions.invoke("ai-prefill-preferences", {
         body: { procedureName, specialty },
@@ -276,6 +287,11 @@ const ProcedurePreferences = () => {
 
       await fetchPreferences();
       setAiPrefilled(true);
+      setPreAiSnapshot({
+        preferences: snapshotPrefs,
+        updatedDates: snapshotDates,
+        affectedCategories: Object.keys(categoryMap),
+      });
       toast({ title: "AI Suggestions Applied", description: `${upserts.length} categories prefilled. Review and edit as needed.` });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Please try again.";
@@ -283,6 +299,58 @@ const ProcedurePreferences = () => {
       toast({ title: "AI prefill failed", description: message, variant: "destructive" });
     } finally {
       setAiPrefilling(false);
+    }
+  };
+
+  const handleUndoAiPrefill = async () => {
+    if (!procedureId || !effectiveUserId || !preAiSnapshot || undoingAi) return;
+    setUndoingAi(true);
+    try {
+      const { affectedCategories, preferences: prevPrefs, updatedDates: prevDates } = preAiSnapshot;
+
+      // Categories that had a prior value → restore via upsert with original value + date
+      const restores = affectedCategories
+        .filter((cat) => prevPrefs[cat] !== undefined && prevPrefs[cat] !== "")
+        .map((cat) => ({
+          procedure_id: procedureId,
+          user_id: effectiveUserId,
+          category: cat,
+          value: prevPrefs[cat],
+          updated_at: prevDates[cat] || new Date().toISOString(),
+        }));
+
+      // Categories that had no prior value → delete the AI-inserted rows
+      const toDelete = affectedCategories.filter(
+        (cat) => prevPrefs[cat] === undefined || prevPrefs[cat] === ""
+      );
+
+      if (restores.length > 0) {
+        const { error: upsertErr } = await supabase
+          .from("procedure_preferences")
+          .upsert(restores, { onConflict: "procedure_id,user_id,category" });
+        if (upsertErr) throw upsertErr;
+      }
+
+      if (toDelete.length > 0) {
+        const { error: delErr } = await supabase
+          .from("procedure_preferences")
+          .delete()
+          .eq("procedure_id", procedureId)
+          .eq("user_id", effectiveUserId)
+          .in("category", toDelete);
+        if (delErr) throw delErr;
+      }
+
+      await fetchPreferences();
+      setAiPrefilled(false);
+      setPreAiSnapshot(null);
+      toast({ title: "Prefill removed", description: "Fields restored." });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Please try again.";
+      console.error("Undo AI prefill error:", err);
+      toast({ title: "Undo failed", description: message, variant: "destructive" });
+    } finally {
+      setUndoingAi(false);
     }
   };
 
@@ -470,7 +538,22 @@ const ProcedurePreferences = () => {
           </button>
         )}
 
-        {/* Action bars */}
+        {/* Undo AI Prefill — appears immediately after AI prefill, until user edits or saves */}
+        {aiPrefilled && preAiSnapshot && canManageCard && (
+          <button
+            onClick={handleUndoAiPrefill}
+            disabled={undoingAi}
+            className="flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 text-xs font-medium text-primary hover:bg-primary/15 transition-all active:scale-[0.98] disabled:opacity-50"
+          >
+            {undoingAi ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Undo2 size={14} />
+            )}
+            {undoingAi ? "Restoring..." : "Undo AI Prefill"}
+          </button>
+        )}
+
         <div className="flex flex-col gap-2">
           <button
             onClick={() => setSummaryOpen(true)}
