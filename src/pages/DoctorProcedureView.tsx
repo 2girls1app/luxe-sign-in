@@ -22,6 +22,7 @@ import { MULTI_SELECT_CATEGORIES } from "@/data/preferenceOptions";
 import PreferenceSummaryDrawer from "@/components/PreferenceSummaryDrawer";
 import TeamChatDrawer from "@/components/TeamChatDrawer";
 import SharePreferenceCardDrawer from "@/components/SharePreferenceCardDrawer";
+import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
 import NavHeader from "@/components/NavHeader";
 import ReadOnlyPreferenceViewer from "@/components/ReadOnlyPreferenceViewer";
 import FileUploadDrawer from "@/components/FileUploadDrawer";
@@ -111,6 +112,7 @@ const DoctorProcedureView = () => {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [musicOpen, setMusicOpen] = useState(false);
 
   // View drawer
   const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
@@ -369,13 +371,22 @@ const DoctorProcedureView = () => {
               {procedureCategory && `${procedureCategory} · `}Preference Card
             </p>
           </div>
-          <button
-            onClick={() => setShareOpen(true)}
-            className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary shrink-0"
-            aria-label="Share preference card"
-          >
-            <Share2 size={20} />
-          </button>
+          <div className="flex items-center gap-0.5 shrink-0">
+            <button
+              onClick={() => setMusicOpen(true)}
+              className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary"
+              aria-label="Music preferences"
+            >
+              <Music size={18} />
+            </button>
+            <button
+              onClick={() => setShareOpen(true)}
+              className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary"
+              aria-label="Share preference card"
+            >
+              <Share2 size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Pending changes banner */}
