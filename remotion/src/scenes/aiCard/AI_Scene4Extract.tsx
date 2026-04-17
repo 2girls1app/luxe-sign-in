@@ -72,15 +72,19 @@ export const AI_Scene4Extract = () => {
                 overflow: "hidden",
               }}
             >
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
+              {/* Faux preference card content */}
+              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(0,0,0,0.65)", marginBottom: 12, letterSpacing: 1 }}>
+                PREFERENCE CARD
+              </div>
+              {Array.from({ length: 22 }).map((_, i) => (
                 <div
                   key={i}
                   style={{
-                    height: 8,
-                    width: i % 3 === 0 ? "60%" : i % 2 === 0 ? "90%" : "75%",
-                    background: "rgba(0,0,0,0.2)",
-                    borderRadius: 4,
-                    marginBottom: 16,
+                    height: 7,
+                    width: i % 5 === 0 ? "45%" : i % 3 === 0 ? "60%" : i % 2 === 0 ? "88%" : "75%",
+                    background: i % 5 === 0 ? "rgba(0,0,0,0.45)" : "rgba(0,0,0,0.22)",
+                    borderRadius: 3,
+                    marginBottom: i % 5 === 0 ? 14 : 10,
                   }}
                 />
               ))}
