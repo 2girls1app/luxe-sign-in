@@ -77,8 +77,8 @@ export const AI_Scene6Builds = () => {
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
+                gridAutoRows: "200px",
                 gap: 14,
-                flex: 1,
               }}
             >
               {CATEGORIES.map((cat, i) => {
