@@ -19,6 +19,9 @@ export type TutorialItem = {
 
 const DEMO_VIDEO_URL =
   "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/demo-video.mp4";
+const CAROUSEL_MUSIC_URL =
+  "https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/app-assets/carousel-music.mp3";
+const MUSIC_VOLUME = 0.35;
 
 const DEFAULT_ITEMS: TutorialItem[] = [
   {
@@ -71,6 +74,38 @@ export function TutorialCarousel({ items = DEFAULT_ITEMS, onSelect }: TutorialCa
   const [activeVideo, setActiveVideo] = useState<TutorialItem | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
+  const musicRef = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize background music element once
+  useEffect(() => {
+    const audio = new Audio(CAROUSEL_MUSIC_URL);
+    audio.loop = true;
+    audio.volume = MUSIC_VOLUME;
+    audio.preload = "auto";
+    musicRef.current = audio;
+    return () => {
+      audio.pause();
+      audio.src = "";
+      musicRef.current = null;
+    };
+  }, []);
+
+  // Play/pause + mute music in sync with the video modal
+  useEffect(() => {
+    const music = musicRef.current;
+    if (!music) return;
+    if (activeVideo) {
+      music.muted = isMuted;
+      music.currentTime = 0;
+      music.play().catch(() => {});
+    } else {
+      music.pause();
+    }
+  }, [activeVideo, isMuted]);
+
+  useEffect(() => {
+    if (musicRef.current) musicRef.current.muted = isMuted;
+  }, [isMuted]);
 
   const loopedItems = [...items, ...items];
 
