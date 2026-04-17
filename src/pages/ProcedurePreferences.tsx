@@ -395,12 +395,41 @@ const ProcedurePreferences = () => {
               </div>
             </div>
           </div>
-          <button
-            onClick={() => setShareOpen(true)}
-            className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary shrink-0"
-          >
-            <Share2 size={20} />
-          </button>
+          <div className="flex items-center gap-0.5 shrink-0">
+            <button
+              onClick={() => setMusicOpen(true)}
+              className="relative p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary"
+              aria-label="Music preferences"
+            >
+              <Music size={18} />
+              {musicCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-primary text-[9px] font-semibold text-primary-foreground flex items-center justify-center">
+                  {musicCount}
+                </span>
+              )}
+            </button>
+            {canManageCard && (
+              <button
+                onClick={handleAiPrefill}
+                disabled={aiPrefilling}
+                className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary disabled:opacity-50"
+                aria-label="Prefill with AI"
+              >
+                {aiPrefilling ? (
+                  <Loader2 size={18} className="animate-spin text-primary" />
+                ) : (
+                  <Sparkles size={18} className={aiPrefilled ? "text-primary" : ""} />
+                )}
+              </button>
+            )}
+            <button
+              onClick={() => setShareOpen(true)}
+              className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary"
+              aria-label="Share preference card"
+            >
+              <Share2 size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Complete status - hidden for Individual users */}
@@ -459,46 +488,7 @@ const ProcedurePreferences = () => {
               Team Chat
             </button>
           )}
-          <button
-            onClick={() => setMusicOpen(true)}
-            className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-xs font-medium text-foreground hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all active:scale-[0.98]"
-          >
-            <Music size={16} className="text-primary" />
-            Music Preference
-            {musicCount > 0 && (
-              <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
-                {musicCount}
-              </span>
-            )}
-          </button>
         </div>
-
-        {/* AI Prefill Button */}
-        {canManageCard && (
-          <button
-            onClick={handleAiPrefill}
-            disabled={aiPrefilling}
-            className={`group flex items-center justify-center gap-2.5 rounded-xl border px-4 py-3.5 text-xs font-medium transition-all active:scale-[0.98] ${
-              aiPrefilled
-                ? "border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
-                : "border-primary/40 bg-gradient-to-r from-primary/10 to-primary/5 text-primary hover:from-primary/20 hover:to-primary/10 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10"
-            }`}
-          >
-            {aiPrefilling ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <Sparkles size={16} className="group-hover:scale-110 transition-transform" />
-            )}
-            {aiPrefilling
-              ? "Generating AI Suggestions..."
-              : aiPrefilled
-              ? "Regenerate AI Suggestions"
-              : "Prefill with AI"}
-            {!aiPrefilling && !aiPrefilled && (
-              <span className="text-[9px] text-primary/60 font-normal">AI Recommended</span>
-            )}
-          </button>
-        )}
 
         {/* Widget grid - 3 per row */}
         <div className="grid grid-cols-3 gap-3">
