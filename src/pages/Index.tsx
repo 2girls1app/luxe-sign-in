@@ -191,32 +191,6 @@ const Index = () => {
         <OnboardingVideoCarousel
           onSelect={() => setShowDemoModal(true)}
         />
-
-        {/* Demo Video Preview */}
-        <div className="w-full mt-2">
-          <button
-            onClick={() => setShowDemoModal(true)}
-            className="w-full group relative rounded-xl overflow-hidden border border-border hover:border-primary/40 transition-all"
-          >
-            <video
-              ref={videoRef}
-              src={DEMO_VIDEO_URL}
-              muted
-              autoPlay
-              loop
-              playsInline
-              className="w-full aspect-video object-cover opacity-70 group-hover:opacity-90 transition-opacity"
-            />
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 group-hover:bg-black/20 transition-colors">
-              <div className="w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                <Play size={20} className="text-primary-foreground ml-0.5" />
-              </div>
-              <span className="text-xs font-medium text-foreground/90 tracking-wider uppercase">
-                Quick Demo
-              </span>
-            </div>
-          </button>
-        </div>
       </motion.div>
 
       {/* Demo Video Modal — fullscreen landscape */}
