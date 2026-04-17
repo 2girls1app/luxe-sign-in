@@ -371,22 +371,34 @@ const DoctorProcedureView = () => {
               {procedureCategory && `${procedureCategory} · `}Preference Card
             </p>
           </div>
-          <div className="flex items-center gap-0.5 shrink-0">
-            <button
-              onClick={() => setMusicOpen(true)}
-              className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary"
-              aria-label="Music preferences"
-            >
-              <Music size={18} />
-            </button>
-            <button
-              onClick={() => setShareOpen(true)}
-              className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary"
-              aria-label="Share preference card"
-            >
-              <Share2 size={18} />
-            </button>
-          </div>
+          <TooltipProvider delayDuration={150}>
+            <div className="flex items-center gap-0.5 shrink-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setMusicOpen(true)}
+                    className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary"
+                    aria-label="Music Preferences"
+                  >
+                    <Music size={18} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={6}>Music Preferences</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setShareOpen(true)}
+                    className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-primary"
+                    aria-label="Share"
+                  >
+                    <Share2 size={18} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={6}>Share</TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
         </div>
 
         {/* Pending changes banner */}
