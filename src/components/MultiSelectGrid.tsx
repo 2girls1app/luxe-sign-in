@@ -275,18 +275,18 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
           </div>
           {/* Per-size qty controls */}
           {normalizeSizes(item.sizes).length > 0 && (
-            <div className="space-y-1.5 mt-1">
+            <div className="mt-2 rounded-lg bg-secondary/40 border border-border/60 p-2 space-y-1.5">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Quantity per size</span>
               {normalizeSizes(item.sizes).map((entry) => (
                 <div key={entry.size} className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-primary w-10">{entry.size}</span>
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Qty</span>
-                  <div className="flex items-center gap-1">
-                    <button type="button" onClick={() => updateSizeQty(item.name, entry.size, -1)} className="w-5 h-5 rounded bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
-                      <ChevronDown size={10} className="text-muted-foreground" />
+                  <span className="text-xs font-semibold text-primary w-12">{entry.size}</span>
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <button type="button" onClick={() => updateSizeQty(item.name, entry.size, -1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
+                      <ChevronDown size={12} className="text-muted-foreground" />
                     </button>
-                    <span className="text-xs font-semibold text-foreground w-5 text-center">{entry.qty}</span>
-                    <button type="button" onClick={() => updateSizeQty(item.name, entry.size, 1)} className="w-5 h-5 rounded bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
-                      <ChevronUp size={10} className="text-muted-foreground" />
+                    <span className="text-sm font-semibold text-foreground w-7 text-center">{entry.qty}</span>
+                    <button type="button" onClick={() => updateSizeQty(item.name, entry.size, 1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
+                      <ChevronUp size={12} className="text-muted-foreground" />
                     </button>
                   </div>
                 </div>
