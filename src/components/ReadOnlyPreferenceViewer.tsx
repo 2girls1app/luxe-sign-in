@@ -158,6 +158,16 @@ const ReadOnlyPreferenceViewer = ({
 
   // --- Position ---
   if (categoryKey === "position") {
+    let positionName = value;
+    let positionNotes = "";
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && "position" in parsed) {
+        positionName = parsed.position || "";
+        positionNotes = parsed.notes || "";
+      }
+    } catch { /* legacy plain-string value */ }
+
     return (
       <div>
         <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
@@ -168,7 +178,7 @@ const ReadOnlyPreferenceViewer = ({
             <div
               key={pos.name}
               className={`flex flex-col items-center gap-2 rounded-xl border p-3 ${
-                value === pos.name
+                positionName === pos.name
                   ? "border-primary bg-primary/15 shadow-sm shadow-primary/10"
                   : "border-border bg-secondary opacity-50"
               }`}
@@ -183,12 +193,12 @@ const ReadOnlyPreferenceViewer = ({
               />
               <span
                 className={`text-xs font-medium ${
-                  value === pos.name ? "text-primary" : "text-muted-foreground"
+                  positionName === pos.name ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 {pos.name}
               </span>
-              {value === pos.name && (
+              {positionName === pos.name && (
                 <Badge className="bg-primary/20 text-primary border-primary/30 text-[9px]">
                   <Check size={10} className="mr-0.5" /> Selected
                 </Badge>
@@ -196,6 +206,14 @@ const ReadOnlyPreferenceViewer = ({
             </div>
           ))}
         </div>
+        {positionNotes && (
+          <div className="mt-3 rounded-xl border border-border bg-secondary p-3">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+              Notes
+            </p>
+            <p className="text-sm text-foreground whitespace-pre-wrap">{positionNotes}</p>
+          </div>
+        )}
       </div>
     );
   }
