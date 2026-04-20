@@ -486,6 +486,7 @@ const DoctorWorkspace = () => {
           facilities={facilities}
           onComplete={fetchData}
           forUserId={userId}
+          preselectedFacilityId={facilityId || undefined}
         />
       )}
 

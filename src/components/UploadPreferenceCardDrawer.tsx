@@ -33,6 +33,7 @@ interface UploadPreferenceCardDrawerProps {
   facilities: { id: string; name: string }[];
   onComplete: () => void;
   forUserId?: string;
+  preselectedFacilityId?: string;
 }
 
 const CONFIDENCE_COLORS: Record<string, string> = {
@@ -47,10 +48,11 @@ PREFERENCE_CATEGORIES.forEach((c) => {
 });
 
 const UploadPreferenceCardDrawer = ({
-  open, onOpenChange, facilities, onComplete, forUserId,
+  open, onOpenChange, facilities, onComplete, forUserId, preselectedFacilityId,
 }: UploadPreferenceCardDrawerProps) => {
   const { user } = useAuth();
   const targetUserId = forUserId || user?.id;
+  const isUploadingForOther = !!forUserId && forUserId !== user?.id;
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -77,7 +79,7 @@ const UploadPreferenceCardDrawer = ({
     setExtraction(null);
     setEditedCategories({});
     setProcedureName("");
-    setSelectedFacility(facilities.length === 1 ? facilities[0].id : "");
+    setSelectedFacility(preselectedFacilityId || (facilities.length === 1 ? facilities[0].id : ""));
     setErrorMessage("");
     setExpandedCategories(new Set());
     setMimeType("");
@@ -183,6 +185,17 @@ const UploadPreferenceCardDrawer = ({
   const handleSave = async () => {
     if (!user || !targetUserId || !procedureName.trim()) {
       toast({ title: "Procedure name required", variant: "destructive" });
+      return;
+    }
+
+    // When uploading on behalf of another user (e.g., a linked doctor), a facility
+    // is required so the row passes the "facility-linked procedures" RLS policy.
+    if (isUploadingForOther && !selectedFacility) {
+      toast({
+        title: "Facility required",
+        description: "Please select a facility to save this preference card for the doctor.",
+        variant: "destructive",
+      });
       return;
     }
 
