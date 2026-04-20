@@ -298,10 +298,15 @@ const PreferenceDetailDrawer = ({
             onClick={() => {
               if (category.key === "gloves") {
                 onSave(category.key, JSON.stringify({ doctor: doctorGlove, first_assist: firstAssistGlove }));
+              } else if (category.key === "position") {
+                onSave(category.key, JSON.stringify({ position: positionName, notes: positionNotes }));
               } else {
                 onSave(category.key, value);
               }
             }}
+            disabled={saving}
+            className="w-full"
+          >
             disabled={saving}
             className="w-full"
           >
