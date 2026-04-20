@@ -1,0 +1,1 @@
+UPDATE public.procedures SET user_id = 'af7f1113-c34a-4d90-999b-410b1b69b723' WHERE id = 'b5882b7d-fcb0-4515-958d-d927b27d7af4'; UPDATE public.procedure_preferences SET user_id = 'af7f1113-c34a-4d90-999b-410b1b69b723' WHERE procedure_id = 'b5882b7d-fcb0-4515-958d-d927b27d7af4';
