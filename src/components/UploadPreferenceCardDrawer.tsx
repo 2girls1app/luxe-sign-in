@@ -189,9 +189,9 @@ const UploadPreferenceCardDrawer = ({
     setStep("saving");
 
     try {
-      // Create the procedure
-      // Use the authenticated user's ID for inserts to satisfy RLS policies
-      const insertUserId = user.id;
+      // Save the procedure under the target doctor (when uploading on a doctor's behalf)
+      // so it appears on their preference card list — not under the uploader's own account.
+      const insertUserId = targetUserId || user.id;
       const { data: proc, error: procError } = await supabase
         .from("procedures")
         .insert({
