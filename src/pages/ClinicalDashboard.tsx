@@ -246,18 +246,16 @@ const ClinicalDashboard = () => {
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    {isIndividual && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteFacility(f.id);
-                        }}
-                        className="text-muted-foreground hover:text-destructive transition-colors p-1"
-                        aria-label="Remove facility"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteFacility(f.id);
+                      }}
+                      className="text-muted-foreground hover:text-destructive transition-colors p-1"
+                      aria-label="Remove facility"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                     <ChevronRight size={16} className="text-muted-foreground" />
                   </div>
                 </motion.div>
