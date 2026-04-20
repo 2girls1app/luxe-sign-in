@@ -219,6 +219,37 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
         </>
       )}
 
+      {/* Hold control for sutures (sizes mode hides the default qty/hold row) */}
+      {supportsSizes && supportsHold && (
+        <>
+          <div className="flex items-center gap-3 pl-7">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Hold</span>
+            <button
+              type="button"
+              onClick={() => toggleHold(item.name)}
+              className={`text-[10px] font-medium px-2 py-1 rounded-md border transition-colors ${
+                item.hold
+                  ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
+                  : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+              }`}
+            >
+              {item.hold ? "On Hold" : "Hold"}
+            </button>
+            {item.hold && (
+              <div className="flex items-center gap-1.5 ml-auto">
+                <button type="button" onClick={() => updateHoldQty(item.name, -1)} className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors">
+                  <ChevronDown size={12} className="text-amber-400" />
+                </button>
+                <span className="text-sm font-semibold text-amber-400 w-6 text-center">{item.holdQty ?? 1}</span>
+                <button type="button" onClick={() => updateHoldQty(item.name, 1)} className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors">
+                  <ChevronUp size={12} className="text-amber-400" />
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
       {/* Size selection for sutures with per-size qty */}
       {supportsSizes && (
         <div className="pl-7 space-y-2">
