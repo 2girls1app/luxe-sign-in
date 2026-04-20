@@ -41,43 +41,32 @@ const ClinicalDashboard = () => {
   const fetchFacilities = useCallback(async () => {
     if (!user) return;
 
-    if (isIndividual) {
-      // Individual users: fetch from doctor_facilities join table
-      const { data: links } = await supabase
-        .from("doctor_facilities" as any)
-        .select("facility_id")
-        .eq("user_id", user.id);
-      const facilityIds = (links as any[] || []).map((l: any) => l.facility_id);
+    // Collect facility IDs from both: assigned facility (profile.facility_id)
+    // and doctor_facilities join table (linked facilities for any role).
+    const facilityIdSet = new Set<string>();
+    if (profile?.facility_id) facilityIdSet.add(profile.facility_id);
 
-      if (facilityIds.length === 0) {
-        setFacilities([]);
-        return;
-      }
+    const { data: links } = await supabase
+      .from("doctor_facilities" as any)
+      .select("facility_id")
+      .eq("user_id", user.id);
+    (links as any[] || []).forEach((l: any) => facilityIdSet.add(l.facility_id));
 
-      const { data } = await supabase
-        .from("facilities")
-        .select("id, name, location")
-        .in("id", facilityIds);
-      setFacilities(
-        (data || []).sort((a: any, b: any) =>
-          a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
-        ) as FacilityInfo[]
-      );
-    } else {
-      // Facility-linked users: show assigned facility
-      if (!profile?.facility_id) {
-        setFacilities([]);
-        return;
-      }
-      const { data } = await supabase
-        .from("facilities")
-        .select("id, name, location")
-        .eq("id", profile.facility_id)
-        .single();
-      if (data) setFacilities([data]);
-      else setFacilities([]);
+    if (facilityIdSet.size === 0) {
+      setFacilities([]);
+      return;
     }
-  }, [user, profile?.facility_id, isIndividual]);
+
+    const { data } = await supabase
+      .from("facilities")
+      .select("id, name, location")
+      .in("id", Array.from(facilityIdSet));
+    setFacilities(
+      (data || []).sort((a: any, b: any) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+      ) as FacilityInfo[]
+    );
+  }, [user, profile?.facility_id]);
 
   const fetchPendingCount = useCallback(async () => {
     if (!user || isIndividual) {
