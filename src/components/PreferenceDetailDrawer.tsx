@@ -77,6 +77,8 @@ const PreferenceDetailDrawer = ({
   const addInputRef = useRef<HTMLInputElement>(null);
   const [doctorGlove, setDoctorGlove] = useState("");
   const [firstAssistGlove, setFirstAssistGlove] = useState("");
+  const [positionName, setPositionName] = useState("");
+  const [positionNotes, setPositionNotes] = useState("");
 
   useEffect(() => {
     setValue(currentValue);
@@ -86,6 +88,11 @@ const PreferenceDetailDrawer = ({
       const parsed = parseGloveValue(currentValue);
       setDoctorGlove(parsed.doctor);
       setFirstAssistGlove(parsed.first_assist);
+    }
+    if (category?.key === "position") {
+      const parsed = parsePositionValue(currentValue);
+      setPositionName(parsed.position);
+      setPositionNotes(parsed.notes);
     }
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
