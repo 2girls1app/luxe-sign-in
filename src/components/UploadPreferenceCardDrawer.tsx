@@ -33,6 +33,7 @@ interface UploadPreferenceCardDrawerProps {
   facilities: { id: string; name: string }[];
   onComplete: () => void;
   forUserId?: string;
+  preselectedFacilityId?: string;
 }
 
 const CONFIDENCE_COLORS: Record<string, string> = {
