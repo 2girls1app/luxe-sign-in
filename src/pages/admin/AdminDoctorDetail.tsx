@@ -289,6 +289,7 @@ const AdminDoctorDetail = () => {
         facilities={facilities}
         onComplete={fetchData}
         forUserId={userId}
+        preselectedFacilityId={facilities[0]?.id}
       />
 
       {/* Delete Confirmation Dialog */}
