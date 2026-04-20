@@ -56,6 +56,16 @@ const parseGloveValue = (val: string): { doctor: string; first_assist: string } 
   return { doctor: val || "", first_assist: "" };
 };
 
+const parsePositionValue = (val: string): { position: string; notes: string } => {
+  try {
+    const parsed = JSON.parse(val);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && "position" in parsed) {
+      return { position: parsed.position || "", notes: parsed.notes || "" };
+    }
+  } catch { /* legacy: plain-string position name */ }
+  return { position: val || "", notes: "" };
+};
+
 const PreferenceDetailDrawer = ({
   open, onOpenChange, category, currentValue, onSave, saving,
   procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName,
