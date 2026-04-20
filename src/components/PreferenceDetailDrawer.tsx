@@ -203,14 +203,14 @@ const PreferenceDetailDrawer = ({
               </div>
             </div>
           ) : category.key === "position" ? (
-            <div ref={scrollRef} className="max-h-[50vh] overflow-y-auto">
-              <RadioGroup value={value} onValueChange={setValue} className="grid grid-cols-2 gap-3">
+            <div ref={scrollRef} className="max-h-[55vh] overflow-y-auto space-y-4">
+              <RadioGroup value={positionName} onValueChange={setPositionName} className="grid grid-cols-2 gap-3">
                 {POSITIONS.map((pos) => (
                   <Label
                     key={pos.name}
                     htmlFor={`pos-${pos.name}`}
                     className={`flex flex-col items-center gap-2 rounded-xl border p-3 cursor-pointer transition-all ${
-                      value === pos.name
+                      positionName === pos.name
                         ? "border-primary bg-primary/15 shadow-sm shadow-primary/10"
                         : "border-border bg-secondary hover:border-primary/40"
                     }`}
@@ -224,12 +224,21 @@ const PreferenceDetailDrawer = ({
                       height={100}
                       className="w-20 h-20 object-contain"
                     />
-                    <span className={`text-xs font-medium ${value === pos.name ? "text-primary" : "text-muted-foreground"}`}>
+                    <span className={`text-xs font-medium ${positionName === pos.name ? "text-primary" : "text-muted-foreground"}`}>
                       {pos.name}
                     </span>
                   </Label>
                 ))}
               </RadioGroup>
+              <div>
+                <p className="text-xs font-semibold text-foreground mb-2">Notes</p>
+                <Textarea
+                  value={positionNotes}
+                  onChange={(e) => setPositionNotes(e.target.value)}
+                  placeholder="Add positioning notes (e.g. arms tucked, padding, table tilt)..."
+                  className="min-h-[90px] bg-secondary border-border text-foreground placeholder:text-muted-foreground resize-none"
+                />
+              </div>
             </div>
           ) : multiSelectOptions ? (
             <MultiSelectGrid
