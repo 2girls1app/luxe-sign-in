@@ -48,10 +48,11 @@ PREFERENCE_CATEGORIES.forEach((c) => {
 });
 
 const UploadPreferenceCardDrawer = ({
-  open, onOpenChange, facilities, onComplete, forUserId,
+  open, onOpenChange, facilities, onComplete, forUserId, preselectedFacilityId,
 }: UploadPreferenceCardDrawerProps) => {
   const { user } = useAuth();
   const targetUserId = forUserId || user?.id;
+  const isUploadingForOther = !!forUserId && forUserId !== user?.id;
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
