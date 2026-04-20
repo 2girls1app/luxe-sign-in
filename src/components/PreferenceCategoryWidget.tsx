@@ -119,6 +119,20 @@ const PreferenceCategoryWidget = ({ category, value, fileCount, onClick, index, 
       return raw;
     }
 
+    // Special handling for position JSON format (position + notes)
+    if (category.key === "position") {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && "position" in parsed) {
+          const name = (parsed.position || "").trim();
+          const hasNotes = !!(parsed.notes && parsed.notes.trim());
+          if (name) return hasNotes ? `${name} • Notes` : name;
+          return hasNotes ? "Notes only" : null;
+        }
+      } catch { /* legacy plain string */ }
+      return raw;
+    }
+
     // Special handling for sales_rep JSON format
     if (category.key === "sales_rep") {
       try {
