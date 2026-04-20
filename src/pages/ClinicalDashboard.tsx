@@ -46,11 +46,12 @@ const ClinicalDashboard = () => {
     const facilityIdSet = new Set<string>();
     if (profile?.facility_id) facilityIdSet.add(profile.facility_id);
 
-    const { data: links } = await supabase
-      .from("doctor_facilities" as any)
-      .select("facility_id")
-      .eq("user_id", user.id);
+    const [{ data: links }, { data: owned }] = await Promise.all([
+      supabase.from("doctor_facilities" as any).select("facility_id").eq("user_id", user.id),
+      supabase.from("facilities").select("id").eq("user_id", user.id),
+    ]);
     (links as any[] || []).forEach((l: any) => facilityIdSet.add(l.facility_id));
+    (owned as any[] || []).forEach((f: any) => facilityIdSet.add(f.id));
 
     if (facilityIdSet.size === 0) {
       setFacilities([]);
