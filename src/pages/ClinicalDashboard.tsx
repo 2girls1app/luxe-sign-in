@@ -95,13 +95,44 @@ const ClinicalDashboard = () => {
 
   const deleteFacility = async (facilityId: string) => {
     if (!user) return;
-    const { error } = await supabase
+    if (!confirm("Remove this facility from your dashboard?")) return;
+
+    // Always remove the personal link (if any)
+    await supabase
       .from("doctor_facilities" as any)
       .delete()
       .eq("user_id", user.id)
       .eq("facility_id", facilityId);
-    if (!error) fetchFacilities();
-    else toast({ title: "Error", description: (error as any).message, variant: "destructive" });
+
+    // If the user owns the facility row, delete the facility itself
+    const { data: facility } = await supabase
+      .from("facilities")
+      .select("user_id")
+      .eq("id", facilityId)
+      .maybeSingle();
+
+    if (facility && (facility as any).user_id === user.id) {
+      const { error: delErr } = await supabase
+        .from("facilities")
+        .delete()
+        .eq("id", facilityId);
+      if (delErr) {
+        toast({ title: "Error", description: delErr.message, variant: "destructive" });
+        return;
+      }
+    }
+
+    // If it was the assigned facility on the profile, unassign it
+    if (profile?.facility_id === facilityId) {
+      await supabase
+        .from("profiles")
+        .update({ facility_id: null })
+        .eq("user_id", user.id);
+      await refreshProfile();
+    }
+
+    toast({ title: "Removed", description: "Facility removed from your dashboard." });
+    fetchFacilities();
   };
 
   return (
