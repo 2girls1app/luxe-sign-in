@@ -56,6 +56,16 @@ const parseGloveValue = (val: string): { doctor: string; first_assist: string } 
   return { doctor: val || "", first_assist: "" };
 };
 
+const parsePositionValue = (val: string): { position: string; notes: string } => {
+  try {
+    const parsed = JSON.parse(val);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && "position" in parsed) {
+      return { position: parsed.position || "", notes: parsed.notes || "" };
+    }
+  } catch { /* legacy: plain-string position name */ }
+  return { position: val || "", notes: "" };
+};
+
 const PreferenceDetailDrawer = ({
   open, onOpenChange, category, currentValue, onSave, saving,
   procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName,
@@ -67,6 +77,8 @@ const PreferenceDetailDrawer = ({
   const addInputRef = useRef<HTMLInputElement>(null);
   const [doctorGlove, setDoctorGlove] = useState("");
   const [firstAssistGlove, setFirstAssistGlove] = useState("");
+  const [positionName, setPositionName] = useState("");
+  const [positionNotes, setPositionNotes] = useState("");
 
   useEffect(() => {
     setValue(currentValue);
@@ -76,6 +88,11 @@ const PreferenceDetailDrawer = ({
       const parsed = parseGloveValue(currentValue);
       setDoctorGlove(parsed.doctor);
       setFirstAssistGlove(parsed.first_assist);
+    }
+    if (category?.key === "position") {
+      const parsed = parsePositionValue(currentValue);
+      setPositionName(parsed.position);
+      setPositionNotes(parsed.notes);
     }
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
@@ -186,14 +203,14 @@ const PreferenceDetailDrawer = ({
               </div>
             </div>
           ) : category.key === "position" ? (
-            <div ref={scrollRef} className="max-h-[50vh] overflow-y-auto">
-              <RadioGroup value={value} onValueChange={setValue} className="grid grid-cols-2 gap-3">
+            <div ref={scrollRef} className="max-h-[55vh] overflow-y-auto space-y-4">
+              <RadioGroup value={positionName} onValueChange={setPositionName} className="grid grid-cols-2 gap-3">
                 {POSITIONS.map((pos) => (
                   <Label
                     key={pos.name}
                     htmlFor={`pos-${pos.name}`}
                     className={`flex flex-col items-center gap-2 rounded-xl border p-3 cursor-pointer transition-all ${
-                      value === pos.name
+                      positionName === pos.name
                         ? "border-primary bg-primary/15 shadow-sm shadow-primary/10"
                         : "border-border bg-secondary hover:border-primary/40"
                     }`}
@@ -207,12 +224,21 @@ const PreferenceDetailDrawer = ({
                       height={100}
                       className="w-20 h-20 object-contain"
                     />
-                    <span className={`text-xs font-medium ${value === pos.name ? "text-primary" : "text-muted-foreground"}`}>
+                    <span className={`text-xs font-medium ${positionName === pos.name ? "text-primary" : "text-muted-foreground"}`}>
                       {pos.name}
                     </span>
                   </Label>
                 ))}
               </RadioGroup>
+              <div>
+                <p className="text-xs font-semibold text-foreground mb-2">Notes</p>
+                <Textarea
+                  value={positionNotes}
+                  onChange={(e) => setPositionNotes(e.target.value)}
+                  placeholder="Add positioning notes (e.g. arms tucked, padding, table tilt)..."
+                  className="min-h-[90px] bg-secondary border-border text-foreground placeholder:text-muted-foreground resize-none"
+                />
+              </div>
             </div>
           ) : multiSelectOptions ? (
             <MultiSelectGrid
@@ -272,6 +298,8 @@ const PreferenceDetailDrawer = ({
             onClick={() => {
               if (category.key === "gloves") {
                 onSave(category.key, JSON.stringify({ doctor: doctorGlove, first_assist: firstAssistGlove }));
+              } else if (category.key === "position") {
+                onSave(category.key, JSON.stringify({ position: positionName, notes: positionNotes }));
               } else {
                 onSave(category.key, value);
               }

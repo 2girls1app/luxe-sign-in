@@ -195,6 +195,20 @@ const PreferenceSummaryDrawer = ({
       } catch { /* fallback */ }
       return val;
     }
+    if (key === "position") {
+      try {
+        const parsed = JSON.parse(val);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && "position" in parsed) {
+          const name = (parsed.position || "").trim();
+          const notes = (parsed.notes || "").trim();
+          if (name && notes) return `${name}\nNotes: ${notes}`;
+          if (name) return name;
+          if (notes) return `Notes: ${notes}`;
+          return "";
+        }
+      } catch { /* legacy plain string */ }
+      return val;
+    }
     if (key === "steps") {
       try {
         const steps = JSON.parse(val);
