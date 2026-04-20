@@ -46,11 +46,44 @@ serve(async (req) => {
       });
     }
 
-    // Download the file and convert to base64
+    // Download the file
     const fileResponse = await fetch(file_url);
     if (!fileResponse.ok) throw new Error("Failed to download file");
+
+    // Enforce a max size BEFORE buffering to avoid crashes on huge files
+    const MAX_BYTES = 20 * 1024 * 1024; // 20MB
+    const contentLength = Number(fileResponse.headers.get("content-length") || 0);
+    if (contentLength && contentLength > MAX_BYTES) {
+      return new Response(
+        JSON.stringify({
+          error: `File is too large (${(contentLength / 1024 / 1024).toFixed(1)}MB). Maximum size is 20MB. Please upload a smaller image or PDF.`,
+        }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const fileBuffer = await fileResponse.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(fileBuffer)));
+    if (fileBuffer.byteLength > MAX_BYTES) {
+      return new Response(
+        JSON.stringify({
+          error: `File is too large (${(fileBuffer.byteLength / 1024 / 1024).toFixed(1)}MB). Maximum size is 20MB. Please upload a smaller image or PDF.`,
+        }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Convert to base64 in chunks to avoid "Maximum call stack size exceeded"
+    // (String.fromCharCode(...bytes) blows the stack for large arrays)
+    const bytes = new Uint8Array(fileBuffer);
+    let binary = "";
+    const CHUNK = 0x8000; // 32KB
+    for (let i = 0; i < bytes.length; i += CHUNK) {
+      binary += String.fromCharCode.apply(
+        null,
+        bytes.subarray(i, i + CHUNK) as unknown as number[]
+      );
+    }
+    const base64 = btoa(binary);
 
     const mediaType = mime_type || "image/jpeg";
     const isImage = mediaType.startsWith("image/");
