@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { LogOut, Building2, Bell, Settings, ChevronRight, Plus, Trash2, MapPin, User } from "lucide-react";
+import { LogOut, Building2, Bell, Settings, ChevronRight, Plus, Trash2, MapPin, User, Pencil } from "lucide-react";
+import EditFacilityDialog from "@/components/EditFacilityDialog";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import NotificationsDrawer from "@/components/NotificationsDrawer";
 import { useNavigate } from "react-router-dom";
