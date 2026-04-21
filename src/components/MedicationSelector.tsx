@@ -207,80 +207,132 @@ const MedicationSelector = ({
         </DrawerHeader>
 
         <div className="flex-1 overflow-y-auto px-4 pb-2 space-y-3 max-h-[60vh]">
-          {/* ── Selected Medications (top preview section) ── */}
+          {/* ── Selected Medications (compact chips) ── */}
           {medications.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[11px] font-semibold text-primary uppercase tracking-wider px-1 flex items-center gap-1.5">
-                <Check size={12} />
-                Selected Medications ({medications.length})
-              </p>
-              <div className="space-y-2">
-                {medications.map((med, index) => (
-                  <div
-                    key={`${med.name}-${index}`}
-                    className="rounded-xl border-2 border-primary/30 bg-primary/5 overflow-hidden"
-                  >
-                    <div className="flex items-start gap-2 px-3 py-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
-                        <Pill size={14} className="text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 px-1">
+                <p className="text-[11px] font-semibold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                  <Check size={12} />
+                  Selected Medications
+                </p>
+                <Badge className="text-[10px] px-1.5 py-0 h-4 bg-primary/15 text-primary border border-primary/30 hover:bg-primary/15">
+                  {medications.length} selected
+                </Badge>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {medications.map((med, index) => {
+                  const isOpen = editingIndex === index;
+                  return (
+                    <Popover
+                      key={`${med.name}-${index}`}
+                      open={isOpen}
+                      onOpenChange={(o) => {
+                        if (o) openEditor(index);
+                        else if (editingIndex === index) {
+                          // Persist details when closing the popover
+                          saveDetails();
+                        }
+                      }}
+                    >
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className={`group inline-flex items-center gap-1.5 rounded-full border pl-2 pr-1 py-1 text-xs font-medium transition-all max-w-full ${
+                            med.hold
+                              ? "border-amber-500/40 bg-amber-500/10 text-amber-300/90 opacity-75"
+                              : "border-primary/30 bg-primary/10 text-foreground hover:bg-primary/15 hover:border-primary/50"
+                          }`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${getCategoryDot(med.category)}`} />
+                          <span className="truncate max-w-[180px]">{med.name}</span>
+                          {med.hold && (
+                            <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[9px] px-1.5 py-0.5 font-semibold uppercase tracking-wider">
+                              <Pause size={8} />Hold
+                            </span>
+                          )}
+                          {(med.dosage || med.route) && !med.hold && (
+                            <span className="text-[10px] text-muted-foreground/80 truncate max-w-[80px]">
+                              {[med.dosage, med.route].filter(Boolean).join(" · ")}
+                            </span>
+                          )}
+                          <span
+                            role="button"
+                            tabIndex={-1}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeMedication(index);
+                            }}
+                            className="ml-0.5 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-destructive/20 hover:text-destructive text-muted-foreground transition-colors"
+                            aria-label={`Remove ${med.name}`}
+                          >
+                            <X size={11} />
+                          </span>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="start"
+                        sideOffset={6}
+                        className="w-72 bg-card border-border p-3 space-y-3"
+                        onOpenAutoFocus={(e) => e.preventDefault()}
+                      >
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-foreground truncate">{med.name}</span>
+                          <span className={`w-2 h-2 rounded-full ${getCategoryDot(med.category)}`} />
+                          <p className="text-sm font-semibold text-foreground truncate flex-1">{med.name}</p>
                           {med.isCustom && (
                             <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-primary/30 text-primary">
                               Custom
                             </Badge>
                           )}
-                          {med.hold && (
-                            <Badge className="text-[9px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                              <Pause size={8} className="mr-0.5" />Hold
-                            </Badge>
-                          )}
                         </div>
-                        {/* Detail pills */}
-                        <div className="flex flex-wrap gap-1.5 mt-1.5">
-                          {med.dosage && (
-                            <span className="text-[10px] font-medium text-foreground bg-secondary rounded-md px-2 py-0.5 border border-border">
-                              💊 {med.dosage}
-                            </span>
-                          )}
-                          {med.route && (
-                            <span className="text-[10px] font-medium text-foreground bg-secondary rounded-md px-2 py-0.5 border border-border">
-                              🔄 {med.route}
-                            </span>
-                          )}
-                          {med.notes && (
-                            <span className="text-[10px] text-muted-foreground bg-secondary rounded-md px-2 py-0.5 border border-border">
-                              📝 {med.notes}
-                            </span>
-                          )}
-                          {!med.dosage && !med.route && !med.notes && (
-                            <span className="text-[10px] text-muted-foreground/50 italic">Tap edit to add details</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          onClick={() => openEditor(index)}
-                          className="p-1.5 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
-                          title="Edit details"
-                        >
-                          <Pencil size={13} />
-                        </button>
-                        <button
-                          onClick={() => removeMedication(index)}
-                          className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                          title="Remove"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    </div>
 
-                    {/* Inline detail editor */}
-                    {editingIndex === index && (
-                      <div className="border-t border-primary/20 bg-secondary/30 px-3 py-3 space-y-2.5">
+                        {/* Hold toggle */}
+                        <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/40 px-2.5 py-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMedications((prev) =>
+                                prev.map((m, i) => i === index ? { ...m, hold: !m.hold, holdQty: m.holdQty ?? 1 } : m)
+                              );
+                            }}
+                            className={`text-[11px] font-medium px-2.5 py-1 rounded-md border transition-colors ${
+                              med.hold
+                                ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
+                                : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                            }`}
+                          >
+                            {med.hold ? "On Hold" : "Mark Hold"}
+                          </button>
+                          {med.hold && (
+                            <div className="flex items-center gap-1">
+                              <span className="text-[10px] text-amber-400/80 uppercase tracking-wider mr-1">Qty</span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setMedications((prev) =>
+                                    prev.map((m, i) => i === index ? { ...m, holdQty: Math.max(1, (m.holdQty ?? 1) - 1) } : m)
+                                  )
+                                }
+                                className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors"
+                              >
+                                <Minus size={11} className="text-amber-400" />
+                              </button>
+                              <span className="text-sm font-semibold text-amber-400 w-5 text-center">{med.holdQty ?? 1}</span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setMedications((prev) =>
+                                    prev.map((m, i) => i === index ? { ...m, holdQty: (m.holdQty ?? 1) + 1 } : m)
+                                  )
+                                }
+                                className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors"
+                              >
+                                <Plus size={11} className="text-amber-400" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Inline edit fields */}
                         <div>
                           <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Dosage</label>
                           <Input
@@ -292,12 +344,13 @@ const MedicationSelector = ({
                         </div>
                         <div>
                           <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Route</label>
-                          <div className="flex flex-wrap gap-1.5 mt-1">
+                          <div className="flex flex-wrap gap-1 mt-1">
                             {ROUTES.map((r) => (
                               <button
                                 key={r}
+                                type="button"
                                 onClick={() => setEditRoute(editRoute === r ? "" : r)}
-                                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                                className={`px-2 py-0.5 rounded-full text-[11px] font-medium transition-colors ${
                                   editRoute === r
                                     ? "bg-primary text-primary-foreground"
                                     : "bg-secondary border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
@@ -317,58 +370,27 @@ const MedicationSelector = ({
                             className="mt-1 h-8 text-sm bg-secondary border-border text-foreground placeholder:text-muted-foreground"
                           />
                         </div>
-                        <Button size="sm" onClick={saveDetails} className="w-full text-xs">
-                          Done
-                        </Button>
-                      </div>
-                    )}
-
-                    {/* Hold controls */}
-                    <div className="border-t border-primary/10 px-3 py-2 flex items-center gap-3">
-                      <button
-                        onClick={() => {
-                          setMedications((prev) =>
-                            prev.map((m, i) => i === index ? { ...m, hold: !m.hold, holdQty: m.holdQty ?? 1 } : m)
-                          );
-                        }}
-                        className={`text-[10px] font-medium px-2.5 py-1 rounded-md border transition-colors ${
-                          med.hold
-                            ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
-                            : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
-                        }`}
-                      >
-                        {med.hold ? "On Hold" : "Mark Hold"}
-                      </button>
-                      {med.hold && (
-                        <div className="flex items-center gap-1.5 ml-auto">
-                          <span className="text-[10px] text-amber-400/80 uppercase tracking-wider">Hold Qty</span>
-                          <button
-                            onClick={() =>
-                              setMedications((prev) =>
-                                prev.map((m, i) => i === index ? { ...m, holdQty: Math.max(1, (m.holdQty ?? 1) - 1) } : m)
-                              )
-                            }
-                            className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors"
+                        <div className="flex gap-2 pt-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => removeMedication(index)}
+                            className="flex-1 h-8 text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
                           >
-                            <ChevronDown size={12} className="text-amber-400" />
-                          </button>
-                          <span className="text-sm font-semibold text-amber-400 w-5 text-center">{med.holdQty ?? 1}</span>
-                          <button
-                            onClick={() =>
-                              setMedications((prev) =>
-                                prev.map((m, i) => i === index ? { ...m, holdQty: (m.holdQty ?? 1) + 1 } : m)
-                              )
-                            }
-                            className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors"
-                          >
-                            <ChevronUp size={12} className="text-amber-400" />
-                          </button>
+                            <X size={12} className="mr-1" />Remove
+                          </Button>
+                          <Button size="sm" onClick={saveDetails} className="flex-1 h-8 text-xs">
+                            Done
+                          </Button>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                      </PopoverContent>
+                    </Popover>
+                  );
+                })}
               </div>
+              <p className="text-[10px] text-muted-foreground/70 italic px-1">
+                Tap a medication to mark as hold or edit details
+              </p>
             </div>
           )}
 
