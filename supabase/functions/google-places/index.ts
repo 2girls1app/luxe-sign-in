@@ -52,15 +52,16 @@ Deno.serve(async (req) => {
       };
 
       if (mode === "hospital") {
-        // Broaden beyond hospitals to include surgical centers, ASCs, medical
-        // centers, and specialty clinics that perform procedures.
-        // Google Places (New) allows up to 5 included primary types.
+        // Broaden beyond just hospitals to include surgical centers,
+        // ambulatory surgery centers, outpatient surgery, medical centers,
+        // and specialty procedure clinics. Google Places (New) Autocomplete
+        // accepts up to 5 included primary types from Table A.
         reqBody.includedPrimaryTypes = [
           "hospital",
           "medical_lab",
           "doctor",
-          "health",
-          "physiotherapist",
+          "dental_clinic",
+          "wellness_center",
         ];
       }
 
