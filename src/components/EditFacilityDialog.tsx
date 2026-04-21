@@ -117,6 +117,9 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
       <DialogContent className="bg-card border-border text-foreground max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-foreground">Edit Facility</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Update the facility name, address, or notes. Changes save instantly.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 mt-2">
           {/* Facility Name */}
