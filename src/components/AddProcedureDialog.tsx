@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, FilePlus, Copy, ArrowLeft, Search } from "lucide-react";
+import { Plus, FilePlus, Copy, ArrowLeft, Search, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -30,6 +30,7 @@ interface AddProcedureDialogProps {
   forUserId?: string;
   defaultSpecialty?: string;
   autoOpen?: boolean;
+  onUploadClick?: () => void;
 }
 
 type DialogMode = "choose" | "new" | "existing";
@@ -109,6 +110,7 @@ const AddProcedureDialog = ({
   forUserId,
   defaultSpecialty,
   autoOpen = false,
+  onUploadClick,
 }: AddProcedureDialogProps) => {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<DialogMode>("choose");
