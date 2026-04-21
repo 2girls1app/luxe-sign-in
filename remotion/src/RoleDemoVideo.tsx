@@ -26,65 +26,56 @@ interface Props {
 
 export const RoleDemoVideo = ({ roleId }: Props) => {
   const role = ROLE_SCRIPTS[roleId];
+  const totalSteps = role.steps.length;
 
-  return (
-    <AbsoluteFill>
-      <PersistentBackground />
-      <TransitionSeries>
-        <TransitionSeries.Sequence durationInFrames={INTRO_DURATION}>
-          <IntroScene role={role} />
-        </TransitionSeries.Sequence>
-        <TransitionSeries.Transition
-          presentation={fade()}
-          timing={springTiming({ config: { damping: 200 }, durationInFrames: T })}
-        />
-        {role.steps.map((_, i) => (
-          <Step
-            key={i}
-            stepIndex={i}
-            totalSteps={role.steps.length}
-            role={role}
-            isLast={i === role.steps.length - 1}
-          />
-        ))}
-        <TransitionSeries.Sequence durationInFrames={OUTRO_DURATION}>
-          <OutroScene role={role} />
-        </TransitionSeries.Sequence>
-      </TransitionSeries>
-    </AbsoluteFill>
+  // TransitionSeries requires direct Sequence/Transition children — we cannot wrap them in a component.
+  const children: React.ReactNode[] = [];
+
+  children.push(
+    <TransitionSeries.Sequence key="intro" durationInFrames={INTRO_DURATION}>
+      <IntroScene role={role} />
+    </TransitionSeries.Sequence>
   );
-};
+  children.push(
+    <TransitionSeries.Transition
+      key="t-intro"
+      presentation={fade()}
+      timing={springTiming({ config: { damping: 200 }, durationInFrames: T })}
+    />
+  );
 
-const Step = ({
-  stepIndex,
-  totalSteps,
-  role,
-  isLast,
-}: {
-  stepIndex: number;
-  totalSteps: number;
-  role: RoleScript;
-  isLast: boolean;
-}) => {
-  const step = role.steps[stepIndex];
-  const duration = step.duration ?? STEP_DURATION;
-  return (
-    <>
-      <TransitionSeries.Sequence durationInFrames={duration}>
+  role.steps.forEach((step, i) => {
+    const duration = step.duration ?? STEP_DURATION;
+    children.push(
+      <TransitionSeries.Sequence key={`s-${i}`} durationInFrames={duration}>
         <StepScene
           step={step}
-          stepIndex={stepIndex}
+          stepIndex={i}
           totalSteps={totalSteps}
           duration={duration}
         />
       </TransitionSeries.Sequence>
-      {!isLast && (
-        <TransitionSeries.Transition
-          presentation={fade()}
-          timing={springTiming({ config: { damping: 200 }, durationInFrames: T })}
-        />
-      )}
-    </>
+    );
+    children.push(
+      <TransitionSeries.Transition
+        key={`t-${i}`}
+        presentation={fade()}
+        timing={springTiming({ config: { damping: 200 }, durationInFrames: T })}
+      />
+    );
+  });
+
+  children.push(
+    <TransitionSeries.Sequence key="outro" durationInFrames={OUTRO_DURATION}>
+      <OutroScene role={role} />
+    </TransitionSeries.Sequence>
+  );
+
+  return (
+    <AbsoluteFill>
+      <PersistentBackground />
+      <TransitionSeries>{children}</TransitionSeries>
+    </AbsoluteFill>
   );
 };
 
