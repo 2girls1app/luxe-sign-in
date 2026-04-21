@@ -52,7 +52,16 @@ Deno.serve(async (req) => {
       };
 
       if (mode === "hospital") {
-        reqBody.includedPrimaryTypes = ["hospital"];
+        // Broaden beyond hospitals to include surgical centers, ASCs, medical
+        // centers, and specialty clinics that perform procedures.
+        // Google Places (New) allows up to 5 included primary types.
+        reqBody.includedPrimaryTypes = [
+          "hospital",
+          "medical_lab",
+          "doctor",
+          "health",
+          "physiotherapist",
+        ];
       }
 
       const res = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
