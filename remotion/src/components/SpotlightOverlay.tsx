@@ -107,19 +107,19 @@ export const SpotlightOverlay = ({
         <defs>
           <radialGradient id={`spot-${fromFrame}`} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="black" stopOpacity="1" />
-            <stop offset="60%" stopColor="black" stopOpacity="1" />
+            <stop offset="55%" stopColor="black" stopOpacity="1" />
             <stop offset="100%" stopColor="black" stopOpacity="0" />
           </radialGradient>
           <mask id={`mask-${fromFrame}`}>
             <rect width={width} height={height} fill="white" />
-            <circle cx={cx} cy={cy} r={radius * 1.5} fill={`url(#spot-${fromFrame})`} />
+            <circle cx={cx} cy={cy} r={radius * 1.9} fill={`url(#spot-${fromFrame})`} />
           </mask>
         </defs>
         <rect
           width={width}
           height={height}
           fill="black"
-          opacity={0.72}
+          opacity={0.55}
           mask={`url(#mask-${fromFrame})`}
         />
       </svg>
