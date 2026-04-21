@@ -3,11 +3,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, MapPin, Loader2 } from "lucide-react";
+import { Plus, MapPin, Loader2, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useNominatimAutocomplete, formatAddress, NominatimResult } from "@/hooks/useNominatimAutocomplete";
+import {
+  useGooglePlacesAutocomplete,
+  fetchPlaceDetails,
+  PlaceSuggestion,
+} from "@/hooks/useGooglePlacesAutocomplete";
 
 const APPROVED_FACILITIES: { name: string; code: string; facilityId: string }[] = [
   { name: "Northside Hospital Duluth", code: "NSD-6154", facilityId: "6e5219ec-9ab4-42d7-a98e-75181416f917" },
@@ -23,10 +27,14 @@ const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = f
   const [open, setOpen] = useState(false);
   const [nameQuery, setNameQuery] = useState("");
   const [address, setAddress] = useState("");
+  const [addressQuery, setAddressQuery] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showHospitalDropdown, setShowHospitalDropdown] = useState(false);
   const [showAddressDropdown, setShowAddressDropdown] = useState(false);
+  const [coords, setCoords] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
+  const [selectedHospital, setSelectedHospital] = useState<PlaceSuggestion | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -36,10 +44,18 @@ const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = f
   const [facilityCode, setFacilityCode] = useState("");
   const [codeError, setCodeError] = useState("");
 
-  // Address autocomplete for individual users
-  const { results: addressResults, loading: addressLoading } = useNominatimAutocomplete(
+  // Google Places: hospital search by name (Georgia, USA)
+  const { results: hospitalResults, loading: hospitalLoading } = useGooglePlacesAutocomplete(
     isIndividual ? nameQuery : "",
-    isIndividual && nameQuery.trim().length >= 3 && !address
+    isIndividual && !selectedHospital,
+    "hospital"
+  );
+
+  // Google Places: address fallback
+  const { results: addressResults, loading: addressLoading } = useGooglePlacesAutocomplete(
+    isIndividual ? addressQuery : "",
+    isIndividual && addressQuery.length >= 2 && !address,
+    "address"
   );
 
   const availableFacilities = APPROVED_FACILITIES.filter(
@@ -53,25 +69,45 @@ const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = f
   const resetForm = () => {
     setNameQuery("");
     setAddress("");
+    setAddressQuery("");
     setSelectedFacility(null);
+    setSelectedHospital(null);
     setFacilityCode("");
     setCodeError("");
     setNotes("");
+    setCoords({ lat: null, lng: null });
     setShowDropdown(false);
+    setShowHospitalDropdown(false);
     setShowAddressDropdown(false);
   };
 
   // === Individual flow handlers ===
-  const handleIndividualSelectAddress = (result: NominatimResult) => {
-    setAddress(formatAddress(result));
+  const handleSelectHospital = async (suggestion: PlaceSuggestion) => {
+    setSelectedHospital(suggestion);
+    setNameQuery(suggestion.mainText);
+    setShowHospitalDropdown(false);
+    const details = await fetchPlaceDetails(suggestion.placeId);
+    if (details) {
+      setAddress(details.address);
+      setAddressQuery(details.address);
+      setCoords({ lat: details.latitude, lng: details.longitude });
+    }
+  };
+
+  const handleSelectAddress = async (suggestion: PlaceSuggestion) => {
     setShowAddressDropdown(false);
+    const details = await fetchPlaceDetails(suggestion.placeId);
+    if (details) {
+      setAddress(details.address);
+      setAddressQuery(details.address);
+      setCoords({ lat: details.latitude, lng: details.longitude });
+    }
   };
 
   const handleIndividualSubmit = async () => {
     if (!user || !nameQuery.trim()) return;
 
     setLoading(true);
-    // Create a new facility owned by this user
     const { data: newFacility, error: createError } = await supabase
       .from("facilities")
       .insert({
@@ -79,6 +115,8 @@ const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = f
         location: address.trim() || null,
         notes: notes.trim() || null,
         user_id: user.id,
+        latitude: coords.lat,
+        longitude: coords.lng,
       })
       .select("id")
       .single();
@@ -89,7 +127,6 @@ const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = f
       return;
     }
 
-    // Link via doctor_facilities
     const { error: linkError } = await supabase.from("doctor_facilities" as any).insert({
       user_id: user.id,
       facility_id: newFacility.id,
@@ -121,11 +158,19 @@ const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = f
     setSelectedFacility(null);
     setFacilityCode("");
     setCodeError("");
-    setShowDropdown(true);
     if (isIndividual) {
-      setAddress("");
-      setShowAddressDropdown(true);
+      setSelectedHospital(null);
+      setShowHospitalDropdown(true);
+    } else {
+      setShowDropdown(true);
     }
+  };
+
+  const handleAddressChange = (val: string) => {
+    setAddressQuery(val);
+    setAddress(val);
+    setCoords({ lat: null, lng: null });
+    setShowAddressDropdown(true);
   };
 
   const handleCodeChange = (val: string) => {
@@ -186,13 +231,20 @@ const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = f
           <div className="relative" ref={dropdownRef}>
             <label className="text-xs text-muted-foreground mb-1 block">Facility Name *</label>
             <Input
-              placeholder={isIndividual ? "Enter facility name" : "Search facility by name"}
+              placeholder={isIndividual ? "Search Georgia hospitals..." : "Search facility by name"}
               value={nameQuery}
               onChange={(e) => handleNameChange(e.target.value)}
-              onFocus={() => !isIndividual && setShowDropdown(true)}
-              onBlur={() => setTimeout(() => { setShowDropdown(false); setShowAddressDropdown(false); }, 200)}
+              onFocus={() => {
+                if (isIndividual && !selectedHospital) setShowHospitalDropdown(true);
+                else if (!isIndividual) setShowDropdown(true);
+              }}
+              onBlur={() => setTimeout(() => {
+                setShowDropdown(false);
+                setShowHospitalDropdown(false);
+              }, 200)}
               className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
             />
+
             {/* Facility-linked dropdown */}
             {!isIndividual && showDropdown && (
               <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
@@ -213,42 +265,84 @@ const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = f
                 )}
               </div>
             )}
-            {/* Individual address suggestions from name search */}
-            {isIndividual && showAddressDropdown && addressResults.length > 0 && (
-              <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
-                {addressResults.map((r) => (
-                  <button
-                    key={r.place_id}
-                    type="button"
-                    className="w-full text-left px-3 py-2 hover:bg-accent text-sm cursor-pointer"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => handleIndividualSelectAddress(r)}
-                  >
-                    <div className="flex items-start gap-2">
-                      <MapPin size={14} className="text-primary mt-0.5 shrink-0" />
-                      <span className="text-foreground">{r.display_name}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-            {isIndividual && addressLoading && nameQuery.trim().length >= 3 && !address && (
-              <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg p-3 flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 size={14} className="animate-spin" /> Searching addresses...
+
+            {/* Individual hospital search dropdown */}
+            {isIndividual && showHospitalDropdown && nameQuery.trim().length >= 2 && (
+              <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                {hospitalLoading ? (
+                  <div className="p-3 flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 size={14} className="animate-spin" /> Searching Georgia hospitals...
+                  </div>
+                ) : hospitalResults.length === 0 ? (
+                  <div className="p-3 text-sm text-muted-foreground text-center">
+                    No hospitals found — you can still type the name manually
+                  </div>
+                ) : (
+                  hospitalResults.map((r) => (
+                    <button
+                      key={r.placeId}
+                      type="button"
+                      className="w-full text-left px-3 py-2 hover:bg-accent text-sm cursor-pointer"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => handleSelectHospital(r)}
+                    >
+                      <div className="flex items-start gap-2">
+                        <Building2 size={14} className="text-primary mt-0.5 shrink-0" />
+                        <div>
+                          <div className="font-medium text-foreground">{r.mainText}</div>
+                          {r.secondaryText && (
+                            <div className="text-xs text-muted-foreground">{r.secondaryText}</div>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                )}
               </div>
             )}
           </div>
 
           {/* Address field - Individual only */}
           {isIndividual && (
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Address</label>
+            <div className="relative">
+              <label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1">
+                Address
+                {coords.lat !== null && (
+                  <span className="text-[10px] text-primary ml-1">✓ GPS verified</span>
+                )}
+              </label>
               <Input
-                placeholder="Auto-filled or enter manually"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Auto-filled or search address"
+                value={addressQuery}
+                onChange={(e) => handleAddressChange(e.target.value)}
+                onFocus={() => addressQuery.length >= 2 && !address && setShowAddressDropdown(true)}
+                onBlur={() => setTimeout(() => setShowAddressDropdown(false), 200)}
                 className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
               />
+              {showAddressDropdown && addressQuery.length >= 2 && !coords.lat && (
+                <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {addressLoading ? (
+                    <div className="p-3 flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 size={14} className="animate-spin" /> Searching addresses...
+                    </div>
+                  ) : addressResults.length === 0 ? null : (
+                    addressResults.map((r) => (
+                      <button
+                        key={r.placeId}
+                        type="button"
+                        className="w-full text-left px-3 py-2 hover:bg-accent text-sm cursor-pointer"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleSelectAddress(r)}
+                      >
+                        <div className="flex items-start gap-2">
+                          <MapPin size={14} className="text-primary mt-0.5 shrink-0" />
+                          <span className="text-foreground">{r.fullText}</span>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           )}
 
