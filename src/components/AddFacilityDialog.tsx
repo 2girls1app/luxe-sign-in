@@ -134,7 +134,8 @@ const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = f
     if (!nameQuery.trim()) return false;
     // If user typed/selected a preset facility name, require valid code
     if (matchedPreset) return !!facilityCode.trim() && !!codeMatches;
-    return true;
+    // Otherwise require a Google Places verified selection (GPS coords)
+    return coords.lat !== null && coords.lng !== null;
   })();
 
   const handleSubmit = async () => {
