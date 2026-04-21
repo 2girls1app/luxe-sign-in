@@ -156,7 +156,7 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
           <div className="relative" ref={dropdownRef}>
             <label className="text-xs text-muted-foreground mb-1 block">Facility Name *</label>
             <Input
-              placeholder="Search Georgia hospitals..."
+              placeholder="Search Georgia hospitals & surgery centers..."
               value={nameQuery}
               onChange={(e) => handleNameChange(e.target.value)}
               onFocus={() => !selectedHospital && nameQuery.trim().length >= 2 && setShowHospitalDropdown(true)}
@@ -168,11 +168,11 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
               <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
                 {hospitalLoading ? (
                   <div className="p-3 flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 size={14} className="animate-spin" /> Searching Georgia hospitals...
+                    <Loader2 size={14} className="animate-spin" /> Searching Georgia facilities...
                   </div>
                 ) : hospitalResults.length === 0 ? (
-                  <div className="p-3 text-sm text-muted-foreground text-center">
-                    No hospitals found — you can still type the name manually
+                  <div className="p-3 text-xs text-muted-foreground text-center">
+                    No facilities found — try "surgery center", "ASC", or a hospital name
                   </div>
                 ) : (
                   hospitalResults.map((r) => (
@@ -196,6 +196,13 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
                   ))
                 )}
               </div>
+            )}
+
+            {/* GPS verification warning when user typed a new name without selecting */}
+            {facility && nameQuery.trim() !== (facility.name || "").trim() && coords.lat === null && (
+              <p className="text-[11px] text-amber-500 mt-1.5 leading-snug">
+                ⚠ Please select a verified facility from the list to ensure accurate location data.
+              </p>
             )}
           </div>
 
