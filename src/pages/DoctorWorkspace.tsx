@@ -332,25 +332,15 @@ const DoctorWorkspace = () => {
             <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Procedures</h2>
           </div>
           {canAdd && isIndividual && (
-            <div className="flex items-center gap-2">
-              <AddProcedureDialog
-                facilities={facilities}
-                onAdded={fetchData}
-                preselectedFacilityId={facilityId || undefined}
-                forUserId={userId}
-                defaultSpecialty={doctor?.specialty || undefined}
-                autoOpen={shouldAutoOpenProcedure && facilitiesLoaded && !!facilityId}
-              />
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1.5 rounded-full text-xs border-primary/30 hover:border-primary/60"
-                onClick={() => setUploadDrawerOpen(true)}
-              >
-                <Upload size={14} />
-                Upload
-              </Button>
-            </div>
+            <AddProcedureDialog
+              facilities={facilities}
+              onAdded={fetchData}
+              preselectedFacilityId={facilityId || undefined}
+              forUserId={userId}
+              defaultSpecialty={doctor?.specialty || undefined}
+              autoOpen={shouldAutoOpenProcedure && facilitiesLoaded && !!facilityId}
+              onUploadClick={() => setUploadDrawerOpen(true)}
+            />
           )}
           {canAdd && !isIndividual && (
             <Button

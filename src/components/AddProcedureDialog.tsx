@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, FilePlus, Copy, ArrowLeft, Search } from "lucide-react";
+import { Plus, FilePlus, Copy, ArrowLeft, Search, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -30,6 +30,7 @@ interface AddProcedureDialogProps {
   forUserId?: string;
   defaultSpecialty?: string;
   autoOpen?: boolean;
+  onUploadClick?: () => void;
 }
 
 type DialogMode = "choose" | "new" | "existing";
@@ -109,6 +110,7 @@ const AddProcedureDialog = ({
   forUserId,
   defaultSpecialty,
   autoOpen = false,
+  onUploadClick,
 }: AddProcedureDialogProps) => {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<DialogMode>("choose");
@@ -340,6 +342,23 @@ const AddProcedureDialog = ({
                 <p className="text-xs text-muted-foreground">Clone an existing preference card</p>
               </div>
             </button>
+            {onUploadClick && (
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  onUploadClick();
+                }}
+                className="flex items-center gap-4 rounded-xl border border-border bg-secondary p-4 text-left transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                  <Upload size={20} className="text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Upload Procedure</p>
+                  <p className="text-xs text-muted-foreground">Import a procedure card from a file</p>
+                </div>
+              </button>
+            )}
           </div>
         )}
 
