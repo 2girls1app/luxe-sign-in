@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin, Loader2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -131,14 +131,31 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
                 <span className="text-[10px] text-primary ml-1">✓ GPS verified</span>
               )}
             </label>
-            <Input
-              placeholder="Search for a corrected address"
-              value={addressQuery}
-              onChange={(e) => handleAddressChange(e.target.value)}
-              onFocus={() => addressQuery.length >= 2 && coords.lat === null && setShowAddressDropdown(true)}
-              onBlur={() => setTimeout(() => setShowAddressDropdown(false), 200)}
-              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
-            />
+            <div className="relative">
+              <Input
+                placeholder="Search for an address"
+                value={addressQuery}
+                onChange={(e) => handleAddressChange(e.target.value)}
+                onFocus={() => addressQuery.length >= 2 && coords.lat === null && setShowAddressDropdown(true)}
+                onBlur={() => setTimeout(() => setShowAddressDropdown(false), 200)}
+                className="bg-secondary border-border text-foreground placeholder:text-muted-foreground pr-8"
+              />
+              {addressQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAddressQuery("");
+                    setAddress("");
+                    setCoords({ lat: null, lng: null });
+                    setShowAddressDropdown(false);
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5"
+                  aria-label="Clear address"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
             {showAddressDropdown && addressQuery.length >= 2 && coords.lat === null && (
               <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
                 {addressLoading ? (
