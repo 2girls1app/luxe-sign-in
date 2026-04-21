@@ -336,18 +336,13 @@ const Profile = () => {
 
             {/* Quick Add Procedure - non-admin only */}
             {!isAdmin && (
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} triggerVariant="prominent" defaultSpecialty={profile?.specialty || undefined} />
-                </div>
-                <button
-                  onClick={() => setUploadCardOpen(true)}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-primary/40 bg-card hover:border-primary/70 transition-colors px-4 py-3 text-primary"
-                  aria-label="Upload Preference Card"
-                >
-                  <Upload size={18} />
-                </button>
-              </div>
+              <AddProcedureDialog
+                facilities={facilities}
+                onAdded={fetchProcedures}
+                triggerVariant="prominent"
+                defaultSpecialty={profile?.specialty || undefined}
+                onUploadClick={() => setUploadCardOpen(true)}
+              />
             )}
 
             {/* Facilities Section - non-admin only */}
@@ -396,18 +391,13 @@ const Profile = () => {
               <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
                 <Stethoscope size={16} className="text-primary" /> Procedures
               </h2>
-              <div className="flex items-center gap-2">
-                {isDoctor && (
-                  <button
-                    onClick={() => setUploadCardOpen(true)}
-                    className="flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 h-9 w-9"
-                    aria-label="Upload Preference Card"
-                  >
-                    <Upload size={16} />
-                  </button>
-                )}
-                <AddProcedureDialog facilities={facilities} onAdded={fetchProcedures} preselectedFacilityId={facilityFilter} defaultSpecialty={profile?.specialty || undefined} />
-              </div>
+              <AddProcedureDialog
+                facilities={facilities}
+                onAdded={fetchProcedures}
+                preselectedFacilityId={facilityFilter}
+                defaultSpecialty={profile?.specialty || undefined}
+                onUploadClick={isDoctor ? () => setUploadCardOpen(true) : undefined}
+              />
             </div>
 
             {filteredProcedures.length > 0 && (

@@ -213,25 +213,15 @@ const AdminDoctorDetail = () => {
           </button>
         </div>
 
-        {/* Add Procedure + Upload */}
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <AddProcedureDialog
-              facilities={facilities}
-              onAdded={fetchData}
-              forUserId={userId}
-              triggerVariant="prominent"
-              defaultSpecialty={doctor?.specialty || undefined}
-            />
-          </div>
-          <button
-            onClick={() => setUploadDrawerOpen(true)}
-            className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-primary/40 bg-card hover:border-primary/70 transition-colors px-4 py-3 text-primary"
-            aria-label="Upload Preference Card"
-          >
-            <Upload size={18} />
-          </button>
-        </div>
+        {/* Add Procedure */}
+        <AddProcedureDialog
+          facilities={facilities}
+          onAdded={fetchData}
+          forUserId={userId}
+          triggerVariant="prominent"
+          defaultSpecialty={doctor?.specialty || undefined}
+          onUploadClick={() => setUploadDrawerOpen(true)}
+        />
 
         {/* Procedures grouped by facility */}
         <div>
