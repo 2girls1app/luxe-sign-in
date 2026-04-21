@@ -284,7 +284,14 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
             </Button>
             <Button
               onClick={handleSave}
-              disabled={!nameQuery.trim() || loading}
+              disabled={
+                !nameQuery.trim() ||
+                loading ||
+                // Block save when the user changed the name but didn't pick a verified place
+                (!!facility &&
+                  nameQuery.trim() !== (facility.name || "").trim() &&
+                  coords.lat === null)
+              }
               className="flex-1 rounded-full"
             >
               {loading ? "Saving..." : "Save Changes"}
