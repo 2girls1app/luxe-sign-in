@@ -64,7 +64,7 @@ const ClinicalDashboard = () => {
 
     const { data } = await supabase
       .from("facilities")
-      .select("id, name, location")
+      .select("id, name, location, notes")
       .in("id", Array.from(facilityIdSet));
     setFacilities(
       (data || []).sort((a: any, b: any) =>
