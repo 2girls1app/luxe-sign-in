@@ -17,6 +17,7 @@ interface FacilityInfo {
   id: string;
   name: string;
   location: string | null;
+  notes: string | null;
 }
 
 const ClinicalDashboard = () => {
