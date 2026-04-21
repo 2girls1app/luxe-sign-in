@@ -253,6 +253,17 @@ const ClinicalDashboard = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        setEditingFacility(f);
+                        setEditDialogOpen(true);
+                      }}
+                      className="text-muted-foreground hover:text-primary transition-colors p-1"
+                      aria-label="Edit facility"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
                         deleteFacility(f.id);
                       }}
                       className="text-muted-foreground hover:text-destructive transition-colors p-1"
