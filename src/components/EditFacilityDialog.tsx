@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Loader2, X } from "lucide-react";
+import { MapPin, Loader2, X, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -26,45 +26,74 @@ interface EditFacilityDialogProps {
 
 const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacilityDialogProps) => {
   const { toast } = useToast();
-  const [name, setName] = useState("");
+
+  // Name search (hospitals in Georgia) — mirrors AddFacilityDialog
+  const [nameQuery, setNameQuery] = useState("");
+  const [selectedHospital, setSelectedHospital] = useState<PlaceSuggestion | null>(null);
+  const [showHospitalDropdown, setShowHospitalDropdown] = useState(false);
+
+  // Address fallback search
   const [address, setAddress] = useState("");
   const [addressQuery, setAddressQuery] = useState("");
+  const [showAddressDropdown, setShowAddressDropdown] = useState(false);
+
   const [notes, setNotes] = useState("");
   const [coords, setCoords] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
-  const [showAddressDropdown, setShowAddressDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Pre-fill when facility changes / dialog opens
   useEffect(() => {
     if (facility && open) {
-      setName(facility.name || "");
+      setNameQuery(facility.name || "");
       setAddress(facility.location || "");
       setAddressQuery(facility.location || "");
       setNotes(facility.notes || "");
       setCoords({ lat: null, lng: null });
-      // Auto-open the suggestions if there is a prefilled address to edit
-      setShowAddressDropdown(!!(facility.location && facility.location.trim().length >= 2));
+      setSelectedHospital(null);
+      setShowHospitalDropdown(false);
+      setShowAddressDropdown(false);
     }
   }, [facility, open]);
 
+  // Google Places: hospital search (Georgia, USA) — disabled once a hospital is picked
+  const { results: hospitalResults, loading: hospitalLoading } = useGooglePlacesAutocomplete(
+    nameQuery,
+    !selectedHospital,
+    "hospital"
+  );
+
+  // Google Places: address fallback — disabled once GPS-verified
   const { results: addressResults, loading: addressLoading } = useGooglePlacesAutocomplete(
     addressQuery,
     addressQuery.length >= 2 && coords.lat === null,
     "address"
   );
 
+  const handleNameChange = (val: string) => {
+    setNameQuery(val);
+    setSelectedHospital(null);
+    setShowHospitalDropdown(true);
+  };
+
+  const handleSelectHospital = async (suggestion: PlaceSuggestion) => {
+    setSelectedHospital(suggestion);
+    setNameQuery(suggestion.mainText);
+    setShowHospitalDropdown(false);
+    const details = await fetchPlaceDetails(suggestion.placeId);
+    if (details) {
+      // Overwrite both name + address with verified Google Places data
+      setAddress(details.address);
+      setAddressQuery(details.address);
+      setCoords({ lat: details.latitude, lng: details.longitude });
+    }
+  };
+
   const handleAddressChange = (val: string) => {
     setAddressQuery(val);
     setAddress(val);
     setCoords({ lat: null, lng: null });
     setShowAddressDropdown(true);
-  };
-
-  const handleAddressFocus = () => {
-    if (addressQuery.length >= 2 && coords.lat === null) {
-      setShowAddressDropdown(true);
-    }
   };
 
   const handleSelectAddress = async (suggestion: PlaceSuggestion) => {
@@ -82,14 +111,15 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
   };
 
   const handleSave = async () => {
-    if (!facility || !name.trim()) return;
+    if (!facility || !nameQuery.trim()) return;
     setLoading(true);
 
     const updatePayload: Record<string, any> = {
-      name: name.trim(),
+      name: nameQuery.trim(),
       location: address.trim() || null,
       notes: notes.trim() || null,
     };
+    // Only overwrite GPS if the user picked a verified place this session
     if (coords.lat !== null && coords.lng !== null) {
       updatePayload.latitude = coords.lat;
       updatePayload.longitude = coords.lng;
@@ -118,23 +148,59 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
         <DialogHeader>
           <DialogTitle className="text-foreground">Edit Facility</DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Update the facility name, address, or notes. Changes save instantly.
+            Search to update with verified Google Places data, or edit fields directly. Changes save instantly.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 mt-2">
-          {/* Facility Name */}
-          <div>
+          {/* Facility Name (Google Places hospital search) */}
+          <div className="relative" ref={dropdownRef}>
             <label className="text-xs text-muted-foreground mb-1 block">Facility Name *</label>
             <Input
-              placeholder="Facility name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="Search Georgia hospitals..."
+              value={nameQuery}
+              onChange={(e) => handleNameChange(e.target.value)}
+              onFocus={() => !selectedHospital && nameQuery.trim().length >= 2 && setShowHospitalDropdown(true)}
+              onBlur={() => setTimeout(() => setShowHospitalDropdown(false), 200)}
               className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
             />
+
+            {showHospitalDropdown && nameQuery.trim().length >= 2 && (
+              <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                {hospitalLoading ? (
+                  <div className="p-3 flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 size={14} className="animate-spin" /> Searching Georgia hospitals...
+                  </div>
+                ) : hospitalResults.length === 0 ? (
+                  <div className="p-3 text-sm text-muted-foreground text-center">
+                    No hospitals found — you can still type the name manually
+                  </div>
+                ) : (
+                  hospitalResults.map((r) => (
+                    <button
+                      key={r.placeId}
+                      type="button"
+                      className="w-full text-left px-3 py-2 hover:bg-accent text-sm cursor-pointer"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => handleSelectHospital(r)}
+                    >
+                      <div className="flex items-start gap-2">
+                        <Building2 size={14} className="text-primary mt-0.5 shrink-0" />
+                        <div>
+                          <div className="font-medium text-foreground">{r.mainText}</div>
+                          {r.secondaryText && (
+                            <div className="text-xs text-muted-foreground">{r.secondaryText}</div>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Address (Google Places autocomplete) */}
-          <div className="relative" ref={dropdownRef}>
+          {/* Address (Google Places address autocomplete fallback) */}
+          <div className="relative">
             <label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1">
               Address
               {coords.lat !== null && (
@@ -143,10 +209,10 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
             </label>
             <div className="relative">
               <Input
-                placeholder="Search for an address"
+                placeholder="Auto-filled or search address"
                 value={addressQuery}
                 onChange={(e) => handleAddressChange(e.target.value)}
-                onFocus={handleAddressFocus}
+                onFocus={() => addressQuery.length >= 2 && coords.lat === null && setShowAddressDropdown(true)}
                 onBlur={() => setTimeout(() => setShowAddressDropdown(false), 200)}
                 className="bg-secondary border-border text-foreground placeholder:text-muted-foreground pr-8"
               />
@@ -211,7 +277,7 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
             </Button>
             <Button
               onClick={handleSave}
-              disabled={!name.trim() || loading}
+              disabled={!nameQuery.trim() || loading}
               className="flex-1 rounded-full"
             >
               {loading ? "Saving..." : "Save Changes"}
