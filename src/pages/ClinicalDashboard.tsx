@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { LogOut, Building2, Bell, Settings, ChevronRight, Plus, Trash2, MapPin, User } from "lucide-react";
+import { LogOut, Building2, Bell, Settings, ChevronRight, Plus, Trash2, MapPin, User, Pencil } from "lucide-react";
+import EditFacilityDialog from "@/components/EditFacilityDialog";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import NotificationsDrawer from "@/components/NotificationsDrawer";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +17,7 @@ interface FacilityInfo {
   id: string;
   name: string;
   location: string | null;
+  notes: string | null;
 }
 
 const ClinicalDashboard = () => {
@@ -25,6 +27,8 @@ const ClinicalDashboard = () => {
   const [facilities, setFacilities] = useState<FacilityInfo[]>([]);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [editingFacility, setEditingFacility] = useState<FacilityInfo | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const displayName = profile?.display_name || user?.user_metadata?.full_name || "User";
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
@@ -60,7 +64,7 @@ const ClinicalDashboard = () => {
 
     const { data } = await supabase
       .from("facilities")
-      .select("id, name, location")
+      .select("id, name, location, notes")
       .in("id", Array.from(facilityIdSet));
     setFacilities(
       (data || []).sort((a: any, b: any) =>
@@ -249,6 +253,17 @@ const ClinicalDashboard = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        setEditingFacility(f);
+                        setEditDialogOpen(true);
+                      }}
+                      className="text-muted-foreground hover:text-primary transition-colors p-1"
+                      aria-label="Edit facility"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
                         deleteFacility(f.id);
                       }}
                       className="text-muted-foreground hover:text-destructive transition-colors p-1"
@@ -300,6 +315,16 @@ const ClinicalDashboard = () => {
         open={notificationsOpen}
         onOpenChange={setNotificationsOpen}
         onCountChange={setPendingCount}
+      />
+
+      <EditFacilityDialog
+        open={editDialogOpen}
+        onOpenChange={(v) => {
+          setEditDialogOpen(v);
+          if (!v) setEditingFacility(null);
+        }}
+        facility={editingFacility}
+        onSaved={fetchFacilities}
       />
     </div>
   );
