@@ -146,7 +146,7 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
                 placeholder="Search for an address"
                 value={addressQuery}
                 onChange={(e) => handleAddressChange(e.target.value)}
-                onFocus={() => addressQuery.length >= 2 && coords.lat === null && setShowAddressDropdown(true)}
+                onFocus={handleAddressFocus}
                 onBlur={() => setTimeout(() => setShowAddressDropdown(false), 200)}
                 className="bg-secondary border-border text-foreground placeholder:text-muted-foreground pr-8"
               />
