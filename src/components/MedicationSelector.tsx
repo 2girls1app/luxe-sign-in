@@ -207,7 +207,7 @@ const MedicationSelector = ({
         </DrawerHeader>
 
         <div className="flex-1 overflow-y-auto px-4 pb-2 space-y-3 max-h-[60vh]">
-          {/* ── Selected Medications (compact chips) ── */}
+          {/* ── Selected Medications (card rows) ── */}
           {medications.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-2 px-1">
@@ -219,177 +219,165 @@ const MedicationSelector = ({
                   {medications.length} selected
                 </Badge>
               </div>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="space-y-2">
                 {medications.map((med, index) => {
-                  const isOpen = editingIndex === index;
+                  const isExpanded = editingIndex === index;
+                  const hasNotes = !!(med.notes && med.notes.trim());
                   return (
-                    <Popover
+                    <div
                       key={`${med.name}-${index}`}
-                      open={isOpen}
-                      onOpenChange={(o) => {
-                        if (o) openEditor(index);
-                        else if (editingIndex === index) {
-                          // Persist details when closing the popover
-                          saveDetails();
-                        }
-                      }}
+                      className={`rounded-xl border bg-[hsl(0_0%_14%)] transition-all ${
+                        isExpanded
+                          ? "border-primary/60 shadow-[0_0_0_1px_hsl(var(--primary)/0.3)]"
+                          : "border-border/60 hover:border-primary/40"
+                      } ${med.hold ? "opacity-90" : ""}`}
                     >
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className={`group inline-flex items-center gap-1.5 rounded-full border pl-2 pr-1 py-1 text-xs font-medium transition-all max-w-full ${
-                            med.hold
-                              ? "border-amber-500/40 bg-amber-500/10 text-amber-300/90 opacity-75"
-                              : "border-primary/30 bg-primary/10 text-foreground hover:bg-primary/15 hover:border-primary/50"
-                          }`}
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${getCategoryDot(med.category)}`} />
-                          <span className="truncate max-w-[180px]">{med.name}</span>
-                          {med.hold && (
-                            <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[9px] px-1.5 py-0.5 font-semibold uppercase tracking-wider">
-                              <Pause size={8} />Hold
-                            </span>
-                          )}
-                          {(med.dosage || med.route) && !med.hold && (
-                            <span className="text-[10px] text-muted-foreground/80 truncate max-w-[80px]">
-                              {[med.dosage, med.route].filter(Boolean).join(" · ")}
-                            </span>
-                          )}
-                          <span
-                            role="button"
-                            tabIndex={-1}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeMedication(index);
-                            }}
-                            className="ml-0.5 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-destructive/20 hover:text-destructive text-muted-foreground transition-colors"
-                            aria-label={`Remove ${med.name}`}
-                          >
-                            <X size={11} />
-                          </span>
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        align="start"
-                        sideOffset={6}
-                        className="w-72 bg-card border-border p-3 space-y-3"
-                        onOpenAutoFocus={(e) => e.preventDefault()}
+                      {/* Row header (tap target) */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isExpanded) {
+                            saveDetails();
+                          } else {
+                            openEditor(index);
+                          }
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left"
                       >
-                        <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${getCategoryDot(med.category)}`} />
-                          <p className="text-sm font-semibold text-foreground truncate flex-1">{med.name}</p>
-                          {med.isCustom && (
-                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-primary/30 text-primary">
-                              Custom
-                            </Badge>
-                          )}
-                        </div>
+                        <span className="w-2 h-2 rounded-full bg-primary shrink-0 shadow-[0_0_6px_hsl(var(--primary)/0.6)]" />
+                        <span className="text-sm font-medium text-foreground truncate">
+                          {med.name}
+                        </span>
+                        {med.route && (
+                          <span className="inline-flex items-center rounded-md bg-secondary border border-border/60 text-[10px] font-semibold text-muted-foreground px-1.5 py-0.5 uppercase tracking-wider shrink-0">
+                            {med.route}
+                          </span>
+                        )}
+                        {med.hold && (
+                          <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 border border-primary/40 text-[10px] font-semibold text-primary px-1.5 py-0.5 uppercase tracking-wider shrink-0">
+                            <Pause size={9} />On hold
+                          </span>
+                        )}
+                        {hasNotes && (
+                          <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-primary shrink-0">
+                            <Pencil size={11} />
+                            See notes
+                          </span>
+                        )}
+                        <span
+                          role="button"
+                          tabIndex={-1}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeMedication(index);
+                          }}
+                          className="ml-auto inline-flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:bg-destructive/15 hover:text-destructive transition-colors shrink-0"
+                          aria-label={`Remove ${med.name}`}
+                        >
+                          <X size={14} />
+                        </span>
+                      </button>
 
-                        {/* Hold toggle */}
-                        <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/40 px-2.5 py-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setMedications((prev) =>
-                                prev.map((m, i) => i === index ? { ...m, hold: !m.hold, holdQty: m.holdQty ?? 1 } : m)
-                              );
-                            }}
-                            className={`text-[11px] font-medium px-2.5 py-1 rounded-md border transition-colors ${
-                              med.hold
-                                ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
-                                : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
-                            }`}
-                          >
-                            {med.hold ? "On Hold" : "Mark Hold"}
-                          </button>
-                          {med.hold && (
-                            <div className="flex items-center gap-1">
-                              <span className="text-[10px] text-amber-400/80 uppercase tracking-wider mr-1">Qty</span>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setMedications((prev) =>
-                                    prev.map((m, i) => i === index ? { ...m, holdQty: Math.max(1, (m.holdQty ?? 1) - 1) } : m)
-                                  )
-                                }
-                                className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors"
-                              >
-                                <Minus size={11} className="text-amber-400" />
-                              </button>
-                              <span className="text-sm font-semibold text-amber-400 w-5 text-center">{med.holdQty ?? 1}</span>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setMedications((prev) =>
-                                    prev.map((m, i) => i === index ? { ...m, holdQty: (m.holdQty ?? 1) + 1 } : m)
-                                  )
-                                }
-                                className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors"
-                              >
-                                <Plus size={11} className="text-amber-400" />
-                              </button>
+                      {/* Expanded section */}
+                      {isExpanded && (
+                        <div className="px-3 pb-3 space-y-3 border-t border-border/40 pt-3">
+                          {/* Notes display */}
+                          <div className="rounded-lg bg-[hsl(0_0%_10%)] border-l-2 border-primary px-3 py-2.5">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/80 mb-1">
+                              Notes
+                            </p>
+                            {hasNotes ? (
+                              <p className="text-sm text-foreground whitespace-pre-wrap">{med.notes}</p>
+                            ) : (
+                              <p className="text-xs italic text-muted-foreground/70">No notes added</p>
+                            )}
+                          </div>
+
+                          {/* Edit fields */}
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Dosage</label>
+                              <Input
+                                value={editDosage}
+                                onChange={(e) => setEditDosage(e.target.value)}
+                                placeholder="e.g., 10 mL"
+                                className="mt-1 h-8 text-sm bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+                              />
                             </div>
-                          )}
-                        </div>
-
-                        {/* Inline edit fields */}
-                        <div>
-                          <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Dosage</label>
-                          <Input
-                            value={editDosage}
-                            onChange={(e) => setEditDosage(e.target.value)}
-                            placeholder="e.g., 10 mL, 0.5%, 1g"
-                            className="mt-1 h-8 text-sm bg-secondary border-border text-foreground placeholder:text-muted-foreground"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Route</label>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {ROUTES.map((r) => (
-                              <button
-                                key={r}
-                                type="button"
-                                onClick={() => setEditRoute(editRoute === r ? "" : r)}
-                                className={`px-2 py-0.5 rounded-full text-[11px] font-medium transition-colors ${
-                                  editRoute === r
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-secondary border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
-                                }`}
+                            <div>
+                              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Route</label>
+                              <select
+                                value={editRoute}
+                                onChange={(e) => setEditRoute(e.target.value)}
+                                className="mt-1 h-8 w-full rounded-md bg-secondary border border-border text-foreground text-sm px-2"
                               >
-                                {r}
-                              </button>
-                            ))}
+                                <option value="">—</option>
+                                {ROUTES.map((r) => (
+                                  <option key={r} value={r}>{r}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Edit notes</label>
+                            <textarea
+                              value={editNotes}
+                              onChange={(e) => setEditNotes(e.target.value)}
+                              placeholder="Add notes for this medication..."
+                              rows={2}
+                              className="mt-1 w-full rounded-md bg-secondary border border-border text-foreground placeholder:text-muted-foreground text-sm px-2 py-1.5 resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                          </div>
+
+                          {/* Action row */}
+                          <div className="flex items-center gap-2 pt-1">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setMedications((prev) =>
+                                  prev.map((m, i) => i === index ? { ...m, hold: !m.hold, holdQty: m.holdQty ?? 1 } : m)
+                                );
+                              }}
+                              className="h-8 text-xs border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+                            >
+                              <Pause size={12} className="mr-1" />
+                              {med.hold ? "Remove hold" : "Mark hold"}
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                saveDetails();
+                              }}
+                              className="h-8 text-xs"
+                            >
+                              <Check size={12} className="mr-1" />
+                              Save notes
+                            </Button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                saveDetails();
+                              }}
+                              className="ml-auto inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80"
+                            >
+                              See less <ChevronUp size={12} />
+                            </button>
                           </div>
                         </div>
-                        <div>
-                          <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Notes</label>
-                          <Input
-                            value={editNotes}
-                            onChange={(e) => setEditNotes(e.target.value)}
-                            placeholder="Additional notes..."
-                            className="mt-1 h-8 text-sm bg-secondary border-border text-foreground placeholder:text-muted-foreground"
-                          />
-                        </div>
-                        <div className="flex gap-2 pt-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => removeMedication(index)}
-                            className="flex-1 h-8 text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
-                          >
-                            <X size={12} className="mr-1" />Remove
-                          </Button>
-                          <Button size="sm" onClick={saveDetails} className="flex-1 h-8 text-xs">
-                            Done
-                          </Button>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                      )}
+                    </div>
                   );
                 })}
               </div>
               <p className="text-[10px] text-muted-foreground/70 italic px-1">
-                Tap a medication to mark as hold or edit details
+                Tap a medication to view notes or mark as hold
               </p>
             </div>
           )}
