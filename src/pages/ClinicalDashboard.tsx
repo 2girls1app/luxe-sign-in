@@ -316,6 +316,16 @@ const ClinicalDashboard = () => {
         onOpenChange={setNotificationsOpen}
         onCountChange={setPendingCount}
       />
+
+      <EditFacilityDialog
+        open={editDialogOpen}
+        onOpenChange={(v) => {
+          setEditDialogOpen(v);
+          if (!v) setEditingFacility(null);
+        }}
+        facility={editingFacility}
+        onSaved={fetchFacilities}
+      />
     </div>
   );
 };
