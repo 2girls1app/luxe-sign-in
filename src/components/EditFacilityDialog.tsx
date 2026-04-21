@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,7 +43,8 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
       setAddressQuery(facility.location || "");
       setNotes(facility.notes || "");
       setCoords({ lat: null, lng: null });
-      setShowAddressDropdown(false);
+      // Auto-open the suggestions if there is a prefilled address to edit
+      setShowAddressDropdown(!!(facility.location && facility.location.trim().length >= 2));
     }
   }, [facility, open]);
 
@@ -58,6 +59,12 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
     setAddress(val);
     setCoords({ lat: null, lng: null });
     setShowAddressDropdown(true);
+  };
+
+  const handleAddressFocus = () => {
+    if (addressQuery.length >= 2 && coords.lat === null) {
+      setShowAddressDropdown(true);
+    }
   };
 
   const handleSelectAddress = async (suggestion: PlaceSuggestion) => {
@@ -110,6 +117,9 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
       <DialogContent className="bg-card border-border text-foreground max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-foreground">Edit Facility</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Update the facility name, address, or notes. Changes save instantly.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 mt-2">
           {/* Facility Name */}
@@ -136,7 +146,7 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
                 placeholder="Search for an address"
                 value={addressQuery}
                 onChange={(e) => handleAddressChange(e.target.value)}
-                onFocus={() => addressQuery.length >= 2 && coords.lat === null && setShowAddressDropdown(true)}
+                onFocus={handleAddressFocus}
                 onBlur={() => setTimeout(() => setShowAddressDropdown(false), 200)}
                 className="bg-secondary border-border text-foreground placeholder:text-muted-foreground pr-8"
               />
