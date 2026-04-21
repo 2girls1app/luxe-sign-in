@@ -2,11 +2,29 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter,
 } from "@/components/ui/drawer";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Pill, Search, Plus, X, ChevronDown, ChevronUp, Pencil, Check, Minus, Pause } from "lucide-react";
 import { MEDICATIONS_DATABASE, MEDICATION_CATEGORIES, type MedicationEntry } from "@/data/medications";
+
+// Stable color palette mapped to medication categories
+const CATEGORY_DOT_COLORS: Record<string, string> = {
+  "Local Anesthetics": "bg-sky-400",
+  "Analgesics": "bg-rose-400",
+  "Antibiotics": "bg-emerald-400",
+  "Anti-emetics": "bg-violet-400",
+  "Steroids": "bg-amber-400",
+  "Sedatives": "bg-indigo-400",
+  "Paralytics": "bg-fuchsia-400",
+  "Reversal Agents": "bg-teal-400",
+  "Vasoactive": "bg-red-400",
+  "Antiseptics": "bg-lime-400",
+  "Hemostatics": "bg-orange-400",
+  "Other": "bg-slate-400",
+};
+const getCategoryDot = (cat: string) => CATEGORY_DOT_COLORS[cat] || "bg-primary";
 
 export interface SelectedMedication {
   name: string;
