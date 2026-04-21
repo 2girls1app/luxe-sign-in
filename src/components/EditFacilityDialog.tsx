@@ -43,7 +43,8 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
       setAddressQuery(facility.location || "");
       setNotes(facility.notes || "");
       setCoords({ lat: null, lng: null });
-      setShowAddressDropdown(false);
+      // Auto-open the suggestions if there is a prefilled address to edit
+      setShowAddressDropdown(!!(facility.location && facility.location.trim().length >= 2));
     }
   }, [facility, open]);
 
@@ -58,6 +59,12 @@ const EditFacilityDialog = ({ open, onOpenChange, facility, onSaved }: EditFacil
     setAddress(val);
     setCoords({ lat: null, lng: null });
     setShowAddressDropdown(true);
+  };
+
+  const handleAddressFocus = () => {
+    if (addressQuery.length >= 2 && coords.lat === null) {
+      setShowAddressDropdown(true);
+    }
   };
 
   const handleSelectAddress = async (suggestion: PlaceSuggestion) => {
