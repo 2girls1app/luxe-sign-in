@@ -27,6 +27,8 @@ const ClinicalDashboard = () => {
   const [facilities, setFacilities] = useState<FacilityInfo[]>([]);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [editingFacility, setEditingFacility] = useState<FacilityInfo | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const displayName = profile?.display_name || user?.user_metadata?.full_name || "User";
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
