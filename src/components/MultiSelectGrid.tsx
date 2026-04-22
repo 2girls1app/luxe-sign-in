@@ -74,6 +74,7 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
   const selectedNames = items.map((i) => i.name);
   const [showInput, setShowInput] = useState(false);
   const [customName, setCustomName] = useState("");
+  const [showBrowser, setShowBrowser] = useState(items.length === 0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const predefinedNames = options.map((o) => o.name);
@@ -82,6 +83,11 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
   useEffect(() => {
     if (showInput && inputRef.current) inputRef.current.focus();
   }, [showInput]);
+
+  // Auto-expand browser when there are no selections
+  useEffect(() => {
+    if (items.length === 0) setShowBrowser(true);
+  }, [items.length]);
 
   const updateItems = (newItems: ItemData[]) => {
     onChange(serializeItems(newItems));
