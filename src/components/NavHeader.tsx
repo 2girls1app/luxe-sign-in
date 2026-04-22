@@ -3,15 +3,16 @@ import { useNavigate } from "react-router-dom";
 
 interface NavHeaderProps {
   showHome?: boolean;
+  backTo?: string;
 }
 
-const NavHeader = ({ showHome = true }: NavHeaderProps) => {
+const NavHeader = ({ showHome = true, backTo }: NavHeaderProps) => {
   const navigate = useNavigate();
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-background/80 backdrop-blur-sm">
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => (backTo ? navigate(backTo) : navigate(-1))}
         className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
       >
         <ArrowLeft size={20} />
