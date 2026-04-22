@@ -256,6 +256,9 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
                 );
               })}
             </div>
+            <p className="text-[10px] text-muted-foreground/70 italic px-1">
+              Tap a rep to edit company, product, links, or notes
+            </p>
           </div>
         )}
 
