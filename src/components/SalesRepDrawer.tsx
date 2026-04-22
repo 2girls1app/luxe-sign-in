@@ -56,6 +56,7 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
   const { toast } = useToast();
   const [reps, setReps] = useState<SalesRepEntry[]>([emptySalesRep()]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [showEditor, setShowEditor] = useState(true);
   const [repImages, setRepImages] = useState<RepFile[]>([]);
   const [repVideos, setRepVideos] = useState<RepFile[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -77,13 +78,17 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
           notes: r.notes || "",
         })));
         setActiveIndex(0);
+        // Collapse editor by default when reps already exist
+        setShowEditor(false);
       } else {
         setReps([emptySalesRep()]);
         setActiveIndex(0);
+        setShowEditor(true);
       }
     } catch {
       setReps([emptySalesRep()]);
       setActiveIndex(0);
+      setShowEditor(true);
     }
     fetchFiles();
   }, [currentValue, open]);
@@ -164,12 +169,14 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
   const addRep = () => {
     setReps(prev => [...prev, emptySalesRep()]);
     setActiveIndex(reps.length);
+    setShowEditor(true);
   };
 
   const removeRep = (idx: number) => {
     if (reps.length <= 1) {
       setReps([emptySalesRep()]);
       setActiveIndex(0);
+      setShowEditor(true);
       return;
     }
     const updated = reps.filter((_, i) => i !== idx);
@@ -248,10 +255,10 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
                     name={displayName}
                     notes={subline || r.notes}
                     badges={badges}
-                    onClick={() => setActiveIndex(i)}
+                    onClick={() => { setActiveIndex(i); setShowEditor(true); }}
                     onRemove={reps.length > 1 ? () => removeRep(i) : undefined}
                     removeLabel={`Remove ${displayName}`}
-                    highlighted={isActive}
+                    highlighted={isActive && showEditor}
                   />
                 );
               })}
@@ -262,6 +269,21 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
           </div>
         )}
 
+        {/* "+ Select more reps" button (collapsed state) */}
+        {!showEditor && (
+          <div className="px-4 pb-2">
+            <button
+              type="button"
+              onClick={addRep}
+              className="flex items-center justify-center gap-2 w-full rounded-xl border border-dashed border-primary/40 bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 hover:border-primary/60 transition-all active:scale-[0.98]"
+            >
+              <Plus size={16} />
+              Select more reps
+            </button>
+          </div>
+        )}
+
+        {showEditor && (
         <div className="px-4 pb-2 overflow-y-auto max-h-[50vh] space-y-3">
           <div>
             <Label className="text-xs text-muted-foreground">Company</Label>
@@ -369,6 +391,7 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
             <Textarea value={rep.notes} onChange={e => updateField("notes", e.target.value)} placeholder="Additional notes..." className="bg-secondary border-border mt-1 min-h-[80px] resize-none" />
           </div>
         </div>
+        )}
 
         <DrawerFooter className="pt-2">
           <div className="flex gap-2 w-full">
