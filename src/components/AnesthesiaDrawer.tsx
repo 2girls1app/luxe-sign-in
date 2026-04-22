@@ -3,9 +3,9 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { X, Search, Plus, Stethoscope, Check } from "lucide-react";
+import { Search, Plus, Stethoscope, Check } from "lucide-react";
+import SelectedItemCard, { SelectedCountHeader } from "@/components/SelectedItemCard";
 
 const ANESTHESIA_MEDS = [
   "Propofol", "Midazolam", "Fentanyl", "Rocuronium", "Succinylcholine",
