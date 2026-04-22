@@ -242,40 +242,41 @@ const MedicationSelector = ({
                             openEditor(index);
                           }
                         }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left"
+                        className="w-full flex flex-col gap-1.5 px-3 py-2.5 text-left"
                       >
-                        <span className="w-2 h-2 rounded-full bg-primary shrink-0 shadow-[0_0_6px_hsl(var(--primary)/0.6)]" />
-                        <span className="text-sm font-medium text-foreground truncate">
-                          {med.name}
-                        </span>
-                        {med.route && (
-                          <span className="inline-flex items-center rounded-md bg-secondary border border-border/60 text-[10px] font-semibold text-muted-foreground px-1.5 py-0.5 uppercase tracking-wider shrink-0">
-                            {med.route}
+                        <div className="flex items-center gap-2.5 w-full">
+                          <span className="w-2 h-2 rounded-full bg-primary shrink-0 shadow-[0_0_6px_hsl(var(--primary)/0.6)]" />
+                          <span className="text-sm font-medium text-foreground truncate">
+                            {med.name}
                           </span>
-                        )}
-                        {med.hold && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 border border-primary/40 text-[10px] font-semibold text-primary px-1.5 py-0.5 uppercase tracking-wider shrink-0">
-                            <Pause size={9} />On hold
+                          {med.route && (
+                            <span className="inline-flex items-center rounded-md bg-secondary border border-border/60 text-[10px] font-semibold text-muted-foreground px-1.5 py-0.5 uppercase tracking-wider shrink-0">
+                              {med.route}
+                            </span>
+                          )}
+                          {med.hold && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 border border-primary/40 text-[10px] font-semibold text-primary px-1.5 py-0.5 uppercase tracking-wider shrink-0">
+                              <Pause size={9} />On hold
+                            </span>
+                          )}
+                          <span
+                            role="button"
+                            tabIndex={-1}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeMedication(index);
+                            }}
+                            className="ml-auto inline-flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:bg-destructive/15 hover:text-destructive transition-colors shrink-0"
+                            aria-label={`Remove ${med.name}`}
+                          >
+                            <X size={14} />
                           </span>
+                        </div>
+                        {hasNotes && !isExpanded && (
+                          <p className="text-[12px] text-muted-foreground border-l-2 border-amber-400 pl-2 ml-4 whitespace-pre-wrap">
+                            {med.notes}
+                          </p>
                         )}
-                        {hasNotes && (
-                          <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-primary shrink-0">
-                            <Pencil size={11} />
-                            See notes
-                          </span>
-                        )}
-                        <span
-                          role="button"
-                          tabIndex={-1}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeMedication(index);
-                          }}
-                          className="ml-auto inline-flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:bg-destructive/15 hover:text-destructive transition-colors shrink-0"
-                          aria-label={`Remove ${med.name}`}
-                        >
-                          <X size={14} />
-                        </span>
                       </button>
 
                       {/* Expanded section */}
