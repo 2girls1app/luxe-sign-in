@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { LogOut, Building2, Bell, Settings, ChevronRight, Plus, Trash2, MapPin, User, Pencil } from "lucide-react";
+import { LogOut, Building2, Bell, Settings, ChevronRight, Plus, Trash2, MapPin, User, Pencil, Home } from "lucide-react";
 import EditFacilityDialog from "@/components/EditFacilityDialog";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import NotificationsDrawer from "@/components/NotificationsDrawer";
@@ -29,6 +29,31 @@ const ClinicalDashboard = () => {
   const [pendingCount, setPendingCount] = useState(0);
   const [editingFacility, setEditingFacility] = useState<FacilityInfo | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const homeKey = user ? `homeFacility:${user.id}` : "";
+  const [homeFacilityId, setHomeFacilityId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (homeKey) setHomeFacilityId(localStorage.getItem(homeKey));
+  }, [homeKey]);
+
+  const setAsHome = (id: string) => {
+    if (!homeKey) return;
+    if (homeFacilityId === id) {
+      localStorage.removeItem(homeKey);
+      setHomeFacilityId(null);
+      toast({ title: "Home facility cleared" });
+    } else {
+      localStorage.setItem(homeKey, id);
+      setHomeFacilityId(id);
+      toast({ title: "Home facility set" });
+    }
+  };
+
+  const sortedFacilities = [...facilities].sort((a, b) => {
+    if (a.id === homeFacilityId) return -1;
+    if (b.id === homeFacilityId) return 1;
+    return 0;
+  });
 
   const displayName = profile?.display_name || user?.user_metadata?.full_name || "User";
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
