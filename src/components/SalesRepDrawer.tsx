@@ -255,10 +255,10 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
                     name={displayName}
                     notes={subline || r.notes}
                     badges={badges}
-                    onClick={() => setActiveIndex(i)}
+                    onClick={() => { setActiveIndex(i); setShowEditor(true); }}
                     onRemove={reps.length > 1 ? () => removeRep(i) : undefined}
                     removeLabel={`Remove ${displayName}`}
-                    highlighted={isActive}
+                    highlighted={isActive && showEditor}
                   />
                 );
               })}
@@ -269,6 +269,21 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
           </div>
         )}
 
+        {/* "+ Select more reps" button (collapsed state) */}
+        {!showEditor && (
+          <div className="px-4 pb-2">
+            <button
+              type="button"
+              onClick={addRep}
+              className="flex items-center justify-center gap-2 w-full rounded-xl border border-dashed border-primary/40 bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 hover:border-primary/60 transition-all active:scale-[0.98]"
+            >
+              <Plus size={16} />
+              Select more reps
+            </button>
+          </div>
+        )}
+
+        {showEditor && (
         <div className="px-4 pb-2 overflow-y-auto max-h-[50vh] space-y-3">
           <div>
             <Label className="text-xs text-muted-foreground">Company</Label>
