@@ -51,7 +51,7 @@ const SelectedItemCard = ({
 
   return (
     <div
-      className={`w-full sm:w-1/2 sm:max-w-md rounded-xl border bg-secondary/40 transition-all ${
+      className={`w-full rounded-xl border bg-secondary/40 transition-all ${
         highlighted
           ? "border-primary/60 shadow-[0_0_0_1px_hsl(var(--primary)/0.3)]"
           : "border-border/60 hover:border-primary/40"
