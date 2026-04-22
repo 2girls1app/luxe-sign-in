@@ -258,7 +258,7 @@ const DoctorWorkspace = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-4 pt-16 pb-8">
-      <NavHeader showHome={false} />
+      <NavHeader showHome={false} backTo="/profile" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
