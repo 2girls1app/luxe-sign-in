@@ -56,6 +56,7 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
   const { toast } = useToast();
   const [reps, setReps] = useState<SalesRepEntry[]>([emptySalesRep()]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [showEditor, setShowEditor] = useState(true);
   const [repImages, setRepImages] = useState<RepFile[]>([]);
   const [repVideos, setRepVideos] = useState<RepFile[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -77,13 +78,17 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
           notes: r.notes || "",
         })));
         setActiveIndex(0);
+        // Collapse editor by default when reps already exist
+        setShowEditor(false);
       } else {
         setReps([emptySalesRep()]);
         setActiveIndex(0);
+        setShowEditor(true);
       }
     } catch {
       setReps([emptySalesRep()]);
       setActiveIndex(0);
+      setShowEditor(true);
     }
     fetchFiles();
   }, [currentValue, open]);
