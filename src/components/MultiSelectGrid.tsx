@@ -349,11 +349,15 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
           <SelectedCountHeader count={totalSelected} icon={<Check size={12} />} />
         )}
 
-        {/* Selected items first */}
-        {customItems.map((item) => renderSelectedItem(item, true))}
-        {options
-          .filter((opt) => items.some((i) => i.name === opt.name))
-          .map((opt) => renderSelectedItem(items.find((i) => i.name === opt.name)!, false))}
+        {/* Selected items first - 3-column grid */}
+        {totalSelected > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {customItems.map((item) => renderSelectedItem(item, true))}
+            {options
+              .filter((opt) => items.some((i) => i.name === opt.name))
+              .map((opt) => renderSelectedItem(items.find((i) => i.name === opt.name)!, false))}
+          </div>
+        )}
 
         {/* Helper hint — shown only when there are selections */}
         {totalSelected > 0 && (
