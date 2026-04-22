@@ -761,6 +761,54 @@ export type Database = {
           },
         ]
       }
+      sales_rep_invites: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          prefill_data: Json
+          procedure_id: string
+          rep_email: string
+          rep_index: number
+          status: string
+          submitted_at: string | null
+          submitted_data: Json | null
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string
+          id?: string
+          prefill_data?: Json
+          procedure_id: string
+          rep_email: string
+          rep_index?: number
+          status?: string
+          submitted_at?: string | null
+          submitted_data?: Json | null
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          prefill_data?: Json
+          procedure_id?: string
+          rep_email?: string
+          rep_index?: number
+          status?: string
+          submitted_at?: string | null
+          submitted_data?: Json | null
+          token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       shared_procedure_cards: {
         Row: {
           created_at: string
@@ -861,6 +909,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_sales_rep_invite_by_token: {
+        Args: { _token: string }
+        Returns: {
+          expires_at: string
+          id: string
+          prefill_data: Json
+          procedure_id: string
+          rep_email: string
+          status: string
+          submitted_at: string
+        }[]
+      }
       get_user_facility_id: { Args: { _user_id: string }; Returns: string }
       has_edit_access: {
         Args: { _procedure_id: string; _user_id: string }
@@ -888,6 +948,10 @@ export type Database = {
       owns_procedure: {
         Args: { _procedure_id: string; _user_id: string }
         Returns: boolean
+      }
+      submit_sales_rep_invite: {
+        Args: { _data: Json; _token: string }
+        Returns: Json
       }
     }
     Enums: {

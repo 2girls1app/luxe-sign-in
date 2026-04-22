@@ -34,6 +34,7 @@ import Settings from "./pages/Settings.tsx";
 import FacilityDetails from "./pages/FacilityDetails.tsx";
 import DoctorWorkspace from "./pages/DoctorWorkspace.tsx";
 import DoctorProcedureView from "./pages/DoctorProcedureView.tsx";
+import SalesRepInvite from "./pages/SalesRepInvite.tsx";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/procedure/:procedureId/preferences" element={<ProcedurePreferences />} />
               <Route path="/shared/procedure/:procedureId" element={<SharedPreferenceCard />} />
+              <Route path="/sales-rep-invite/:token" element={<SalesRepInvite />} />
               
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/users" element={<AdminUsers />} />
