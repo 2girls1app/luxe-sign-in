@@ -380,10 +380,23 @@ const Profile = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2">
-                    {facilities.map((f) => (
-                      <motion.div key={f.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start justify-between rounded-xl bg-card border border-border p-4 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => navigate(`/profile?facility=${f.id}`)}>
+                    {[...facilities].sort((a, b) => {
+                      if (a.id === homeFacilityId) return -1;
+                      if (b.id === homeFacilityId) return 1;
+                      return 0;
+                    }).map((f) => {
+                      const isHome = f.id === homeFacilityId;
+                      return (
+                      <motion.div key={f.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`flex items-start justify-between rounded-xl bg-card border p-4 cursor-pointer hover:border-primary/40 transition-colors ${isHome ? "border-primary/60 ring-1 ring-primary/30" : "border-border"}`} onClick={() => navigate(`/profile?facility=${f.id}`)}>
                         <div className="flex-1 min-w-0">
-                          <p className="text-foreground font-medium text-sm">{f.name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-foreground font-medium text-sm">{f.name}</p>
+                            {isHome && (
+                              <span className="text-[10px] uppercase tracking-wider font-semibold text-primary bg-primary/10 border border-primary/30 rounded-full px-2 py-0.5">
+                                Home
+                              </span>
+                            )}
+                          </div>
                           {f.location && (
                             <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                               <MapPin size={12} /> {f.location}
@@ -391,11 +404,22 @@ const Profile = () => {
                           )}
                           {f.notes && <p className="text-xs text-muted-foreground mt-1 truncate">{f.notes}</p>}
                         </div>
-                        <button onClick={(e) => { e.stopPropagation(); deleteFacility(f.id); }} className="text-muted-foreground hover:text-destructive transition-colors ml-2 mt-0.5">
-                          <Trash2 size={14} />
-                        </button>
+                        <div className="flex items-center gap-2 ml-2 mt-0.5 shrink-0">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setAsHome(f.id); }}
+                            className={`transition-colors p-1 ${isHome ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
+                            aria-label={isHome ? "Unset home facility" : "Set as home facility"}
+                            title={isHome ? "Home facility" : "Set as home"}
+                          >
+                            <Home size={14} fill={isHome ? "currentColor" : "none"} />
+                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); deleteFacility(f.id); }} className="text-muted-foreground hover:text-destructive transition-colors">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </motion.div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
