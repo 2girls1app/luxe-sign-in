@@ -254,6 +254,7 @@ const MedicationSelector = ({
                       removeLabel={`Remove ${med.name}`}
                       onClick={() => (isExpanded ? saveDetails() : openEditor(index))}
                       highlighted={isExpanded}
+                      compactNotes={!isExpanded}
                     >
                       {isExpanded && (
                         <div className="space-y-3 pt-3 border-t border-border/40">
