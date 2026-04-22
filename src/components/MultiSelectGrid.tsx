@@ -44,6 +44,8 @@ interface MultiSelectGridProps {
   specialtySuggestions?: string[];
   procedureName?: string;
   specialtyName?: string;
+  /** Singular noun for the section, used in the helper hint (e.g. "item", "supply", "instrument"). */
+  itemNoun?: string;
 }
 
 const parseItems = (value: string): ItemData[] => {
@@ -67,7 +69,7 @@ const serializeItems = (items: ItemData[]): string => {
   return JSON.stringify(items);
 };
 
-const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false, supportsSizes = false, hideInternalAdd = false, procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName }: MultiSelectGridProps) => {
+const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false, supportsSizes = false, hideInternalAdd = false, procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName, itemNoun = "item" }: MultiSelectGridProps) => {
   const items = parseItems(value);
   const selectedNames = items.map((i) => i.name);
   const [showInput, setShowInput] = useState(false);
@@ -352,6 +354,13 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
         {options
           .filter((opt) => items.some((i) => i.name === opt.name))
           .map((opt) => renderSelectedItem(items.find((i) => i.name === opt.name)!, false))}
+
+        {/* Helper hint — shown only when there are selections */}
+        {totalSelected > 0 && (
+          <p className="text-[10px] text-muted-foreground/70 italic px-1 -mt-1">
+            Tap a {itemNoun} to edit {supportsSizes ? "sizes, quantity, or notes" : "quantity or notes"}
+          </p>
+        )}
 
         {/* Suggested for this Procedure */}
         {procSuggested.length > 0 && (

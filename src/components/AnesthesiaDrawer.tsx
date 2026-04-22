@@ -84,6 +84,9 @@ const SelectableList = ({
               />
             ))}
           </div>
+          <p className="text-[10px] text-muted-foreground/70 italic px-1">
+            Tap × to remove a {label.toLowerCase().replace(/s$/, "")}
+          </p>
         </div>
       )}
       {!showList ? (
