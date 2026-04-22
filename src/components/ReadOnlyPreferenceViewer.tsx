@@ -288,45 +288,44 @@ const ReadOnlyPreferenceViewer = ({
 
     return (
       <div className="space-y-2">
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-          Selected Items ({items.length})
-        </p>
-        <div className="space-y-1.5">
+        <SelectedCountHeader
+          count={items.length}
+          label="Selected Items"
+          icon={<Check size={12} />}
+        />
+        <div className="space-y-2">
           {items.map((item, idx) => {
             const presetInfo = presetOptions.find(
               (o) => o.name.toLowerCase() === item.name.toLowerCase()
             );
+            const noteParts: string[] = [];
+            if (presetInfo?.desc) noteParts.push(presetInfo.desc);
+            if (item.notes && item.notes.trim()) noteParts.push(item.notes);
+            const notes = noteParts.length > 0 ? noteParts.join(" — ") : undefined;
+
+            const badges = (
+              <>
+                {item.qty > 1 && (
+                  <span className="inline-flex items-center rounded-md bg-secondary border border-border/60 text-[10px] font-semibold text-muted-foreground px-1.5 py-0.5">
+                    ×{item.qty}
+                  </span>
+                )}
+                {item.hold && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/15 border border-amber-500/30 text-[10px] font-semibold text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">
+                    <Pause size={9} />
+                    On hold{item.holdQty && item.holdQty > 1 ? ` ×${item.holdQty}` : ""}
+                  </span>
+                )}
+              </>
+            );
+
             return (
-              <div
+              <SelectedItemCard
                 key={`${item.name}-${idx}`}
-                className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 p-3"
-              >
-                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                  <Check size={12} className="text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">{item.name}</p>
-                  {presetInfo?.desc && (
-                    <p className="text-[10px] text-muted-foreground">{presetInfo.desc}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {item.qty > 1 && (
-                    <Badge
-                      variant="outline"
-                      className="text-[9px] border-primary/30 text-primary"
-                    >
-                      ×{item.qty}
-                    </Badge>
-                  )}
-                  {item.hold && (
-                    <Badge className="text-[9px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                      <Pause size={8} className="mr-0.5" />
-                      Hold{item.holdQty && item.holdQty > 1 ? ` ×${item.holdQty}` : ""}
-                    </Badge>
-                  )}
-                </div>
-              </div>
+                name={item.name}
+                notes={notes}
+                badges={badges}
+              />
             );
           })}
         </div>
