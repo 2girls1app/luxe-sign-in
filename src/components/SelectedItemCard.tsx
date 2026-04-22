@@ -22,6 +22,8 @@ export interface SelectedItemCardProps {
   children?: ReactNode;
   /** Visual highlight, e.g. when expanded */
   highlighted?: boolean;
+  /** When true, notes are truncated to a single line (collapsed summary view). */
+  compactNotes?: boolean;
 }
 
 /**
@@ -44,6 +46,7 @@ const SelectedItemCard = ({
   onClick,
   children,
   highlighted = false,
+  compactNotes = false,
 }: SelectedItemCardProps) => {
   const hasNotes = !!(notes && notes.trim());
 
@@ -79,7 +82,11 @@ const SelectedItemCard = ({
           {/* Inline notes (never hidden) */}
           {hasNotes && (
             <div className="border-l-2 border-primary/60 pl-2 py-0.5">
-              <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-snug">
+              <p
+                className={`text-xs text-muted-foreground leading-snug ${
+                  compactNotes ? "truncate" : "whitespace-pre-wrap"
+                }`}
+              >
                 {notes}
               </p>
             </div>
