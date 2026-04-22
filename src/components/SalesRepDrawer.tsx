@@ -391,6 +391,7 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
             <Textarea value={rep.notes} onChange={e => updateField("notes", e.target.value)} placeholder="Additional notes..." className="bg-secondary border-border mt-1 min-h-[80px] resize-none" />
           </div>
         </div>
+        )}
 
         <DrawerFooter className="pt-2">
           <div className="flex gap-2 w-full">
