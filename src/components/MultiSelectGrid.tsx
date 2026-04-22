@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Plus, X, ChevronUp, ChevronDown, Pause } from "lucide-react";
+import { Plus, X, ChevronUp, ChevronDown, Pause, Check } from "lucide-react";
+import SelectedItemCard, { SelectedCountHeader } from "@/components/SelectedItemCard";
 
 const SUTURE_SIZES = ["0", "2-0", "3-0", "4-0", "5-0", "6-0", "7-0", "8-0"];
 
