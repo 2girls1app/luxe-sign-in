@@ -372,42 +372,70 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
           </p>
         )}
 
-        {/* Suggested for this Procedure */}
-        {procSuggested.length > 0 && (
+        {/* Browser section — selectable items (suggestions + all). Hidden by default when items are selected. */}
+        {showBrowser && (
           <>
-            <div className="flex items-center gap-2 mt-2 mb-0.5">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">
-                Suggested for {procedureName || "this Procedure"}
-              </span>
-              <div className="flex-1 h-px bg-primary/20" />
-            </div>
-            {procSuggested.map(renderUnselectedItem)}
+            {/* Suggested for this Procedure */}
+            {procSuggested.length > 0 && (
+              <>
+                <div className="flex items-center gap-2 mt-2 mb-0.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">
+                    Suggested for {procedureName || "this Procedure"}
+                  </span>
+                  <div className="flex-1 h-px bg-primary/20" />
+                </div>
+                {procSuggested.map(renderUnselectedItem)}
+              </>
+            )}
+
+            {/* Common for this Specialty */}
+            {specSuggested.length > 0 && (
+              <>
+                <div className="flex items-center gap-2 mt-2 mb-0.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-primary/70">
+                    Common for {specialtyName || "this Specialty"}
+                  </span>
+                  <div className="flex-1 h-px bg-primary/10" />
+                </div>
+                {specSuggested.map(renderUnselectedItem)}
+              </>
+            )}
+
+            {/* All Items */}
+            {hasSuggestions && remaining.length > 0 && (
+              <div className="flex items-center gap-2 mt-2 mb-0.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  All Items
+                </span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+            )}
+            {remaining.map(renderUnselectedItem)}
+
+            {/* Collapse the browser when there are selections */}
+            {totalSelected > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowBrowser(false)}
+                className="self-end text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 px-1 mt-1"
+              >
+                Collapse <ChevronUp size={12} />
+              </button>
+            )}
           </>
         )}
 
-        {/* Common for this Specialty */}
-        {specSuggested.length > 0 && (
-          <>
-            <div className="flex items-center gap-2 mt-2 mb-0.5">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-primary/70">
-                Common for {specialtyName || "this Specialty"}
-              </span>
-              <div className="flex-1 h-px bg-primary/10" />
-            </div>
-            {specSuggested.map(renderUnselectedItem)}
-          </>
+        {/* "+ Select more" button — shown when browser is collapsed */}
+        {!showBrowser && totalSelected > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowBrowser(true)}
+            className="flex items-center justify-center gap-2 w-full rounded-xl border border-dashed border-primary/40 bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 hover:border-primary/60 transition-all active:scale-[0.98] mt-1"
+          >
+            <Plus size={16} />
+            Select more {itemNoun}s
+          </button>
         )}
-
-        {/* All Items */}
-        {hasSuggestions && remaining.length > 0 && (
-          <div className="flex items-center gap-2 mt-2 mb-0.5">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              All Items
-            </span>
-            <div className="flex-1 h-px bg-border" />
-          </div>
-        )}
-        {remaining.map(renderUnselectedItem)}
       </div>
 
       {/* Add custom item - only when not externally managed */}
