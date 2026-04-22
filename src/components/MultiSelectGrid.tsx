@@ -355,6 +355,13 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
           .filter((opt) => items.some((i) => i.name === opt.name))
           .map((opt) => renderSelectedItem(items.find((i) => i.name === opt.name)!, false))}
 
+        {/* Helper hint — shown only when there are selections */}
+        {totalSelected > 0 && (
+          <p className="text-[10px] text-muted-foreground/70 italic px-1 -mt-1">
+            Tap a {itemNoun} to edit {supportsSizes ? "sizes, quantity, or notes" : "quantity or notes"}
+          </p>
+        )}
+
         {/* Suggested for this Procedure */}
         {procSuggested.length > 0 && (
           <>
