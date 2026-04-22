@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { LogOut, Building2, Bell, Settings, ChevronRight, Plus, Trash2, MapPin, User, Pencil } from "lucide-react";
+import { LogOut, Building2, Bell, Settings, ChevronRight, Plus, Trash2, MapPin, User, Pencil, Home } from "lucide-react";
 import EditFacilityDialog from "@/components/EditFacilityDialog";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import NotificationsDrawer from "@/components/NotificationsDrawer";
@@ -29,6 +29,31 @@ const ClinicalDashboard = () => {
   const [pendingCount, setPendingCount] = useState(0);
   const [editingFacility, setEditingFacility] = useState<FacilityInfo | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const homeKey = user ? `homeFacility:${user.id}` : "";
+  const [homeFacilityId, setHomeFacilityId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (homeKey) setHomeFacilityId(localStorage.getItem(homeKey));
+  }, [homeKey]);
+
+  const setAsHome = (id: string) => {
+    if (!homeKey) return;
+    if (homeFacilityId === id) {
+      localStorage.removeItem(homeKey);
+      setHomeFacilityId(null);
+      toast({ title: "Home facility cleared" });
+    } else {
+      localStorage.setItem(homeKey, id);
+      setHomeFacilityId(id);
+      toast({ title: "Home facility set" });
+    }
+  };
+
+  const sortedFacilities = [...facilities].sort((a, b) => {
+    if (a.id === homeFacilityId) return -1;
+    if (b.id === homeFacilityId) return 1;
+    return 0;
+  });
 
   const displayName = profile?.display_name || user?.user_metadata?.full_name || "User";
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
@@ -233,16 +258,25 @@ const ClinicalDashboard = () => {
 
           {facilities.length > 0 ? (
             <div className="flex flex-col gap-2">
-              {facilities.map((f) => (
+              {sortedFacilities.map((f) => {
+                const isHome = f.id === homeFacilityId;
+                return (
                 <motion.div
                   key={f.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex items-center justify-between rounded-xl bg-card border border-border p-4 hover:border-primary/40 transition-all cursor-pointer"
+                  className={`flex items-center justify-between rounded-xl bg-card border p-4 hover:border-primary/40 transition-all cursor-pointer ${isHome ? "border-primary/60 ring-1 ring-primary/30" : "border-border"}`}
                   onClick={() => navigate(`/facility/${f.id}`)}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-foreground font-medium text-sm">{f.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-foreground font-medium text-sm">{f.name}</p>
+                      {isHome && (
+                        <span className="text-[10px] uppercase tracking-wider font-semibold text-primary bg-primary/10 border border-primary/30 rounded-full px-2 py-0.5">
+                          Home
+                        </span>
+                      )}
+                    </div>
                     {f.location && (
                       <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                         <MapPin size={12} className="text-primary" /> {f.location}
@@ -250,6 +284,17 @@ const ClinicalDashboard = () => {
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAsHome(f.id);
+                      }}
+                      className={`transition-colors p-1 ${isHome ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
+                      aria-label={isHome ? "Unset home facility" : "Set as home facility"}
+                      title={isHome ? "Home facility" : "Set as home"}
+                    >
+                      <Home size={14} fill={isHome ? "currentColor" : "none"} />
+                    </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -274,7 +319,8 @@ const ClinicalDashboard = () => {
                     <ChevronRight size={16} className="text-muted-foreground" />
                   </div>
                 </motion.div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="rounded-xl bg-card border border-border p-6 text-center">
