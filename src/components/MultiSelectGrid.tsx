@@ -337,9 +337,16 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
     </button>
   );
 
+  const totalSelected = items.length;
+
   return (
     <div className="max-h-[50vh] overflow-y-auto">
       <div className="grid grid-cols-1 gap-3">
+        {/* Selected items header */}
+        {totalSelected > 0 && (
+          <SelectedCountHeader count={totalSelected} icon={<Check size={12} />} />
+        )}
+
         {/* Selected items first */}
         {customItems.map((item) => renderSelectedItem(item, true))}
         {options
