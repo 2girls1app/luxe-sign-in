@@ -69,7 +69,7 @@ const serializeItems = (items: ItemData[]): string => {
   return JSON.stringify(items);
 };
 
-const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false, supportsSizes = false, hideInternalAdd = false, procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName }: MultiSelectGridProps) => {
+const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supportsHold = false, supportsSizes = false, hideInternalAdd = false, procedureSuggestions = [], specialtySuggestions = [], procedureName, specialtyName, itemNoun = "item" }: MultiSelectGridProps) => {
   const items = parseItems(value);
   const selectedNames = items.map((i) => i.name);
   const [showInput, setShowInput] = useState(false);
