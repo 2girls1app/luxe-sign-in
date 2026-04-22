@@ -422,7 +422,16 @@ const ProcedurePreferences = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => navigate("/profile")}
+              onClick={() => {
+                // Always return to the doctor's full profile view with their procedures.
+                // If the procedure belongs to the current user, that's /profile.
+                // Otherwise (e.g. individual managing another doctor), go to /doctor/:ownerId.
+                if (ownerId && ownerId !== user?.id) {
+                  navigate(`/doctor/${ownerId}`);
+                } else {
+                  navigate("/profile");
+                }
+              }}
               className="p-2 rounded-full hover:bg-card transition-colors text-muted-foreground hover:text-foreground shrink-0"
             >
               <ArrowLeft size={20} />
