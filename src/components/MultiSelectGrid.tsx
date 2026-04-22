@@ -190,6 +190,7 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
         highlighted={isExpanded}
         compactNotes={!isExpanded}
       >
+        {isExpanded && (
         <div className="space-y-2 pt-2 border-t border-border/40 mt-1">
           {/* Qty controls — hide for sutures since qty is per-size */}
           {!supportsSizes && (
@@ -321,6 +322,7 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
             />
           </div>
         </div>
+        )}
       </SelectedItemCard>
     );
   };
