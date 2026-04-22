@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Pill, Check, Pause } from "lucide-react";
 import { MULTI_SELECT_CATEGORIES } from "@/data/preferenceOptions";
+import SelectedItemCard, { SelectedCountHeader } from "@/components/SelectedItemCard";
 
 import supineImg from "@/assets/positions/supine.png";
 import proneImg from "@/assets/positions/prone.png";
