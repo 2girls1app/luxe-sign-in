@@ -75,6 +75,7 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
   const [showInput, setShowInput] = useState(false);
   const [customName, setCustomName] = useState("");
   const [showBrowser, setShowBrowser] = useState(items.length === 0);
+  const [editingName, setEditingName] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const predefinedNames = options.map((o) => o.name);
@@ -175,6 +176,8 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
       </>
     );
 
+    const isExpanded = editingName === item.name;
+
     return (
       <SelectedItemCard
         key={item.name}
@@ -183,6 +186,9 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
         badges={badges}
         onRemove={() => toggle(item.name)}
         removeLabel={`Remove ${item.name}`}
+        onClick={() => setEditingName(isExpanded ? null : item.name)}
+        highlighted={isExpanded}
+        compactNotes={!isExpanded}
       >
         <div className="space-y-2 pt-2 border-t border-border/40 mt-1">
           {/* Qty controls — hide for sutures since qty is per-size */}
