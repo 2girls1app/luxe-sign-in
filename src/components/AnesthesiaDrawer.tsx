@@ -3,9 +3,9 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { X, Search, Plus, Stethoscope, Check } from "lucide-react";
+import { Search, Plus, Stethoscope, Check } from "lucide-react";
+import SelectedItemCard, { SelectedCountHeader } from "@/components/SelectedItemCard";
 
 const ANESTHESIA_MEDS = [
   "Propofol", "Midazolam", "Fentanyl", "Rocuronium", "Succinylcholine",
@@ -72,13 +72,18 @@ const SelectableList = ({
     <div className="flex flex-col gap-2">
       <Label className="text-xs font-semibold text-foreground">{label}</Label>
       {selected.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {selected.map(item => (
-            <Badge key={item} variant="secondary" className="gap-1 pr-1 bg-primary/15 text-primary border-primary/20 hover:bg-primary/25">
-              {item}
-              <button onClick={() => onToggle(item)} className="ml-0.5 hover:text-destructive"><X size={12} /></button>
-            </Badge>
-          ))}
+        <div className="space-y-2">
+          <SelectedCountHeader count={selected.length} icon={<Check size={12} />} />
+          <div className="space-y-1.5">
+            {selected.map(item => (
+              <SelectedItemCard
+                key={item}
+                name={item}
+                onRemove={() => onToggle(item)}
+                removeLabel={`Remove ${item}`}
+              />
+            ))}
+          </div>
         </div>
       )}
       {!showList ? (

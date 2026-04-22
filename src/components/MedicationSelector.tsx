@@ -6,8 +6,9 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Pill, Search, Plus, X, ChevronDown, ChevronUp, Pencil, Check, Minus, Pause } from "lucide-react";
+import { Pill, Search, Plus, ChevronDown, ChevronUp, Check, Pause } from "lucide-react";
 import { MEDICATIONS_DATABASE, MEDICATION_CATEGORIES, type MedicationEntry } from "@/data/medications";
+import SelectedItemCard, { SelectedCountHeader } from "@/components/SelectedItemCard";
 
 // Stable color palette mapped to medication categories
 const CATEGORY_DOT_COLORS: Record<string, string> = {
@@ -207,93 +208,55 @@ const MedicationSelector = ({
         </DrawerHeader>
 
         <div className="flex-1 overflow-y-auto px-4 pb-2 space-y-3 max-h-[60vh]">
-          {/* ── Selected Medications (card rows) ── */}
+          {/* ── Selected Medications (unified card rows) ── */}
           {medications.length > 0 && (
             <div className="space-y-2">
-              <div className="flex items-center gap-2 px-1">
-                <p className="text-[11px] font-semibold text-primary uppercase tracking-wider flex items-center gap-1.5">
-                  <Check size={12} />
-                  Selected Medications
-                </p>
-                <Badge className="text-[10px] px-1.5 py-0 h-4 bg-primary/15 text-primary border border-primary/30 hover:bg-primary/15">
-                  {medications.length} selected
-                </Badge>
-              </div>
+              <SelectedCountHeader
+                count={medications.length}
+                label="Selected Medications"
+                icon={<Check size={12} />}
+              />
               <div className="space-y-2">
                 {medications.map((med, index) => {
                   const isExpanded = editingIndex === index;
-                  const hasNotes = !!(med.notes && med.notes.trim());
+                  const badges = (
+                    <>
+                      {med.route && (
+                        <span className="inline-flex items-center rounded-md bg-secondary border border-border/60 text-[10px] font-semibold text-muted-foreground px-1.5 py-0.5 uppercase tracking-wider">
+                          {med.route}
+                        </span>
+                      )}
+                      {med.dosage && (
+                        <span className="inline-flex items-center rounded-md bg-secondary border border-border/60 text-[10px] font-semibold text-muted-foreground px-1.5 py-0.5">
+                          {med.dosage}
+                        </span>
+                      )}
+                      {med.hold && (
+                        <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/15 border border-amber-500/30 text-[10px] font-semibold text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">
+                          <Pause size={9} />On hold
+                        </span>
+                      )}
+                      {med.isCustom && (
+                        <span className="inline-flex items-center rounded-md bg-primary/10 border border-primary/30 text-[10px] font-semibold text-primary px-1.5 py-0.5 uppercase tracking-wider">
+                          Custom
+                        </span>
+                      )}
+                    </>
+                  );
+
                   return (
-                    <div
+                    <SelectedItemCard
                       key={`${med.name}-${index}`}
-                      className={`rounded-xl border bg-[hsl(0_0%_14%)] transition-all ${
-                        isExpanded
-                          ? "border-primary/60 shadow-[0_0_0_1px_hsl(var(--primary)/0.3)]"
-                          : "border-border/60 hover:border-primary/40"
-                      } ${med.hold ? "opacity-90" : ""}`}
+                      name={med.name}
+                      notes={med.notes}
+                      badges={badges}
+                      onRemove={() => removeMedication(index)}
+                      removeLabel={`Remove ${med.name}`}
+                      onClick={() => (isExpanded ? saveDetails() : openEditor(index))}
+                      highlighted={isExpanded}
                     >
-                      {/* Row header (tap target) */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (isExpanded) {
-                            saveDetails();
-                          } else {
-                            openEditor(index);
-                          }
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left"
-                      >
-                        <span className="w-2 h-2 rounded-full bg-primary shrink-0 shadow-[0_0_6px_hsl(var(--primary)/0.6)]" />
-                        <span className="text-sm font-medium text-foreground truncate">
-                          {med.name}
-                        </span>
-                        {med.route && (
-                          <span className="inline-flex items-center rounded-md bg-secondary border border-border/60 text-[10px] font-semibold text-muted-foreground px-1.5 py-0.5 uppercase tracking-wider shrink-0">
-                            {med.route}
-                          </span>
-                        )}
-                        {med.hold && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 border border-primary/40 text-[10px] font-semibold text-primary px-1.5 py-0.5 uppercase tracking-wider shrink-0">
-                            <Pause size={9} />On hold
-                          </span>
-                        )}
-                        {hasNotes && (
-                          <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-primary shrink-0">
-                            <Pencil size={11} />
-                            See notes
-                          </span>
-                        )}
-                        <span
-                          role="button"
-                          tabIndex={-1}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeMedication(index);
-                          }}
-                          className="ml-auto inline-flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:bg-destructive/15 hover:text-destructive transition-colors shrink-0"
-                          aria-label={`Remove ${med.name}`}
-                        >
-                          <X size={14} />
-                        </span>
-                      </button>
-
-                      {/* Expanded section */}
                       {isExpanded && (
-                        <div className="px-3 pb-3 space-y-3 border-t border-border/40 pt-3">
-                          {/* Notes display */}
-                          <div className="rounded-lg bg-[hsl(0_0%_10%)] border-l-2 border-primary px-3 py-2.5">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/80 mb-1">
-                              Notes
-                            </p>
-                            {hasNotes ? (
-                              <p className="text-sm text-foreground whitespace-pre-wrap">{med.notes}</p>
-                            ) : (
-                              <p className="text-xs italic text-muted-foreground/70">No notes added</p>
-                            )}
-                          </div>
-
-                          {/* Edit fields */}
+                        <div className="space-y-3 pt-3 border-t border-border/40">
                           <div className="grid grid-cols-2 gap-2">
                             <div>
                               <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Dosage</label>
@@ -319,7 +282,7 @@ const MedicationSelector = ({
                             </div>
                           </div>
                           <div>
-                            <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Edit notes</label>
+                            <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Notes</label>
                             <textarea
                               value={editNotes}
                               onChange={(e) => setEditNotes(e.target.value)}
@@ -329,7 +292,6 @@ const MedicationSelector = ({
                             />
                           </div>
 
-                          {/* Action row */}
                           <div className="flex items-center gap-2 pt-1">
                             <Button
                               type="button"
@@ -357,7 +319,7 @@ const MedicationSelector = ({
                               className="h-8 text-xs"
                             >
                               <Check size={12} className="mr-1" />
-                              Save notes
+                              Save
                             </Button>
                             <button
                               type="button"
@@ -367,17 +329,17 @@ const MedicationSelector = ({
                               }}
                               className="ml-auto inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80"
                             >
-                              See less <ChevronUp size={12} />
+                              Collapse <ChevronUp size={12} />
                             </button>
                           </div>
                         </div>
                       )}
-                    </div>
+                    </SelectedItemCard>
                   );
                 })}
               </div>
               <p className="text-[10px] text-muted-foreground/70 italic px-1">
-                Tap a medication to view notes or mark as hold
+                Tap a medication to edit dosage, route, or notes
               </p>
             </div>
           )}

@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Pill, Check, Pause } from "lucide-react";
 import { MULTI_SELECT_CATEGORIES } from "@/data/preferenceOptions";
+import SelectedItemCard, { SelectedCountHeader } from "@/components/SelectedItemCard";
 
 import supineImg from "@/assets/positions/supine.png";
 import proneImg from "@/assets/positions/prone.png";
@@ -39,6 +40,7 @@ interface ItemData {
   qty: number;
   hold?: boolean;
   holdQty?: number;
+  notes?: string;
 }
 
 const parseMedications = (value: string): SelectedMedication[] => {
@@ -60,12 +62,13 @@ const parseItems = (value: string): ItemData[] => {
         qty: item.qty ?? 1,
         hold: item.hold ?? false,
         holdQty: item.holdQty ?? 1,
+        notes: item.notes ?? "",
       }));
   } catch {}
   return value
     .split(", ")
     .filter(Boolean)
-    .map((name) => ({ name, qty: 1, hold: false, holdQty: 1 }));
+    .map((name) => ({ name, qty: 1, hold: false, holdQty: 1, notes: "" }));
 };
 
 interface ReadOnlyPreferenceViewerProps {
@@ -230,65 +233,45 @@ const ReadOnlyPreferenceViewer = ({
     }
     return (
       <div className="space-y-2">
-        <p className="text-[10px] font-medium text-primary uppercase tracking-wider flex items-center gap-1.5">
-          <Pill size={12} />
-          Medications ({medications.length})
-        </p>
-        {medications.map((med, idx) => (
-          <div
-            key={`${med.name}-${idx}`}
-            className="rounded-xl border-2 border-primary/30 bg-primary/5 overflow-hidden"
-          >
-            <div className="flex items-start gap-2 px-3 py-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
-                <Pill size={14} className="text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-foreground truncate">
-                    {med.name}
+        <SelectedCountHeader
+          count={medications.length}
+          label="Medications"
+          icon={<Pill size={12} />}
+        />
+        <div className="space-y-2">
+          {medications.map((med, idx) => {
+            const noteParts: string[] = [];
+            if (med.dosage) noteParts.push(`Dosage: ${med.dosage}`);
+            if (med.route) noteParts.push(`Route: ${med.route}`);
+            if (med.notes) noteParts.push(med.notes);
+            const notes = noteParts.length > 0 ? noteParts.join(" • ") : undefined;
+
+            const badges = (
+              <>
+                {med.isCustom && (
+                  <span className="inline-flex items-center rounded-md bg-primary/10 border border-primary/30 text-[10px] font-semibold text-primary px-1.5 py-0.5 uppercase tracking-wider">
+                    Custom
                   </span>
-                  {med.isCustom && (
-                    <Badge
-                      variant="outline"
-                      className="text-[9px] px-1.5 py-0 border-primary/30 text-primary"
-                    >
-                      Custom
-                    </Badge>
-                  )}
-                  {med.hold && (
-                    <Badge className="text-[9px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                      <Pause size={8} className="mr-0.5" />
-                      Hold{med.holdQty && med.holdQty > 1 ? ` ×${med.holdQty}` : ""}
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-1.5">
-                  {med.dosage && (
-                    <span className="text-[10px] font-medium text-foreground bg-secondary rounded-md px-2 py-0.5 border border-border">
-                      💊 {med.dosage}
-                    </span>
-                  )}
-                  {med.route && (
-                    <span className="text-[10px] font-medium text-foreground bg-secondary rounded-md px-2 py-0.5 border border-border">
-                      🔄 {med.route}
-                    </span>
-                  )}
-                  {med.notes && (
-                    <span className="text-[10px] text-muted-foreground bg-secondary rounded-md px-2 py-0.5 border border-border">
-                      📝 {med.notes}
-                    </span>
-                  )}
-                  {!med.dosage && !med.route && !med.notes && (
-                    <span className="text-[10px] text-muted-foreground/50 italic">
-                      No details added
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+                )}
+                {med.hold && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/15 border border-amber-500/30 text-[10px] font-semibold text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">
+                    <Pause size={9} />
+                    On hold{med.holdQty && med.holdQty > 1 ? ` ×${med.holdQty}` : ""}
+                  </span>
+                )}
+              </>
+            );
+
+            return (
+              <SelectedItemCard
+                key={`${med.name}-${idx}`}
+                name={med.name}
+                notes={notes}
+                badges={badges}
+              />
+            );
+          })}
+        </div>
       </div>
     );
   }
@@ -307,45 +290,44 @@ const ReadOnlyPreferenceViewer = ({
 
     return (
       <div className="space-y-2">
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-          Selected Items ({items.length})
-        </p>
-        <div className="space-y-1.5">
+        <SelectedCountHeader
+          count={items.length}
+          label="Selected Items"
+          icon={<Check size={12} />}
+        />
+        <div className="space-y-2">
           {items.map((item, idx) => {
             const presetInfo = presetOptions.find(
               (o) => o.name.toLowerCase() === item.name.toLowerCase()
             );
+            const noteParts: string[] = [];
+            if (presetInfo?.desc) noteParts.push(presetInfo.desc);
+            if (item.notes && item.notes.trim()) noteParts.push(item.notes);
+            const notes = noteParts.length > 0 ? noteParts.join(" — ") : undefined;
+
+            const badges = (
+              <>
+                {item.qty > 1 && (
+                  <span className="inline-flex items-center rounded-md bg-secondary border border-border/60 text-[10px] font-semibold text-muted-foreground px-1.5 py-0.5">
+                    ×{item.qty}
+                  </span>
+                )}
+                {item.hold && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/15 border border-amber-500/30 text-[10px] font-semibold text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">
+                    <Pause size={9} />
+                    On hold{item.holdQty && item.holdQty > 1 ? ` ×${item.holdQty}` : ""}
+                  </span>
+                )}
+              </>
+            );
+
             return (
-              <div
+              <SelectedItemCard
                 key={`${item.name}-${idx}`}
-                className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 p-3"
-              >
-                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                  <Check size={12} className="text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">{item.name}</p>
-                  {presetInfo?.desc && (
-                    <p className="text-[10px] text-muted-foreground">{presetInfo.desc}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {item.qty > 1 && (
-                    <Badge
-                      variant="outline"
-                      className="text-[9px] border-primary/30 text-primary"
-                    >
-                      ×{item.qty}
-                    </Badge>
-                  )}
-                  {item.hold && (
-                    <Badge className="text-[9px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                      <Pause size={8} className="mr-0.5" />
-                      Hold{item.holdQty && item.holdQty > 1 ? ` ×${item.holdQty}` : ""}
-                    </Badge>
-                  )}
-                </div>
-              </div>
+                name={item.name}
+                notes={notes}
+                badges={badges}
+              />
             );
           })}
         </div>

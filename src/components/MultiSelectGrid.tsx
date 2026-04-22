@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Plus, X, ChevronUp, ChevronDown, Pause } from "lucide-react";
+import { Plus, X, ChevronUp, ChevronDown, Pause, Check } from "lucide-react";
+import SelectedItemCard, { SelectedCountHeader } from "@/components/SelectedItemCard";
 
 const SUTURE_SIZES = ["0", "2-0", "3-0", "4-0", "5-0", "6-0", "7-0", "8-0"];
 
@@ -145,65 +145,72 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
     else if (e.key === "Escape") { setShowInput(false); setCustomName(""); }
   };
 
-  const renderSelectedItem = (item: ItemData, isCustom: boolean) => (
-    <div
-      key={item.name}
-      className="rounded-xl border border-primary bg-primary/15 shadow-sm shadow-primary/10 p-3 space-y-2"
-    >
-      <div className="flex items-start gap-2">
-        <button type="button" onClick={() => toggle(item.name)} className="mt-0.5">
-          <Checkbox checked={true} className="pointer-events-none" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm font-medium text-primary truncate">{item.name}</span>
-            {isCustom && (
-              <Badge variant="outline" className="text-[8px] px-1 py-0 border-primary/30 text-primary shrink-0">Custom</Badge>
-            )}
-            {item.hold && (
-              <Badge className="text-[8px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
-                <Pause size={8} className="mr-0.5" />Hold
-              </Badge>
-            )}
-          </div>
-          {isCustom && <span className="text-[10px] text-muted-foreground leading-tight">Custom item</span>}
-        </div>
-      </div>
+  const renderSelectedItem = (item: ItemData, isCustom: boolean) => {
+    const badges = (
+      <>
+        {isCustom && (
+          <span className="inline-flex items-center rounded-md bg-primary/10 border border-primary/30 text-[10px] font-semibold text-primary px-1.5 py-0.5 uppercase tracking-wider">
+            Custom
+          </span>
+        )}
+        {!supportsSizes && item.qty > 1 && (
+          <span className="inline-flex items-center rounded-md bg-secondary border border-border/60 text-[10px] font-semibold text-muted-foreground px-1.5 py-0.5">
+            ×{item.qty}
+          </span>
+        )}
+        {item.hold && (
+          <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/15 border border-amber-500/30 text-[10px] font-semibold text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">
+            <Pause size={9} />
+            On hold{item.holdQty && item.holdQty > 1 ? ` ×${item.holdQty}` : ""}
+          </span>
+        )}
+      </>
+    );
 
-      {/* Qty controls - hide for sutures since qty is per-size */}
-      {!supportsSizes && (
-        <>
-          <div className="flex items-center gap-3 pl-7">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-8">Qty</span>
-            <div className="flex items-center gap-1.5">
-              <button type="button" onClick={() => updateQty(item.name, -1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
-                <ChevronDown size={12} className="text-muted-foreground" />
-              </button>
-              <span className="text-sm font-semibold text-foreground w-6 text-center">{item.qty}</span>
-              <button type="button" onClick={() => updateQty(item.name, 1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
-                <ChevronUp size={12} className="text-muted-foreground" />
-              </button>
-            </div>
-
-            {supportsHold && (
-              <div className="flex items-center gap-2 ml-auto">
-                <button
-                  type="button"
-                  onClick={() => toggleHold(item.name)}
-                  className={`text-[10px] font-medium px-2 py-1 rounded-md border transition-colors ${
-                    item.hold
-                      ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
-                      : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
-                  }`}
-                >
-                  {item.hold ? "On Hold" : "Hold"}
+    return (
+      <SelectedItemCard
+        key={item.name}
+        name={item.name}
+        notes={item.notes}
+        badges={badges}
+        onRemove={() => toggle(item.name)}
+        removeLabel={`Remove ${item.name}`}
+      >
+        <div className="space-y-2 pt-2 border-t border-border/40 mt-1">
+          {/* Qty controls — hide for sutures since qty is per-size */}
+          {!supportsSizes && (
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-8">Qty</span>
+              <div className="flex items-center gap-1.5">
+                <button type="button" onClick={() => updateQty(item.name, -1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
+                  <ChevronDown size={12} className="text-muted-foreground" />
+                </button>
+                <span className="text-sm font-semibold text-foreground w-6 text-center">{item.qty}</span>
+                <button type="button" onClick={() => updateQty(item.name, 1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
+                  <ChevronUp size={12} className="text-muted-foreground" />
                 </button>
               </div>
-            )}
-          </div>
 
-          {supportsHold && item.hold && (
-            <div className="flex items-center gap-3 pl-7">
+              {supportsHold && (
+                <div className="flex items-center gap-2 ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => toggleHold(item.name)}
+                    className={`text-[10px] font-medium px-2 py-1 rounded-md border transition-colors ${
+                      item.hold
+                        ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
+                        : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                    }`}
+                  >
+                    {item.hold ? "On Hold" : "Hold"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {!supportsSizes && supportsHold && item.hold && (
+            <div className="flex items-center gap-3">
               <span className="text-[10px] text-amber-400/80 uppercase tracking-wider w-8">Hold</span>
               <div className="flex items-center gap-1.5">
                 <button type="button" onClick={() => updateHoldQty(item.name, -1)} className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors">
@@ -216,97 +223,93 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
               </div>
             </div>
           )}
-        </>
-      )}
 
-      {/* Hold control for sutures (sizes mode hides the default qty/hold row) */}
-      {supportsSizes && supportsHold && (
-        <>
-          <div className="flex items-center gap-3 pl-7">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Hold</span>
-            <button
-              type="button"
-              onClick={() => toggleHold(item.name)}
-              className={`text-[10px] font-medium px-2 py-1 rounded-md border transition-colors ${
-                item.hold
-                  ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
-                  : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
-              }`}
-            >
-              {item.hold ? "On Hold" : "Hold"}
-            </button>
-            {item.hold && (
-              <div className="flex items-center gap-1.5 ml-auto">
-                <button type="button" onClick={() => updateHoldQty(item.name, -1)} className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors">
-                  <ChevronDown size={12} className="text-amber-400" />
-                </button>
-                <span className="text-sm font-semibold text-amber-400 w-6 text-center">{item.holdQty ?? 1}</span>
-                <button type="button" onClick={() => updateHoldQty(item.name, 1)} className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors">
-                  <ChevronUp size={12} className="text-amber-400" />
-                </button>
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* Size selection for sutures with per-size qty */}
-      {supportsSizes && (
-        <div className="pl-7 space-y-2">
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sizes</span>
-          <div className="flex flex-wrap gap-1.5">
-            {SUTURE_SIZES.map((size) => {
-              const isSelected = getSizeNames(item.sizes).includes(size);
-              return (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={() => toggleSize(item.name, size)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
-                    isSelected
-                      ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
-                      : "border-border bg-secondary text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                  }`}
-                >
-                  {size}
-                </button>
-              );
-            })}
-          </div>
-          {/* Per-size qty controls */}
-          {normalizeSizes(item.sizes).length > 0 && (
-            <div className="mt-2 rounded-lg bg-secondary/40 border border-border/60 p-2 space-y-1.5">
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Quantity per size</span>
-              {normalizeSizes(item.sizes).map((entry) => (
-                <div key={entry.size} className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-primary w-12">{entry.size}</span>
-                  <div className="flex items-center gap-1.5 ml-auto">
-                    <button type="button" onClick={() => updateSizeQty(item.name, entry.size, -1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
-                      <ChevronDown size={12} className="text-muted-foreground" />
-                    </button>
-                    <span className="text-sm font-semibold text-foreground w-7 text-center">{entry.qty}</span>
-                    <button type="button" onClick={() => updateSizeQty(item.name, entry.size, 1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
-                      <ChevronUp size={12} className="text-muted-foreground" />
-                    </button>
-                  </div>
+          {supportsSizes && supportsHold && (
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Hold</span>
+              <button
+                type="button"
+                onClick={() => toggleHold(item.name)}
+                className={`text-[10px] font-medium px-2 py-1 rounded-md border transition-colors ${
+                  item.hold
+                    ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
+                    : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                }`}
+              >
+                {item.hold ? "On Hold" : "Hold"}
+              </button>
+              {item.hold && (
+                <div className="flex items-center gap-1.5 ml-auto">
+                  <button type="button" onClick={() => updateHoldQty(item.name, -1)} className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors">
+                    <ChevronDown size={12} className="text-amber-400" />
+                  </button>
+                  <span className="text-sm font-semibold text-amber-400 w-6 text-center">{item.holdQty ?? 1}</span>
+                  <button type="button" onClick={() => updateHoldQty(item.name, 1)} className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center hover:bg-amber-500/20 transition-colors">
+                    <ChevronUp size={12} className="text-amber-400" />
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
           )}
-        </div>
-      )}
 
-      <div className="pl-7">
-        <textarea
-          value={item.notes || ""}
-          onChange={(e) => updateNotes(item.name, e.target.value)}
-          placeholder="Add notes..."
-          rows={1}
-          className="w-full text-xs bg-secondary border border-border rounded-lg px-2 py-1.5 text-foreground placeholder:text-muted-foreground resize-none focus:border-primary/50 focus:outline-none transition-colors"
-        />
-      </div>
-    </div>
-  );
+          {supportsSizes && (
+            <div className="space-y-2">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sizes</span>
+              <div className="flex flex-wrap gap-1.5">
+                {SUTURE_SIZES.map((size) => {
+                  const isSelected = getSizeNames(item.sizes).includes(size);
+                  return (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => toggleSize(item.name, size)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+                        isSelected
+                          ? "border-primary bg-primary/15 text-primary shadow-sm shadow-primary/10"
+                          : "border-border bg-secondary text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  );
+                })}
+              </div>
+              {normalizeSizes(item.sizes).length > 0 && (
+                <div className="mt-2 rounded-lg bg-secondary/40 border border-border/60 p-2 space-y-1.5">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Quantity per size</span>
+                  {normalizeSizes(item.sizes).map((entry) => (
+                    <div key={entry.size} className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-primary w-12">{entry.size}</span>
+                      <div className="flex items-center gap-1.5 ml-auto">
+                        <button type="button" onClick={() => updateSizeQty(item.name, entry.size, -1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
+                          <ChevronDown size={12} className="text-muted-foreground" />
+                        </button>
+                        <span className="text-sm font-semibold text-foreground w-7 text-center">{entry.qty}</span>
+                        <button type="button" onClick={() => updateSizeQty(item.name, entry.size, 1)} className="w-6 h-6 rounded-md bg-secondary border border-border flex items-center justify-center hover:bg-card transition-colors">
+                          <ChevronUp size={12} className="text-muted-foreground" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div>
+            <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Notes</label>
+            <textarea
+              value={item.notes || ""}
+              onChange={(e) => updateNotes(item.name, e.target.value)}
+              placeholder="Add notes for this item..."
+              rows={2}
+              className="mt-1 w-full text-xs bg-secondary border border-border rounded-lg px-2 py-1.5 text-foreground placeholder:text-muted-foreground resize-none focus:border-primary/50 focus:outline-none transition-colors"
+            />
+          </div>
+        </div>
+      </SelectedItemCard>
+    );
+  };
 
   // Categorize unselected options into suggestion groups
   const unselectedOptions = options.filter((opt) => !items.some((i) => i.name === opt.name));
@@ -334,9 +337,16 @@ const MultiSelectGrid = ({ options, value, onChange, addLabel = "Add Item", supp
     </button>
   );
 
+  const totalSelected = items.length;
+
   return (
     <div className="max-h-[50vh] overflow-y-auto">
       <div className="grid grid-cols-1 gap-3">
+        {/* Selected items header */}
+        {totalSelected > 0 && (
+          <SelectedCountHeader count={totalSelected} icon={<Check size={12} />} />
+        )}
+
         {/* Selected items first */}
         {customItems.map((item) => renderSelectedItem(item, true))}
         {options
