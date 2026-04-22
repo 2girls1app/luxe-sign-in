@@ -44,6 +44,8 @@ interface MultiSelectGridProps {
   specialtySuggestions?: string[];
   procedureName?: string;
   specialtyName?: string;
+  /** Singular noun for the section, used in the helper hint (e.g. "item", "supply", "instrument"). */
+  itemNoun?: string;
 }
 
 const parseItems = (value: string): ItemData[] => {
