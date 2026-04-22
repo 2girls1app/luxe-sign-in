@@ -169,12 +169,14 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
   const addRep = () => {
     setReps(prev => [...prev, emptySalesRep()]);
     setActiveIndex(reps.length);
+    setShowEditor(true);
   };
 
   const removeRep = (idx: number) => {
     if (reps.length <= 1) {
       setReps([emptySalesRep()]);
       setActiveIndex(0);
+      setShowEditor(true);
       return;
     }
     const updated = reps.filter((_, i) => i !== idx);
