@@ -199,21 +199,63 @@ const SalesRepDrawer = ({ open, onOpenChange, currentValue, onSave, saving, proc
           </DrawerDescription>
         </DrawerHeader>
 
-        {reps.length > 1 && (
-          <div className="px-4 pb-2 flex gap-2 overflow-x-auto">
-            {reps.map((r, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveIndex(i)}
-                className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  i === activeIndex
-                    ? "bg-primary/15 text-primary border border-primary/30"
-                    : "bg-secondary text-muted-foreground border border-border hover:border-primary/30"
-                }`}
-              >
-                {r.company.trim() || r.rep_name.trim() || `Rep ${i + 1}`}
-              </button>
-            ))}
+        {/* ── Selected Sales Reps (unified card rows) ── */}
+        {(reps.length > 1 || (reps.length === 1 && (reps[0].company.trim() || reps[0].rep_name.trim() || reps[0].email.trim()))) && (
+          <div className="px-4 pb-2 space-y-2">
+            <SelectedCountHeader
+              count={reps.length}
+              label="Sales Reps"
+              icon={<Check size={12} />}
+            />
+            <div className="space-y-2">
+              {reps.map((r, i) => {
+                const displayName =
+                  r.rep_name.trim() ||
+                  r.company.trim() ||
+                  r.email.trim() ||
+                  `Rep ${i + 1}`;
+                const subline = [r.company.trim(), r.product.trim(), r.email.trim()]
+                  .filter(Boolean)
+                  .join(" • ");
+                const isActive = i === activeIndex;
+                const hasEmail = !!r.email.trim();
+                const hasContent =
+                  r.company.trim() || r.rep_name.trim() || r.phone.trim() ||
+                  r.email.trim() || r.product.trim();
+                const badges = (
+                  <>
+                    {isActive && (
+                      <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 border border-primary/40 text-[10px] font-semibold text-primary px-1.5 py-0.5 uppercase tracking-wider">
+                        <Pencil size={9} />Editing
+                      </span>
+                    )}
+                    {hasEmail && !isActive && (
+                      <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/15 border border-amber-500/30 text-[10px] font-semibold text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">
+                        Awaiting rep response
+                      </span>
+                    )}
+                    {!hasContent && (
+                      <span className="inline-flex items-center rounded-md bg-secondary border border-border/60 text-[10px] font-semibold text-muted-foreground px-1.5 py-0.5 uppercase tracking-wider">
+                        Empty
+                      </span>
+                    )}
+                  </>
+                );
+
+                return (
+                  <SelectedItemCard
+                    key={i}
+                    name={displayName}
+                    notes={subline || r.notes}
+                    badges={badges}
+                    onClick={() => setActiveIndex(i)}
+                    onRemove={reps.length > 1 ? () => removeRep(i) : undefined}
+                    removeLabel={`Remove ${displayName}`}
+                    highlighted={isActive}
+                  />
+                );
+              })}
+            </div>
           </div>
         )}
 
