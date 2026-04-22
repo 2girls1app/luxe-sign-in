@@ -267,7 +267,7 @@ const DoctorWorkspace = () => {
         {/* Doctor profile header */}
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/profile")}
             className="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0"
           >
             <ArrowLeft size={20} />
