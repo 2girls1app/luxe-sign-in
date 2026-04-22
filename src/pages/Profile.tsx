@@ -53,6 +53,25 @@ const Profile = () => {
     return localStorage.getItem("hasChosenTheme") !== "true";
   });
   const [uploadCardOpen, setUploadCardOpen] = useState(false);
+  const homeKey = user ? `homeFacility:${user.id}` : "";
+  const [homeFacilityId, setHomeFacilityId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (homeKey) setHomeFacilityId(localStorage.getItem(homeKey));
+  }, [homeKey]);
+
+  const setAsHome = (id: string) => {
+    if (!homeKey) return;
+    if (homeFacilityId === id) {
+      localStorage.removeItem(homeKey);
+      setHomeFacilityId(null);
+      toast({ title: "Home facility cleared" });
+    } else {
+      localStorage.setItem(homeKey, id);
+      setHomeFacilityId(id);
+      toast({ title: "Home facility set" });
+    }
+  };
 
   const SPECIALTIES = [
     "Bariatric Surgery", "Breast Surgery", "Cardiothoracic Surgery", "Colon and Rectal Surgery",
