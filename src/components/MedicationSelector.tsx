@@ -6,8 +6,9 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Pill, Search, Plus, X, ChevronDown, ChevronUp, Pencil, Check, Minus, Pause } from "lucide-react";
+import { Pill, Search, Plus, ChevronDown, ChevronUp, Check, Pause } from "lucide-react";
 import { MEDICATIONS_DATABASE, MEDICATION_CATEGORIES, type MedicationEntry } from "@/data/medications";
+import SelectedItemCard, { SelectedCountHeader } from "@/components/SelectedItemCard";
 
 // Stable color palette mapped to medication categories
 const CATEGORY_DOT_COLORS: Record<string, string> = {
