@@ -131,6 +131,14 @@ const Settings = () => {
       label: "Edit Profile",
       description: "Name, photo & credentials",
     },
+    ...(showAccountTypeSection
+      ? [{
+          id: "account-type",
+          icon: UserCog,
+          label: "Account Type",
+          description: isIndividual ? "Individual account" : "Switch to Individual to unlock association tools",
+        }]
+      : []),
     {
       id: "contact-info",
       icon: Mail,
