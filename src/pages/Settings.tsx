@@ -131,6 +131,7 @@ const Settings = () => {
         <button
           onClick={() => navigate("/profile")}
           aria-label="Home"
+          title="Home"
           className="flex items-center justify-center rounded-full border-[1.5px] border-primary bg-transparent p-2 text-primary transition-colors hover:bg-primary/15"
         >
           <Home size={16} className="text-primary" />
