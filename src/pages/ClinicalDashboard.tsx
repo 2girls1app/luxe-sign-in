@@ -359,11 +359,13 @@ const ClinicalDashboard = () => {
         )}
       </motion.div>
 
-      <NotificationsDrawer
-        open={notificationsOpen}
-        onOpenChange={setNotificationsOpen}
-        onCountChange={setPendingCount}
-      />
+      {!isIndividual && (
+        <NotificationsDrawer
+          open={notificationsOpen}
+          onOpenChange={setNotificationsOpen}
+          onCountChange={setPendingCount}
+        />
+      )}
 
       <EditFacilityDialog
         open={editDialogOpen}
