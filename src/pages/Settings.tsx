@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Home, User, Lock, Mail, Phone, ShieldCheck, HeadphonesIcon, Stethoscope, Sun, Moon, Monitor, UserCog, CheckCircle2 } from "lucide-react";
+import { Home, User, Lock, Mail, Phone, ShieldCheck, HeadphonesIcon, Stethoscope, Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,12 +43,6 @@ const Settings = () => {
 
   // Contact Support state
   const [supportMessage, setSupportMessage] = useState("");
-
-  // Account type state (legacy users may have no account_type set)
-  const accountType = (user as any)?.user_metadata?.account_type as string | undefined;
-  const isIndividual = accountType === "individual";
-  const showAccountTypeSection = !isIndividual; // legacy users or facility users wanting to switch
-  const [switchingAccountType, setSwitchingAccountType] = useState(false);
 
   const displayName = profile?.display_name || user?.user_metadata?.full_name || "User";
   const email = user?.email || "";
@@ -98,26 +92,6 @@ const Settings = () => {
     }
   };
 
-  const switchToIndividual = async () => {
-    if (!user) return;
-    setSwitchingAccountType(true);
-    const { error } = await supabase.auth.updateUser({
-      data: { ...(user.user_metadata || {}), account_type: "individual" },
-    });
-    setSwitchingAccountType(false);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-      return;
-    }
-    toast({
-      title: "Account switched to Individual",
-      description: "The doctor, facility & procedure association tools are now unlocked.",
-    });
-    setExpandedSection(null);
-    // Force a reload so user_metadata is refreshed everywhere (gates rely on it)
-    setTimeout(() => window.location.reload(), 600);
-  };
-
   const sections = [
     {
       id: "display-settings",
@@ -131,14 +105,6 @@ const Settings = () => {
       label: "Edit Profile",
       description: "Name, photo & credentials",
     },
-    ...(showAccountTypeSection
-      ? [{
-          id: "account-type",
-          icon: UserCog,
-          label: "Account Type",
-          description: isIndividual ? "Individual account" : "Switch to Individual to unlock association tools",
-        }]
-      : []),
     {
       id: "contact-info",
       icon: Mail,
@@ -307,35 +273,6 @@ const Settings = () => {
                       className="w-full rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors"
                     >
                       Save Changes
-                    </button>
-                  </motion.div>
-                )}
-
-                {/* Account Type */}
-                {isExpanded && section.id === "account-type" && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="px-4 pb-4 flex flex-col gap-3 border-t border-border pt-4"
-                  >
-                    <div className="rounded-lg border border-border bg-secondary/40 p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Current account type</p>
-                      <p className="text-sm font-medium text-foreground capitalize">
-                        {accountType || "Not set (legacy account)"}
-                      </p>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Individual accounts can link doctors to multiple facilities and assign different
-                      procedures at each location. Switching is safe — your existing data, role and
-                      profile are preserved.
-                    </p>
-                    <button
-                      onClick={switchToIndividual}
-                      disabled={switchingAccountType}
-                      className="w-full flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
-                    >
-                      <CheckCircle2 size={16} />
-                      {switchingAccountType ? "Switching..." : "Switch to Individual"}
                     </button>
                   </motion.div>
                 )}

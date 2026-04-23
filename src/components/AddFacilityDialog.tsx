@@ -22,12 +22,9 @@ interface AddFacilityDialogProps {
   onAdded: () => void;
   existingFacilityIds?: string[];
   isIndividual?: boolean;
-  /** When set, the doctor_facilities row is created for this user_id instead of the logged-in user. */
-  forUserId?: string;
-  triggerLabel?: string;
 }
 
-const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = false, forUserId, triggerLabel = "Add Facility" }: AddFacilityDialogProps) => {
+const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = false }: AddFacilityDialogProps) => {
   const [open, setOpen] = useState(false);
   const [nameQuery, setNameQuery] = useState("");
   const [address, setAddress] = useState("");
@@ -157,7 +154,7 @@ const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = f
 
       setLoading(true);
       const { error } = await supabase.from("doctor_facilities" as any).insert({
-        user_id: forUserId || user.id,
+        user_id: user.id,
         facility_id: matchedPreset.facilityId,
       } as any);
       setLoading(false);
@@ -203,7 +200,7 @@ const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = f
     }
 
     const { error: linkError } = await supabase.from("doctor_facilities" as any).insert({
-      user_id: forUserId || user.id,
+      user_id: user.id,
       facility_id: newFacility.id,
     } as any);
 
@@ -223,7 +220,7 @@ const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = f
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
       <DialogTrigger asChild>
         <Button size="sm" className="gap-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
-          <Plus size={16} /> {triggerLabel}
+          <Plus size={16} /> Add Facility
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-card border-border text-foreground max-w-sm">

@@ -5,7 +5,7 @@ import {
   ArrowLeft, MapPin, Search, Plus, Stethoscope, User, Bot, Upload, Trash2,
   Heart, Activity, Brain, Bone, Eye, Baby, Scissors, HandMetal, Ear,
   Waypoints, Shield, Flame, Zap, Ribbon, Footprints, Syringe, Cross,
-  Building2, CheckCircle2, Music, ChevronDown, ChevronUp,
+  Building2, CheckCircle2, Music,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,6 @@ import NavHeader from "@/components/NavHeader";
 import AddProcedureDialog from "@/components/AddProcedureDialog";
 import UploadPreferenceCardDrawer from "@/components/UploadPreferenceCardDrawer";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
-import LinkFacilityToDoctorDialog from "@/components/LinkFacilityToDoctorDialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -83,19 +82,14 @@ const DoctorWorkspace = () => {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   const accountType = user?.user_metadata?.account_type;
-  // Strict: only explicit individual accounts get the My Facilities / association UI.
-  const isIndividual = accountType === "individual";
+  const isIndividual = accountType === "individual" || (!profile?.facility_id && !accountType);
   const isDoctor = profile?.role === "doctor" || profile?.role === "surgeon";
-  // Edit access for the association system is restricted to Individual users only.
-  // Non-individual surgeons keep their own legacy edit access for their procedures.
   const canAdd = (isDoctor && user?.id === userId) || isIndividual;
   const [facilityId, setFacilityId] = useState<string | null>(null);
-  const [facilities, setFacilities] = useState<{ id: string; name: string; location: string | null }[]>([]);
+  const [facilities, setFacilities] = useState<{ id: string; name: string }[]>([]);
   const [facilitiesLoaded, setFacilitiesLoaded] = useState(false);
-  const [expandedFacilities, setExpandedFacilities] = useState<Set<string>>(new Set());
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
-  const [unlinkFacilityTarget, setUnlinkFacilityTarget] = useState<{ id: string; name: string } | null>(null);
   const [musicOpen, setMusicOpen] = useState(false);
   const [musicCount, setMusicCount] = useState(0);
 
@@ -135,13 +129,12 @@ const DoctorWorkspace = () => {
     if (isIndividual && userId) {
       const { data: docFacs } = await supabase
         .from("doctor_facilities")
-        .select("facility_id, facilities(id, name, location)")
+        .select("facility_id, facilities(id, name)")
         .eq("user_id", userId);
       if (docFacs) {
         const facs = docFacs.map((df: any) => ({
           id: df.facility_id,
           name: df.facilities?.name || "Unknown",
-          location: df.facilities?.location || null,
         }));
         setFacilities(facs);
         if (facs.length > 0 && !facilityId) setFacilityId(facs[0].id);
@@ -333,19 +326,31 @@ const DoctorWorkspace = () => {
         </button>
 
 
-        {/* My Facilities header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Building2 size={16} className="text-primary" />
-            <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">My Facilities</h2>
+            <Stethoscope size={16} className="text-primary" />
+            <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Procedures</h2>
           </div>
-          {canAdd && isIndividual && userId && (
-            <LinkFacilityToDoctorDialog
-              doctorUserId={userId}
-              doctorName={doctor?.display_name || undefined}
-              excludeFacilityIds={facilities.map((f) => f.id)}
-              onLinked={fetchData}
+          {canAdd && isIndividual && (
+            <AddProcedureDialog
+              facilities={facilities}
+              onAdded={fetchData}
+              preselectedFacilityId={facilityId || undefined}
+              forUserId={userId}
+              defaultSpecialty={doctor?.specialty || undefined}
+              autoOpen={shouldAutoOpenProcedure && facilitiesLoaded && !!facilityId}
+              onUploadClick={() => setUploadDrawerOpen(true)}
             />
+          )}
+          {canAdd && !isIndividual && (
+            <Button
+              size="sm"
+              className="gap-1.5 rounded-full text-xs"
+              onClick={() => navigate("/profile")}
+            >
+              <Plus size={14} />
+              Add Procedure
+            </Button>
           )}
         </div>
 
@@ -360,188 +365,106 @@ const DoctorWorkspace = () => {
           />
         </div>
 
-        {/* Per-facility procedure groups */}
-        {isIndividual && facilities.length === 0 ? (
-          <div className="rounded-xl bg-card border border-border p-6 text-center">
-            <Building2 size={28} className="mx-auto text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">No facilities linked to this doctor yet.</p>
-            <p className="text-xs text-muted-foreground/70 mt-1">Tap "Add Facility" to associate one.</p>
-          </div>
-        ) : isIndividual ? (
-          <div className="flex flex-col gap-3">
-            {facilities.map((fac) => {
-              const facProcs = filtered.filter((p) => p.facility_id === fac.id);
-              const expanded = expandedFacilities.has(fac.id);
+        {/* Procedure grid */}
+        {filtered.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-12">
+            {searchQuery ? "No procedures match your search" : "No procedures found for this doctor"}
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {filtered.map((proc, i) => {
+              const Icon = getIconForProcedure(proc.name, proc.category);
+              const hasRobotic = roboticProcIds.has(proc.id);
+              const isFav = favorites.has(proc.id);
+
               return (
-                <div key={fac.id} className="rounded-xl bg-card border border-border overflow-hidden">
+                <motion.div
+                  key={proc.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.03 }}
+                  onClick={() => navigate(isIndividual ? `/procedure/${proc.id}/preferences` : `/doctor/${userId}/procedure/${proc.id}`)}
+                  className="group relative flex flex-col rounded-2xl bg-card border border-border overflow-hidden hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 cursor-pointer transition-all"
+                >
+                  {/* Favorite button */}
                   <button
-                    onClick={() => {
-                      setExpandedFacilities((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(fac.id)) next.delete(fac.id); else next.add(fac.id);
-                        return next;
-                      });
-                    }}
-                    className="w-full flex items-center gap-3 p-4 text-left hover:bg-secondary/50 transition-colors"
+                    onClick={(e) => { e.stopPropagation(); toggleFavorite(proc.id); }}
+                    className="absolute top-2 left-2 z-10 p-1.5 rounded-full bg-background/80 transition-all hover:scale-110"
+                    aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
                   >
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <Building2 size={16} className="text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{fac.name}</p>
-                      {fac.location && (
-                        <p className="text-[10px] text-muted-foreground flex items-center gap-1 truncate">
-                          <MapPin size={9} className="shrink-0" /> {fac.location}
-                        </p>
-                      )}
-                    </div>
-                    <span className="text-[10px] bg-primary/15 text-primary px-2 py-0.5 rounded-full font-medium shrink-0">
-                      {facProcs.length}
-                    </span>
-                    {canAdd && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setUnlinkFacilityTarget({ id: fac.id, name: fac.name });
-                        }}
-                        className="text-muted-foreground hover:text-destructive transition-colors p-1 shrink-0"
-                        aria-label="Unlink facility"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    )}
-                    {expanded
-                      ? <ChevronUp size={16} className="text-muted-foreground shrink-0" />
-                      : <ChevronDown size={16} className="text-muted-foreground shrink-0" />}
+                    <Heart
+                      size={14}
+                      className={isFav
+                        ? "text-primary fill-primary"
+                        : "text-muted-foreground hover:text-primary"
+                      }
+                    />
                   </button>
 
-                  {expanded && (
-                    <div className="border-t border-border p-3 flex flex-col gap-3">
-                      {canAdd && (
-                        <AddProcedureDialog
-                          facilities={[{ id: fac.id, name: fac.name }]}
-                          onAdded={fetchData}
-                          preselectedFacilityId={fac.id}
-                          forUserId={userId}
-                          defaultSpecialty={doctor?.specialty || undefined}
-                          onUploadClick={() => setUploadDrawerOpen(true)}
-                        />
-                      )}
-                      {facProcs.length === 0 ? (
-                        <p className="text-xs text-muted-foreground py-3 text-center">
-                          {searchQuery ? "No matching procedures here" : "No procedures at this facility yet"}
-                        </p>
-                      ) : (
-                        <div className="grid grid-cols-2 gap-3">
-                          {facProcs.map((proc) => {
-                            const Icon = getIconForProcedure(proc.name, proc.category);
-                            const hasRobotic = roboticProcIds.has(proc.id);
-                            const isFav = favorites.has(proc.id);
-                            return (
-                              <motion.div
-                                key={proc.id}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                onClick={() => navigate(`/procedure/${proc.id}/preferences`)}
-                                className="group relative flex flex-col rounded-2xl bg-background border border-border overflow-hidden hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 cursor-pointer transition-all"
-                              >
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); toggleFavorite(proc.id); }}
-                                  className="absolute top-2 left-2 z-10 p-1.5 rounded-full bg-background/80 transition-all hover:scale-110"
-                                  aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
-                                >
-                                  <Heart size={14} className={isFav ? "text-primary fill-primary" : "text-muted-foreground hover:text-primary"} />
-                                </button>
-                                {hasRobotic ? (
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <div className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-primary/20 text-primary">
-                                          <Bot size={14} />
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent side="top" className="bg-card border-border text-foreground text-xs">Robotic</TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                ) : canAdd && (
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: proc.id, name: proc.name }); }}
-                                    className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-background/80 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
-                                    aria-label="Delete procedure"
-                                  >
-                                    <Trash2 size={14} />
-                                  </button>
-                                )}
-                                {proc.is_complete && (
-                                  <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/15 border border-green-500/30">
-                                    <CheckCircle2 size={10} className="text-green-400" />
-                                    <span className="text-[9px] font-semibold text-green-400 whitespace-nowrap">Complete</span>
-                                  </div>
-                                )}
-                                <div className="flex items-center justify-center bg-primary/5 py-5">
-                                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <Icon size={24} className="text-primary" />
-                                  </div>
-                                </div>
-                                <div className="flex flex-col flex-1 p-3 gap-1">
-                                  <p className="text-foreground font-medium text-xs leading-tight line-clamp-2">{proc.name}</p>
-                                  {proc.category && (
-                                    <span className="text-[10px] px-2 py-0.5 rounded-full w-fit bg-primary/10 text-primary">{proc.category}</span>
-                                  )}
-                                </div>
-                              </motion.div>
-                            );
-                          })}
-                        </div>
-                      )}
+                  {/* Delete button (Individual users) */}
+                  {isIndividual && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: proc.id, name: proc.name }); }}
+                      className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-background/80 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
+                      aria-label="Delete procedure"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+
+                  {/* Robotic indicator */}
+                  {hasRobotic && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-primary/20 text-primary">
+                            <Bot size={14} />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="bg-card border-border text-foreground text-xs">
+                          Robotic
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+
+                  {/* Card Complete badge */}
+                  {proc.is_complete && (
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/15 border border-green-500/30">
+                      <CheckCircle2 size={10} className="text-green-400" />
+                      <span className="text-[9px] font-semibold text-green-400 whitespace-nowrap">Card Complete</span>
                     </div>
                   )}
-                </div>
+
+                  {/* Icon area */}
+                  <div className="flex items-center justify-center bg-primary/5 py-6">
+                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Icon size={28} className="text-primary" />
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex flex-col flex-1 p-3 gap-1.5">
+                    <p className="text-foreground font-medium text-sm leading-tight line-clamp-2">
+                      {proc.name}
+                    </p>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full w-fit ${
+                      proc.category
+                        ? "bg-primary/10 text-primary"
+                        : "bg-muted text-muted-foreground italic"
+                    }`}>
+                      {proc.category || "Specialty not assigned"}
+                    </span>
+                    {facilityName && (
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <Building2 size={10} /> {facilityName}
+                      </span>
+                    )}
+                  </div>
+                </motion.div>
               );
             })}
           </div>
-        ) : (
-          // Non-individual roles: keep flat grid (read-only or facility-scoped)
-          filtered.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-12">
-              {searchQuery ? "No procedures match your search" : "No procedures found for this doctor"}
-            </p>
-          ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {filtered.map((proc) => {
-                const Icon = getIconForProcedure(proc.name, proc.category);
-                const isFav = favorites.has(proc.id);
-                return (
-                  <motion.div
-                    key={proc.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    onClick={() => navigate(`/doctor/${userId}/procedure/${proc.id}`)}
-                    className="group relative flex flex-col rounded-2xl bg-card border border-border overflow-hidden hover:border-primary/40 cursor-pointer transition-all"
-                  >
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleFavorite(proc.id); }}
-                      className="absolute top-2 left-2 z-10 p-1.5 rounded-full bg-background/80"
-                      aria-label="Toggle favorite"
-                    >
-                      <Heart size={14} className={isFav ? "text-primary fill-primary" : "text-muted-foreground"} />
-                    </button>
-                    <div className="flex items-center justify-center bg-primary/5 py-6">
-                      <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Icon size={28} className="text-primary" />
-                      </div>
-                    </div>
-                    <div className="flex flex-col flex-1 p-3 gap-1.5">
-                      <p className="text-foreground font-medium text-sm leading-tight line-clamp-2">{proc.name}</p>
-                      {proc.category && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full w-fit bg-primary/10 text-primary">{proc.category}</span>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )
         )}
       </motion.div>
 
@@ -577,41 +500,6 @@ const DoctorWorkspace = () => {
             <AlertDialogCancel className="border-border">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={deleteProcedure} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Unlink facility confirmation */}
-      <AlertDialog open={!!unlinkFacilityTarget} onOpenChange={(open) => { if (!open) setUnlinkFacilityTarget(null); }}>
-        <AlertDialogContent className="bg-card border-border">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-foreground">Remove facility association?</AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground">
-              This only removes the link between <span className="font-semibold text-foreground">{doctor?.display_name || "this doctor"}</span> and <span className="font-semibold text-foreground">"{unlinkFacilityTarget?.name}"</span>. The facility itself and any procedures at it will remain.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="border-border">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={async () => {
-                if (!unlinkFacilityTarget || !userId) return;
-                const { error } = await supabase
-                  .from("doctor_facilities")
-                  .delete()
-                  .eq("user_id", userId)
-                  .eq("facility_id", unlinkFacilityTarget.id);
-                if (error) {
-                  toast({ title: "Error", description: error.message, variant: "destructive" });
-                } else {
-                  toast({ title: "Facility unlinked" });
-                  fetchData();
-                }
-                setUnlinkFacilityTarget(null);
-              }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Unlink
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
