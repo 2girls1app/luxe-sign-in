@@ -578,6 +578,41 @@ const DoctorWorkspace = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Unlink facility confirmation */}
+      <AlertDialog open={!!unlinkFacilityTarget} onOpenChange={(open) => { if (!open) setUnlinkFacilityTarget(null); }}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-foreground">Remove facility association?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              This only removes the link between <span className="font-semibold text-foreground">{doctor?.display_name || "this doctor"}</span> and <span className="font-semibold text-foreground">"{unlinkFacilityTarget?.name}"</span>. The facility itself and any procedures at it will remain.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-border">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (!unlinkFacilityTarget || !userId) return;
+                const { error } = await supabase
+                  .from("doctor_facilities")
+                  .delete()
+                  .eq("user_id", userId)
+                  .eq("facility_id", unlinkFacilityTarget.id);
+                if (error) {
+                  toast({ title: "Error", description: error.message, variant: "destructive" });
+                } else {
+                  toast({ title: "Facility unlinked" });
+                  fetchData();
+                }
+                setUnlinkFacilityTarget(null);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Unlink
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
