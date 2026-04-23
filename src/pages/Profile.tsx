@@ -496,11 +496,13 @@ const Profile = () => {
           }}
         />
       )}
-      <NotificationsDrawer
-        open={notificationsOpen}
-        onOpenChange={setNotificationsOpen}
-        onCountChange={setPendingCount}
-      />
+      {!isIndividual && (
+        <NotificationsDrawer
+          open={notificationsOpen}
+          onOpenChange={setNotificationsOpen}
+          onCountChange={setPendingCount}
+        />
+      )}
       {!isAdmin && (
         <UploadPreferenceCardDrawer
           open={uploadCardOpen}
