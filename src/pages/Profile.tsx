@@ -40,6 +40,8 @@ const Profile = () => {
   const [searchParams] = useSearchParams();
   const facilityFilter = searchParams.get("facility");
   const { user, profile, loading, signOut, refreshProfile } = useAuth();
+  const accountType = (user as any)?.user_metadata?.account_type;
+  const isIndividual = accountType === "individual" || (!profile?.facility_id && !accountType);
   const { toast } = useToast();
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
