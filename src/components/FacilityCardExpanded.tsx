@@ -308,7 +308,7 @@ const FacilityCardExpanded = ({
     >
       <div className="flex items-center justify-between p-4 hover:border-primary/40 transition-all">
         <button
-          onClick={() => setExpanded(e => !e)}
+          onClick={toggleExpanded}
           className="flex items-center gap-2 flex-1 min-w-0 text-left"
         >
           {expanded ? (
