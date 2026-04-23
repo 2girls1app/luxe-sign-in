@@ -132,12 +132,13 @@ const DoctorWorkspace = () => {
     if (isIndividual && userId) {
       const { data: docFacs } = await supabase
         .from("doctor_facilities")
-        .select("facility_id, facilities(id, name)")
+        .select("facility_id, facilities(id, name, location)")
         .eq("user_id", userId);
       if (docFacs) {
         const facs = docFacs.map((df: any) => ({
           id: df.facility_id,
           name: df.facilities?.name || "Unknown",
+          location: df.facilities?.location || null,
         }));
         setFacilities(facs);
         if (facs.length > 0 && !facilityId) setFacilityId(facs[0].id);
