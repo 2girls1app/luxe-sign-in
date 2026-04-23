@@ -22,9 +22,12 @@ interface AddFacilityDialogProps {
   onAdded: () => void;
   existingFacilityIds?: string[];
   isIndividual?: boolean;
+  /** When set, the doctor_facilities row is created for this user_id instead of the logged-in user. */
+  forUserId?: string;
+  triggerLabel?: string;
 }
 
-const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = false }: AddFacilityDialogProps) => {
+const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = false, forUserId, triggerLabel = "Add Facility" }: AddFacilityDialogProps) => {
   const [open, setOpen] = useState(false);
   const [nameQuery, setNameQuery] = useState("");
   const [address, setAddress] = useState("");
