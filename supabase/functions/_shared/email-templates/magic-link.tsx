@@ -30,7 +30,7 @@ export const MagicLinkEmail = ({
 }: MagicLinkEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Your sign-in link for 1st Assist</Preview>
+    <Preview>Your sign-in link for First Assist</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
@@ -38,7 +38,7 @@ export const MagicLinkEmail = ({
         </Section>
         <Heading style={h1}>Your sign-in link</Heading>
         <Text style={text}>
-          Tap the button below to sign in to 1st Assist. This link expires shortly,
+          Tap the button below to sign in to First Assist. This link expires shortly,
           so use it soon.
         </Text>
         <Section style={buttonWrap}>

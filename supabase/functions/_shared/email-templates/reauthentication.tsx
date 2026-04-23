@@ -25,7 +25,7 @@ const LOGO_URL =
 export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Your 1st Assist verification code</Preview>
+    <Preview>Your First Assist verification code</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
