@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import AddFacilityDialog from "@/components/AddFacilityDialog";
+import FacilityCardExpanded from "@/components/FacilityCardExpanded";
 import { useToast } from "@/hooks/use-toast";
 
 interface FacilityInfo {
@@ -261,6 +262,21 @@ const ClinicalDashboard = () => {
             <div className="flex flex-col gap-2">
               {sortedFacilities.map((f) => {
                 const isHome = f.id === homeFacilityId;
+                if (isIndividual) {
+                  return (
+                    <FacilityCardExpanded
+                      key={f.id}
+                      facility={f}
+                      isHome={isHome}
+                      onSetHome={setAsHome}
+                      onEdit={() => {
+                        setEditingFacility(f);
+                        setEditDialogOpen(true);
+                      }}
+                      onRemove={() => deleteFacility(f.id)}
+                    />
+                  );
+                }
                 return (
                 <motion.div
                   key={f.id}
