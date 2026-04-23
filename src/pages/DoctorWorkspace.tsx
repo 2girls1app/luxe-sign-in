@@ -83,8 +83,11 @@ const DoctorWorkspace = () => {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   const accountType = user?.user_metadata?.account_type;
-  const isIndividual = accountType === "individual" || (!profile?.facility_id && !accountType);
+  // Strict: only explicit individual accounts get the My Facilities / association UI.
+  const isIndividual = accountType === "individual";
   const isDoctor = profile?.role === "doctor" || profile?.role === "surgeon";
+  // Edit access for the association system is restricted to Individual users only.
+  // Non-individual surgeons keep their own legacy edit access for their procedures.
   const canAdd = (isDoctor && user?.id === userId) || isIndividual;
   const [facilityId, setFacilityId] = useState<string | null>(null);
   const [facilities, setFacilities] = useState<{ id: string; name: string; location: string | null }[]>([]);
