@@ -311,6 +311,35 @@ const Settings = () => {
                   </motion.div>
                 )}
 
+                {/* Account Type */}
+                {isExpanded && section.id === "account-type" && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="px-4 pb-4 flex flex-col gap-3 border-t border-border pt-4"
+                  >
+                    <div className="rounded-lg border border-border bg-secondary/40 p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Current account type</p>
+                      <p className="text-sm font-medium text-foreground capitalize">
+                        {accountType || "Not set (legacy account)"}
+                      </p>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Individual accounts can link doctors to multiple facilities and assign different
+                      procedures at each location. Switching is safe — your existing data, role and
+                      profile are preserved.
+                    </p>
+                    <button
+                      onClick={switchToIndividual}
+                      disabled={switchingAccountType}
+                      className="w-full flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                    >
+                      <CheckCircle2 size={16} />
+                      {switchingAccountType ? "Switching..." : "Switch to Individual"}
+                    </button>
+                  </motion.div>
+                )}
+
                 {/* Contact Information */}
                 {isExpanded && section.id === "contact-info" && (
                   <motion.div
