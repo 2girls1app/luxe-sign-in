@@ -36,9 +36,13 @@ const FacilityDetails = () => {
   const [facility, setFacility] = useState<FacilityInfo | null>(null);
   const [doctors, setDoctors] = useState<DoctorProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [doctorProcs, setDoctorProcs] = useState<Record<string, { id: string; name: string; category: string | null }[]>>({});
+  const [expandedDoctors, setExpandedDoctors] = useState<Set<string>>(new Set());
+  const [unlinkTarget, setUnlinkTarget] = useState<{ id: string; name: string } | null>(null);
 
   const accountType = user?.user_metadata?.account_type;
-  const isIndividual = accountType === "individual" || (!profile?.facility_id && !accountType);
+  // Strict: only explicit Individual accounts get the association UI.
+  const isIndividual = accountType === "individual";
 
   const displayName = profile?.display_name || user?.user_metadata?.full_name || "User";
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
@@ -61,35 +65,63 @@ const FacilityDetails = () => {
       .from("doctor_facilities")
       .select("user_id")
       .eq("facility_id", facilityId);
-    if (!links || links.length === 0) { setDoctors([]); return; }
+    if (!links || links.length === 0) { setDoctors([]); setDoctorProcs({}); return; }
     // Exclude the logged-in user from the doctors list
     const userIds = links.map(l => l.user_id).filter(id => id !== user?.id);
-    if (userIds.length === 0) { setDoctors([]); return; }
+    if (userIds.length === 0) { setDoctors([]); setDoctorProcs({}); return; }
     const { data } = await supabase
       .from("profiles")
       .select("user_id, display_name, avatar_url, specialty")
       .in("user_id", userIds);
     if (data) setDoctors(data.sort((a, b) => (a.display_name || "").localeCompare(b.display_name || "")));
-  }, [facilityId]);
+
+    // Per-doctor procedures at THIS facility (Individual association view)
+    if (isIndividual) {
+      const { data: procs } = await supabase
+        .from("procedures")
+        .select("id, name, category, user_id")
+        .eq("facility_id", facilityId)
+        .in("user_id", userIds);
+      const grouped: Record<string, { id: string; name: string; category: string | null }[]> = {};
+      (procs || []).forEach((p: any) => {
+        if (!grouped[p.user_id]) grouped[p.user_id] = [];
+        grouped[p.user_id].push({ id: p.id, name: p.name, category: p.category });
+      });
+      Object.values(grouped).forEach((arr) => arr.sort((a, b) => a.name.localeCompare(b.name)));
+      setDoctorProcs(grouped);
+    }
+  }, [facilityId, user?.id, isIndividual]);
 
   useEffect(() => {
     fetchFacility();
     fetchDoctors();
   }, [fetchFacility, fetchDoctors]);
 
-  const removeDoctor = async (doctorUserId: string) => {
-    if (!facilityId) return;
+  const toggleDoctorExpanded = (id: string) => {
+    setExpandedDoctors((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const confirmRemoveDoctor = async () => {
+    if (!facilityId || !unlinkTarget) return;
     const { error } = await supabase
       .from("doctor_facilities" as any)
       .delete()
-      .eq("user_id", doctorUserId)
+      .eq("user_id", unlinkTarget.id)
       .eq("facility_id", facilityId);
     if (!error) {
       fetchDoctors();
-      toast({ title: "Doctor removed" });
+      toast({
+        title: "Doctor unlinked",
+        description: `${unlinkTarget.name} is no longer associated with this facility.`,
+      });
     } else {
       toast({ title: "Error", description: (error as any).message, variant: "destructive" });
     }
+    setUnlinkTarget(null);
   };
 
   const filteredDoctors = doctors.filter(d =>
