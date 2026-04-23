@@ -126,8 +126,16 @@ const Settings = () => {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-background px-6 pt-16 pb-8">
-      <NavHeader />
+    <div className="flex min-h-screen flex-col bg-background px-6 pt-8 pb-8">
+      <div className="fixed top-0 right-0 z-50 px-4 py-3">
+        <button
+          onClick={() => navigate("/profile")}
+          className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+        >
+          <Home size={20} />
+          <span className="text-xs font-medium">Home</span>
+        </button>
+      </div>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -136,13 +144,6 @@ const Settings = () => {
       >
         {/* Header */}
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/profile")}
-            className="text-muted-foreground hover:text-foreground transition-colors p-1"
-            aria-label="Back"
-          >
-            <ArrowLeft size={20} />
-          </button>
           <h1 className="text-lg font-semibold text-foreground">Settings</h1>
         </div>
 
