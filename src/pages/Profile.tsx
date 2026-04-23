@@ -256,23 +256,25 @@ const Profile = () => {
           </h1>
           <TooltipProvider delayDuration={300}>
             <div className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => setNotificationsOpen(true)}
-                    className="relative text-muted-foreground hover:text-foreground transition-colors p-1"
-                    aria-label="Notifications"
-                  >
-                    <Bell size={20} />
-                    {pendingCount > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold px-1">
-                        {pendingCount}
-                      </span>
-                    )}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs">Notifications</TooltipContent>
-              </Tooltip>
+              {!isIndividual && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setNotificationsOpen(true)}
+                      className="relative text-muted-foreground hover:text-foreground transition-colors p-1"
+                      aria-label="Notifications"
+                    >
+                      <Bell size={20} />
+                      {pendingCount > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold px-1">
+                          {pendingCount}
+                        </span>
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs">Notifications</TooltipContent>
+                </Tooltip>
+              )}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button onClick={() => navigate("/settings")} className="text-muted-foreground hover:text-foreground transition-colors p-1" aria-label="Settings">
