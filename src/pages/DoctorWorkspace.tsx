@@ -87,10 +87,12 @@ const DoctorWorkspace = () => {
   const isDoctor = profile?.role === "doctor" || profile?.role === "surgeon";
   const canAdd = (isDoctor && user?.id === userId) || isIndividual;
   const [facilityId, setFacilityId] = useState<string | null>(null);
-  const [facilities, setFacilities] = useState<{ id: string; name: string }[]>([]);
+  const [facilities, setFacilities] = useState<{ id: string; name: string; location: string | null }[]>([]);
   const [facilitiesLoaded, setFacilitiesLoaded] = useState(false);
+  const [expandedFacilities, setExpandedFacilities] = useState<Set<string>>(new Set());
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [unlinkFacilityTarget, setUnlinkFacilityTarget] = useState<{ id: string; name: string } | null>(null);
   const [musicOpen, setMusicOpen] = useState(false);
   const [musicCount, setMusicCount] = useState(0);
 
