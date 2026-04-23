@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import AddFacilityDialog from "@/components/AddFacilityDialog";
+import FacilityCardExpanded from "@/components/FacilityCardExpanded";
 import { useToast } from "@/hooks/use-toast";
 
 interface FacilityInfo {
