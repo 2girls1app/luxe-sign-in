@@ -275,6 +275,10 @@ const ClinicalDashboard = () => {
                         setEditDialogOpen(true);
                       }}
                       onRemove={() => deleteFacility(f.id)}
+                      expanded={expandedFacilityId === f.id}
+                      onToggleExpand={(id) =>
+                        setExpandedFacilityId((prev) => (prev === id ? null : id))
+                      }
                     />
                   );
                 }
