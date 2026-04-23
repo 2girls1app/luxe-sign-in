@@ -340,14 +340,6 @@ const AddFacilityDialog = ({ onAdded, existingFacilityIds = [], isIndividual = f
             </div>
           )}
 
-          <Textarea
-            placeholder="Notes (optional)"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="bg-secondary border-border text-foreground placeholder:text-muted-foreground resize-none"
-            rows={2}
-          />
-
           <Button
             onClick={handleSubmit}
             disabled={!isValid || loading}
