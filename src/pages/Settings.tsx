@@ -98,6 +98,26 @@ const Settings = () => {
     }
   };
 
+  const switchToIndividual = async () => {
+    if (!user) return;
+    setSwitchingAccountType(true);
+    const { error } = await supabase.auth.updateUser({
+      data: { ...(user.user_metadata || {}), account_type: "individual" },
+    });
+    setSwitchingAccountType(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: "Account switched to Individual",
+      description: "The doctor, facility & procedure association tools are now unlocked.",
+    });
+    setExpandedSection(null);
+    // Force a reload so user_metadata is refreshed everywhere (gates rely on it)
+    setTimeout(() => window.location.reload(), 600);
+  };
+
   const sections = [
     {
       id: "display-settings",
