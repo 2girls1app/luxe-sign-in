@@ -130,10 +130,10 @@ const Settings = () => {
       <div className="fixed top-0 right-0 z-50 px-4 py-3">
         <button
           onClick={() => navigate("/profile")}
-          className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+          className="flex items-center gap-1.5 rounded-full border-[1.5px] border-primary bg-transparent px-3.5 py-1.5 text-primary transition-colors hover:bg-primary/15"
         >
-          <Home size={20} />
-          <span className="text-xs font-medium">Home</span>
+          <Home size={16} className="text-primary" />
+          <span className="text-[13px] font-semibold text-primary">Home</span>
         </button>
       </div>
       <motion.div
