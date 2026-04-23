@@ -35,7 +35,7 @@ export const EmailChangeEmail = ({
 }: EmailChangeEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Confirm your email change for 1st Assist</Preview>
+    <Preview>Confirm your email change for First Assist</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
@@ -43,7 +43,7 @@ export const EmailChangeEmail = ({
         </Section>
         <Heading style={h1}>Confirm your new email</Heading>
         <Text style={text}>
-          You requested to change your 1st Assist email address from{' '}
+          You requested to change your First Assist email address from{' '}
           <Link href={`mailto:${email}`} style={link}>
             {email}
           </Link>{' '}
