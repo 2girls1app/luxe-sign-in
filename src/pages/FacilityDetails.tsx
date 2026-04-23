@@ -1,12 +1,17 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
-import { Building2, User, ArrowLeft, Search, MapPin, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { Building2, User, ArrowLeft, Search, MapPin, ChevronRight, Plus, Trash2, Stethoscope, ChevronDown, ChevronUp } from "lucide-react";
 import NavHeader from "@/components/NavHeader";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import CreateSurgeonDialog from "@/components/CreateSurgeonDialog";
+import LinkDoctorDialog from "@/components/LinkDoctorDialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 
 interface FacilityInfo {
