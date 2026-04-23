@@ -8,9 +8,12 @@ import {
   Container,
   Head,
   Heading,
+  Hr,
   Html,
+  Img,
   Link,
   Preview,
+  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
@@ -20,6 +23,9 @@ interface InviteEmailProps {
   confirmationUrl: string
 }
 
+const LOGO_URL =
+  'https://gxjrkrbzmfsoblylbjif.supabase.co/storage/v1/object/public/email-assets/logo.png'
+
 export const InviteEmail = ({
   siteName,
   siteUrl,
@@ -27,24 +33,31 @@ export const InviteEmail = ({
 }: InviteEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>You've been invited to join {siteName}</Preview>
+    <Preview>You've been invited to 1st Assist</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>You've been invited</Heading>
+        <Section style={logoSection}>
+          <Img src={LOGO_URL} width="56" height="56" alt={siteName} style={logo} />
+        </Section>
+        <Heading style={h1}>You're invited</Heading>
         <Text style={text}>
           You've been invited to join{' '}
           <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
+            <strong>1st Assist</strong>
           </Link>
-          . Click the button below to accept the invitation and create your
-          account.
+          — the operating room preference card platform built for surgical teams.
         </Text>
-        <Button style={button} href={confirmationUrl}>
-          Accept Invitation
-        </Button>
+        <Text style={text}>
+          Accept the invitation below to set up your account.
+        </Text>
+        <Section style={buttonWrap}>
+          <Button style={button} href={confirmationUrl}>
+            Accept Invitation
+          </Button>
+        </Section>
+        <Hr style={divider} />
         <Text style={footer}>
-          If you weren't expecting this invitation, you can safely ignore this
-          email.
+          If you weren't expecting this invitation, you can safely ignore this email.
         </Text>
       </Container>
     </Body>
@@ -53,27 +66,38 @@ export const InviteEmail = ({
 
 export default InviteEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
+const main = {
+  backgroundColor: '#ffffff',
+  fontFamily:
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+}
+const container = { padding: '32px 28px', maxWidth: '560px' }
+const logoSection = { marginBottom: '24px' }
+const logo = { borderRadius: '12px' }
 const h1 = {
-  fontSize: '22px',
+  fontSize: '24px',
   fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
+  color: '#141414',
+  letterSpacing: '-0.01em',
+  margin: '0 0 18px',
 }
 const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
+  fontSize: '15px',
+  color: '#4a4a4a',
+  lineHeight: '1.6',
+  margin: '0 0 18px',
 }
-const link = { color: 'inherit', textDecoration: 'underline' }
+const link = { color: '#a8843b', textDecoration: 'underline' }
+const buttonWrap = { margin: '28px 0' }
 const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
+  backgroundColor: '#141414',
+  color: '#c9a961',
+  fontSize: '15px',
+  fontWeight: 'bold' as const,
   borderRadius: '8px',
-  padding: '12px 20px',
+  padding: '14px 28px',
   textDecoration: 'none',
+  letterSpacing: '0.02em',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const divider = { borderColor: '#eaeaea', margin: '32px 0 20px' }
+const footer = { fontSize: '12px', color: '#999999', margin: '0', lineHeight: '1.5' }
