@@ -44,6 +44,12 @@ const Settings = () => {
   // Contact Support state
   const [supportMessage, setSupportMessage] = useState("");
 
+  // Account type state (legacy users may have no account_type set)
+  const accountType = (user as any)?.user_metadata?.account_type as string | undefined;
+  const isIndividual = accountType === "individual";
+  const showAccountTypeSection = !isIndividual; // legacy users or facility users wanting to switch
+  const [switchingAccountType, setSwitchingAccountType] = useState(false);
+
   const displayName = profile?.display_name || user?.user_metadata?.full_name || "User";
   const email = user?.email || "";
   const userRole = (profile?.role || "").toLowerCase();
