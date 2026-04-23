@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Home, User, Lock, Mail, Phone, ShieldCheck, HeadphonesIcon, Stethoscope, Sun, Moon, Monitor } from "lucide-react";
+import { Home, User, Lock, Mail, Phone, ShieldCheck, HeadphonesIcon, Stethoscope, Sun, Moon, Monitor, UserCog, CheckCircle2 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
