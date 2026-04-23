@@ -42,15 +42,24 @@ interface FacilityCardExpandedProps {
   onSetHome: (id: string) => void;
   onEdit: () => void;
   onRemove: () => void;
+  expanded?: boolean;
+  onToggleExpand?: (id: string) => void;
 }
 
 const FacilityCardExpanded = ({
   facility, isHome, onSetHome, onEdit, onRemove,
+  expanded: controlledExpanded, onToggleExpand,
 }: FacilityCardExpandedProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [expanded, setExpanded] = useState(false);
+  const [internalExpanded, setInternalExpanded] = useState(false);
+  const isControlled = controlledExpanded !== undefined;
+  const expanded = isControlled ? controlledExpanded : internalExpanded;
+  const toggleExpanded = () => {
+    if (isControlled) onToggleExpand?.(facility.id);
+    else setInternalExpanded(e => !e);
+  };
   const [linkedDoctors, setLinkedDoctors] = useState<DoctorRecord[]>([]);
   const [doctorProcedures, setDoctorProcedures] = useState<Record<string, ProcedureRecord[]>>({});
   const [expandedDoctorId, setExpandedDoctorId] = useState<string | null>(null);
