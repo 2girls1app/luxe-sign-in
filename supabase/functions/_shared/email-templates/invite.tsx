@@ -33,7 +33,7 @@ export const InviteEmail = ({
 }: InviteEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>You've been invited to 1st Assist</Preview>
+    <Preview>You've been invited to First Assist</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
@@ -43,7 +43,7 @@ export const InviteEmail = ({
         <Text style={text}>
           You've been invited to join{' '}
           <Link href={siteUrl} style={link}>
-            <strong>1st Assist</strong>
+            <strong>First Assist</strong>
           </Link>
           — the operating room preference card platform built for surgical teams.
         </Text>

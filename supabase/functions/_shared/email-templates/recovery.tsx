@@ -30,7 +30,7 @@ export const RecoveryEmail = ({
 }: RecoveryEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Reset your 1st Assist password</Preview>
+    <Preview>Reset your First Assist password</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
@@ -38,7 +38,7 @@ export const RecoveryEmail = ({
         </Section>
         <Heading style={h1}>Reset your password</Heading>
         <Text style={text}>
-          We received a request to reset the password for your 1st Assist account.
+          We received a request to reset the password for your First Assist account.
           Tap the button below to choose a new one.
         </Text>
         <Section style={buttonWrap}>

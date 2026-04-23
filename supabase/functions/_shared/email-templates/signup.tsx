@@ -35,7 +35,7 @@ export const SignupEmail = ({
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Confirm your email for 1st Assist</Preview>
+    <Preview>Confirm your email for First Assist</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
@@ -45,7 +45,7 @@ export const SignupEmail = ({
         <Text style={text}>
           Welcome to{' '}
           <Link href={siteUrl} style={link}>
-            <strong>1st Assist</strong>
+            <strong>First Assist</strong>
           </Link>
           . Let's get your account ready.
         </Text>
@@ -63,7 +63,7 @@ export const SignupEmail = ({
         </Section>
         <Hr style={divider} />
         <Text style={footer}>
-          If you didn't create an account with 1st Assist, you can safely ignore this email.
+          If you didn't create an account with First Assist, you can safely ignore this email.
         </Text>
       </Container>
     </Body>
