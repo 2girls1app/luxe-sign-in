@@ -32,6 +32,7 @@ const ClinicalDashboard = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const homeKey = user ? `homeFacility:${user.id}` : "";
   const [homeFacilityId, setHomeFacilityId] = useState<string | null>(null);
+  const [expandedFacilityId, setExpandedFacilityId] = useState<string | null>(null);
 
   useEffect(() => {
     if (homeKey) setHomeFacilityId(localStorage.getItem(homeKey));
