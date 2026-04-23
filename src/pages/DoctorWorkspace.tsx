@@ -5,7 +5,7 @@ import {
   ArrowLeft, MapPin, Search, Plus, Stethoscope, User, Bot, Upload, Trash2,
   Heart, Activity, Brain, Bone, Eye, Baby, Scissors, HandMetal, Ear,
   Waypoints, Shield, Flame, Zap, Ribbon, Footprints, Syringe, Cross,
-  Building2, CheckCircle2, Music,
+  Building2, CheckCircle2, Music, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import NavHeader from "@/components/NavHeader";
 import AddProcedureDialog from "@/components/AddProcedureDialog";
 import UploadPreferenceCardDrawer from "@/components/UploadPreferenceCardDrawer";
 import MusicPreferencesDrawer from "@/components/MusicPreferencesDrawer";
+import LinkFacilityToDoctorDialog from "@/components/LinkFacilityToDoctorDialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
