@@ -165,8 +165,7 @@ const ClinicalDashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background px-6 pt-16 pb-8">
-      <NavHeader showHome={false} />
+    <div className="flex min-h-screen flex-col bg-background px-6 pt-8 pb-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
